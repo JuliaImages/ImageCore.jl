@@ -1,5 +1,9 @@
-using ImagesCore
-using Base.Test
+module ImagesTests
 
-# write your own tests here
-@test 1 == 1
+using FactCheck
+
+include("core.jl")
+
+isinteractive() || FactCheck.exitstatus()
+
+end

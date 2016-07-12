@@ -1,9 +1,8 @@
-module ImagesTests
+module ImagesCoreTests
 
-using FactCheck
+include("colorchannels.jl")
 
-include("core.jl")
-
-isinteractive() || FactCheck.exitstatus()
+# run these last
+include("benchmarks.jl")
 
 end

@@ -5,7 +5,9 @@ using Colors: Fractional
 
 using Base: tail
 
-export ChannelView
+export
+    ChannelView,
+    ColorView
 
 include("colorchannels.jl")
 

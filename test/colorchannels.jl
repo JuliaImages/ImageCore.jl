@@ -182,3 +182,136 @@ end
 end
 
 end
+
+@testset "ColorView" begin
+
+@testset "grayscale" begin
+    _a = [U8(0.2), U8(0.4)]
+    a = ImagesCore.squeeze1 ? _a : reshape(_a, (1, 2))
+    v = ColorView{Gray}(a)
+    @test ndims(v) == 1
+    @test size(v) == (2,)
+    @test eltype(v) == Gray{U8}
+    @test parent(v) === a
+    @test v[1] == Gray(U8(0.2))
+    @test v[2] == Gray(U8(0.4))
+    @test_throws BoundsError v[0]
+    @test_throws BoundsError v[3]
+    v[1] = 0.8
+    @test _a[1] === U8(0.8)
+    @test_throws BoundsError (v[0] = 0.6)
+    @test_throws BoundsError (v[3] = 0.6)
+    c = similar(v)
+    @test isa(c, ColorView{Gray{U8},1,Array{U8,1}})
+    @test length(c) == 2
+    c = similar(v, ImagesCore.squeeze1 ? 3 : (1,3))
+    @test isa(c, ColorView{Gray{U8},1,Array{U8,1}})
+    @test length(c) == 3
+    c = similar(v, Gray{Float32})
+    @test isa(c, ColorView{Gray{Float32},1,Array{Float32,1}})
+    @test length(c) == 2
+    c = similar(v, Gray{Float16}, ImagesCore.squeeze1 ? (5,5) : (1,5,5))
+    @test isa(c, ColorView{Gray{Float16},2,Array{Float16,2}})
+    @test size(c) == (ImagesCore.squeeze1 ? (5,5) : (1,5,5))
+end
+
+@testset "RGB, HSV, etc" begin
+    for T in (RGB, BGR, RGB1, RGB4, HSV, Lab, XYZ)
+        a = [0.1 0.2 0.3; 0.4 0.5 0.6]'
+        v = ColorView{T}(a)
+        @test ndims(v) == 1
+        @test size(v) == (2,)
+        @test eltype(v) == T{Float64}
+        @test parent(v) === a
+        @test v[1] == T(0.1,0.2,0.3)
+        @test v[2] == T(0.4,0.5,0.6)
+        @test_throws BoundsError v[0]
+        @test_throws BoundsError v[3]
+        v[2] = T(0.8, 0.7, 0.6)
+        @test a == [0.1 0.2 0.3; 0.8 0.7 0.6]'
+        @test_throws BoundsError (v[0] = T(0.8, 0.7, 0.6))
+        @test_throws BoundsError (v[3] = T(0.8, 0.7, 0.6))
+        c = similar(v)
+        @test isa(c, ColorView{T{Float64},1,Array{Float64,2}})
+        @test size(c) == (2,)
+        c = similar(v, 4)
+        @test isa(c, ColorView{T{Float64},1,Array{Float64,2}})
+        @test size(c) == (4,)
+        c = similar(v, T{Float32})
+        @test isa(c, ColorView{T{Float32},1,Array{Float32,2}})
+        @test size(c) == (2,)
+        c = similar(v, T{Float16}, (5,5))
+        @test isa(c, ColorView{T{Float16},2,Array{Float16,3}})
+        @test size(c) == (5,5)
+    end
+end
+
+@testset "Gray+Alpha" begin
+    for T in (AGray,GrayA)
+        a = [0.1f0 0.2f0; 0.3f0 0.4f0; 0.5f0 0.6f0]'
+        v = ColorView{T}(a)
+        @test ndims(v) == 1
+        @test size(v) == (3,)
+        @test eltype(v) == T{Float32}
+        @test parent(v) === a
+        @test v[1] == T(0.1f0, 0.2f0)
+        @test v[2] == T(0.3f0, 0.4f0)
+        @test v[3] == T(0.5f0, 0.6f0)
+        @test_throws BoundsError v[0]
+        @test_throws BoundsError v[4]
+        v[2] = T(0.8, 0.7)
+        @test a[1,2] === 0.8f0
+        @test a[2,2] === 0.7f0
+        @test_throws BoundsError (v[0] = T(0.8,0.7))
+        @test_throws BoundsError (v[4] = T(0.8,0.7))
+        c = similar(v)
+        @test isa(c, ColorView{T{Float32},1,Array{Float32,2}})
+        @test size(c) == (3,)
+        c = similar(v, (4,))
+        @test isa(c, ColorView{T{Float32},1,Array{Float32,2}})
+        @test size(c) == (4,)
+        c = similar(v, T{Float64})
+        @test isa(c, ColorView{T{Float64},1,Array{Float64,2}})
+        @test size(c) == (3,)
+        c = similar(v, T{Float16}, (5,5))
+        @test isa(c, ColorView{T{Float16},2,Array{Float16,3}})
+        @test size(c) == (5,5)
+    end
+end
+
+@testset "Alpha+RGB, HSV, etc" begin
+    for T in (ARGB, ABGR, AHSV, ALab, AXYZ,
+              RGBA, BGRA, HSVA, LabA, XYZA)
+        a = [0.1 0.2 0.3 0.4; 0.5 0.6 0.7 0.8]'
+        v = ColorView{T}(a)
+        @test ndims(v) == 1
+        @test size(v) == (2,)
+        @test eltype(v) == T{Float64}
+        @test parent(v) === a
+        @test v[1] == T(0.1,0.2,0.3,0.4)
+        @test v[2] == T(0.5,0.6,0.7,0.8)
+        @test_throws BoundsError v[0]
+        @test_throws BoundsError v[3]
+        v[2] = T(0.9,0.8,0.7,0.6)
+        @test a[1,2] == 0.9
+        @test a[2,2] == 0.8
+        @test a[3,2] == 0.7
+        @test a[4,2] == 0.6
+        @test_throws BoundsError (v[0] = T(0.9,0.8,0.7,0.6))
+        @test_throws BoundsError (v[3] = T(0.9,0.8,0.7,0.6))
+        c = similar(v)
+        @test isa(c, ColorView{T{Float64},1,Array{Float64,2}})
+        @test size(c) == (2,)
+        c = similar(v, 4)
+        @test isa(c, ColorView{T{Float64},1,Array{Float64,2}})
+        @test size(c) == (4,)
+        c = similar(v, T{Float32})
+        @test isa(c, ColorView{T{Float32},1,Array{Float32,2}})
+        @test size(c) == (2,)
+        c = similar(v, T{Float16}, (5,5))
+        @test isa(c, ColorView{T{Float16},2,Array{Float16,3}})
+        @test size(c) == (5,5)
+    end
+end
+
+end

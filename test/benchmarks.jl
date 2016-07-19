@@ -54,28 +54,41 @@ c = reinterpret(RGB{Float64}, a, ssz)
 vchan = ChannelView(c)
 vcol = ColorView{RGB}(a)
 suite["ChannelView"] = BenchmarkGroup()
-channelviewfuncs = (mysum_elt_boundscheck,
-                    mysum_index_boundscheck,
-                    mysum_elt_inbounds,
-                    mysum_index_inbounds_simd)
-chanvtol = Dict(mysum_index_inbounds_simd=>20)  # @simd doesn't work for ChannelView :(
+cc_getindex_funcs = (mysum_elt_boundscheck,
+                     mysum_index_boundscheck,
+                     mysum_elt_inbounds,
+                     mysum_index_inbounds_simd)
+cc_setindex_funcs = (myfill1!,
+                     myfill2!)
+chanvtol = Dict(mysum_index_inbounds_simd => 20,   # @simd doesn't work for ChannelView :(
+                myfill1! => 20,                    # crappy setindex! performance
+                myfill2! => 20)
 chanvdefault = 10
 colvtol = Dict(mysum_elt_boundscheck=>5, mysum_index_boundscheck=>5)
 colvdefault = 3
 
-for f in channelviewfuncs
+for f in cc_getindex_funcs
     for x in (a, vchan)
         suite["ChannelView"][string(f), string(typeof(x).name.name)] = @benchmarkable $(f)($x)
     end
 end
+for f in cc_setindex_funcs
+    for x in (a, vchan)
+        suite["ChannelView"][string(f), string(typeof(x).name.name)] = @benchmarkable $(f)($x, 0)
+    end
+end
 
 suite["ColorView"] = BenchmarkGroup()
-for f in channelviewfuncs
+for f in cc_getindex_funcs
     for x in (c, vcol)
         suite["ColorView"][string(f), string(typeof(x).name.name)] = @benchmarkable $(f)($x)
     end
 end
-
+for f in cc_setindex_funcs
+    for x in (c, vcol)
+        suite["ColorView"][string(f), string(typeof(x).name.name)] = @benchmarkable $(f)($x, $(zero(eltype(c))))
+    end
+end
 
 # tune!(suite)
 # save("params.jld", "suite", params(suite))
@@ -83,14 +96,14 @@ loadparams!(suite, load("params.jld", "suite"), :evals, :samples, :seconds)
 results = run(suite)
 
 chanvr = results["ChannelView"]
-for f in channelviewfuncs
+for f in (cc_getindex_funcs..., cc_setindex_funcs...)
     cv = chanvr[string(f), "ChannelView"]
     a =  chanvr[string(f), "Array"]
     tol = haskey(chanvtol, f) ? chanvtol[f] : chanvdefault
     @test time(median(cv)) < tol*time(median(a))
 end
 colvr = results["ColorView"]
-for f in channelviewfuncs
+for f in (cc_getindex_funcs..., cc_setindex_funcs...)
     cv = colvr[string(f), "ColorView"]
     a =  colvr[string(f), "Array"]
     tol = haskey(colvtol, f) ? colvtol[f] : colvdefault

@@ -110,14 +110,14 @@ parenttype{T,N,A}(::Type{ColorView{T,N,A}}) = A
 
 Base.@propagate_inbounds function Base.getindex{C,N}(A::ColorView{C,N}, I::Vararg{Int,N})
     P = parent(A)
-    @boundscheck Base.checkbounds_indices(parentindices(C, indices(P)), I)
+    @boundscheck Base.checkbounds_indices(Bool, parentindices(C, indices(P)), I) || Base.throw_boundserror(A, I)
     @inbounds ret = C(getchannels(P, C, I)...)
     ret
 end
 
 Base.@propagate_inbounds function Base.setindex!{C,N}(A::ColorView{C,N}, val::C, I::Vararg{Int,N})
     P = parent(A)
-    @boundscheck Base.checkbounds_indices(parentindices(C, indices(P)), I)
+    @boundscheck Base.checkbounds_indices(Bool, parentindices(C, indices(P)), I) || Base.throw_boundserror(A, I)
     setchannels!(P, val, I)
     val
 end

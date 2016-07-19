@@ -57,17 +57,17 @@ _linearindexing{A,C        }(::Type{A}, ::Type{C}) = Base.LinearSlow()
 # colortype(A::ChannelView) = eltype(parent(A))
 
 Base.@propagate_inbounds function Base.getindex{T,N}(A::ChannelView{T,N}, I::Vararg{Int,N})
+    @boundscheck checkbounds(A, I...)
     P = parent(A)
     Ic, Ia = indexsplit(P, I)
-    @boundscheck checkbounds(P, Ia...)
-    @inbounds ret = getfield(P[Ia...], colorperm(eltype(P))[Ic])
+    @inbounds ret = tuplify(P[Ia...])[Ic]
     ret
 end
 
 Base.@propagate_inbounds function Base.setindex!{T,N}(A::ChannelView{T,N}, val, I::Vararg{Int,N})
+    @boundscheck checkbounds(A, I...)
     P = parent(A)
     Ic, Ia = indexsplit(P, I)
-    @boundscheck checkbounds(P, Ia...)
     @inbounds c = P[Ia...]
     @inbounds P[Ia...] = setchannel(c, val, Ic)
     val
@@ -148,11 +148,7 @@ if squeeze1
     colparentsize{C<:Color1}(::Type{C}, dims) = dims
 end
 
-@inline function indexsplit{C<:Colorant}(A::AbstractArray{C}, I)
-    Ic, Ia = I[1], tail(I)
-    @boundscheck checkindex(Bool, 1:length(C), Ic) || Base.throw_boundserror(A, I)
-    Ic, Ia
-end
+@inline indexsplit{C<:Colorant}(A::AbstractArray{C}, I) = I[1], tail(I)
 
 if squeeze1
     @inline indexsplit{C<:Color1}(A::AbstractArray{C}, I) = 1, I
@@ -182,12 +178,10 @@ celtype{T1,T2}(::Type{T1}, ::Type{T2}) = T1
 
 ## Low-level color utilities
 
-colorperm{C<:Color1}(::Type{C}) = (1,)
-colorperm{C<:Color3}(::Type{C}) = (1,2,3)
-colorperm{C<:BGR }(::Type{C}) = (3,2,1)
-colorperm{C<:RGB1}(::Type{C}) = (2,3,4)
-@pure colorperm{CA<:ColorA}(::Type{CA}) = (colorperm(base_color_type(CA))..., length(CA))
-@pure colorperm{AC<:AColor}(::Type{AC}) = (map(n->n+1, colorperm(base_color_type(AC)))..., 1)
+tuplify(c::Color1) = (comp1(c),)
+tuplify(c::Color3) = (comp1(c), comp2(c), comp3(c))
+tuplify(c::Color2) = (comp1(c), alpha(c))
+tuplify(c::Color4) = (comp1(c), comp2(c), comp3(c), alpha(c))
 
 """
     getchannels(P, C::Type, I)

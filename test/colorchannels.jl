@@ -2,24 +2,6 @@ using Colors, ImagesCore, Base.Test, BenchmarkTools
 
 @testset "ChannelView" begin
 
-@testset "color channel order" begin
-    @test ImagesCore.colorperm(Gray)  == (1,)
-    @test ImagesCore.colorperm(AGray) == (2,1)
-    @test ImagesCore.colorperm(GrayA) == (1,2)
-
-    @test ImagesCore.colorperm(RGB)  == (1,2,3)
-    @test ImagesCore.colorperm(ARGB) == (2,3,4,1)
-    @test ImagesCore.colorperm(RGBA) == (1,2,3,4)
-    @test ImagesCore.colorperm(BGR)  == (3,2,1)
-    @test ImagesCore.colorperm(ABGR) == (4,3,2,1)
-    @test ImagesCore.colorperm(BGRA) == (3,2,1,4)
-
-    @test ImagesCore.colorperm(HSV)   == (1,2,3)
-    @test ImagesCore.colorperm(YCbCr) == (1,2,3)
-    @test ImagesCore.colorperm(XYZA)  == (1,2,3,4)
-    @test ImagesCore.colorperm(ALab)  == (2,3,4,1)
-end
-
 @testset "grayscale" begin
     a = [Gray(U8(0.2)), Gray(U8(0.4))]
     v = ChannelView(a)

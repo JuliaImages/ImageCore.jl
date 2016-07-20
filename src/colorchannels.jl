@@ -1,6 +1,3 @@
-using Base: @pure
-using Colors
-
 # Implements two view types for "converting" between arrays-of-colors
 # and arrays-of-numbers (with the "first dimension" corresponding to
 # color channels)

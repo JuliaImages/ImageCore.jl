@@ -6,11 +6,25 @@ using Colors: Fractional
 using Base: tail, @pure
 
 export
+    # Types
     ChannelView,
     ColorView,
+    # functions
+#    float16,
+    float32,
+    float64,
+    u8,
+    ufixed8,
+    ufixed10,
+    ufixed12,
+    ufixed14,
+    ufixed16,
+    u16,
     rawview
 
 include("colorchannels.jl")
+include("convert_reinterpret.jl")
+
 """
     rawview(img::AbstractArray{FixedPoint})
 

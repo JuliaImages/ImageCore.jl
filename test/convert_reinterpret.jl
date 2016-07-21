@@ -1,4 +1,4 @@
-using ImagesCore, Colors, ColorVectorSpace, FixedPointNumbers
+using ImagesCore, Colors, FixedPointNumbers
 using Base.Test
 
 @testset "reinterpret" begin
@@ -96,3 +96,5 @@ end
     @test eltype(float32(a)) == RGB{Float32}
     @test eltype(float64(a)) == RGB{Float64}
 end
+
+nothing

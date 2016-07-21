@@ -1,7 +1,5 @@
 module ImagesCoreTests
 
-using Base.Test
-
 include("colorchannels.jl")
 include("views.jl")
 include("convert_reinterpret.jl")

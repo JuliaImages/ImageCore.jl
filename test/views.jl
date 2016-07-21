@@ -1,4 +1,5 @@
 # some views are in colorchannels.jl
+using Colors, ImagesCore, Base.Test
 
 @testset "rawview" begin
     a = map(U8, rand(3,5))
@@ -20,3 +21,5 @@ end
     v = permuteddimsview(a, (2,3,1))
     @test v == permutedims(a, (2,3,1))
 end
+
+nothing

@@ -1,4 +1,4 @@
-using Colors, ImagesCore, Base.Test, BenchmarkTools
+using Colors, ImagesCore, Base.Test
 
 @testset "ChannelView" begin
 
@@ -313,3 +313,5 @@ end
 end
 
 end
+
+nothing

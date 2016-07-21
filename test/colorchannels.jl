@@ -5,6 +5,8 @@ using Colors, ImagesCore, Base.Test, BenchmarkTools
 @testset "grayscale" begin
     a = [Gray(U8(0.2)), Gray(U8(0.4))]
     v = ChannelView(a)
+    @test isa(channelview(a), ChannelView)
+    @test isa(colorview(Gray, v), Array)
     @test ndims(v) == 2 - ImagesCore.squeeze1
     @test size(v) == (ImagesCore.squeeze1 ? (2,) : (1, 2))
     @test eltype(v) == U8
@@ -35,6 +37,8 @@ end
     for T in (RGB, BGR, RGB1, RGB4, HSV, Lab, XYZ)
         a = [T(0.1,0.2,0.3), T(0.4, 0.5, 0.6)]
         v = ChannelView(a)
+        @test isa(channelview(a), ChannelView)
+        @test isa(colorview(T, v), Array)
         @test ndims(v) == 2
         @test size(v) == (3,2)
         @test eltype(v) == Float64
@@ -78,6 +82,8 @@ end
     for T in (AGray,GrayA)
         a = [T(0.1f0,0.2f0), T(0.3f0,0.4f0), T(0.5f0,0.6f0)]
         v = ChannelView(a)
+        @test isa(channelview(a), ChannelView)
+        @test isa(colorview(T, v), Array)
         @test ndims(v) == 2
         @test size(v) == (2,3)
         @test eltype(v) == Float32
@@ -122,6 +128,8 @@ end
               RGBA, BGRA, HSVA, LabA, XYZA)
         a = [T(0.1,0.2,0.3,0.4), T(0.5,0.6,0.7,0.8)]
         v = ChannelView(a)
+        @test isa(channelview(a), ChannelView)
+        @test isa(colorview(T, v), Array)
         @test ndims(v) == 2
         @test size(v) == (4,2)
         @test eltype(v) == Float64
@@ -171,6 +179,8 @@ end
     _a = [U8(0.2), U8(0.4)]
     a = ImagesCore.squeeze1 ? _a : reshape(_a, (1, 2))
     v = ColorView{Gray}(a)
+    @test isa(colorview(Gray,a), ColorView{Gray{U8}})
+    @test isa(channelview(v), Array)
     @test ndims(v) == 1
     @test size(v) == (2,)
     @test eltype(v) == Gray{U8}
@@ -201,6 +211,8 @@ end
     for T in (RGB, BGR, RGB1, RGB4, HSV, Lab, XYZ)
         a = [0.1 0.2 0.3; 0.4 0.5 0.6]'
         v = ColorView{T}(a)
+        @test isa(colorview(T,a), ColorView{T{Float64}})
+        @test isa(channelview(v), Array)
         @test ndims(v) == 1
         @test size(v) == (2,)
         @test eltype(v) == T{Float64}
@@ -232,6 +244,8 @@ end
     for T in (AGray,GrayA)
         a = [0.1f0 0.2f0; 0.3f0 0.4f0; 0.5f0 0.6f0]'
         v = ColorView{T}(a)
+        @test isa(colorview(T,a), ColorView{T{Float32}})
+        @test isa(channelview(v), Array)
         @test ndims(v) == 1
         @test size(v) == (3,)
         @test eltype(v) == T{Float32}
@@ -266,6 +280,8 @@ end
               RGBA, BGRA, HSVA, LabA, XYZA)
         a = [0.1 0.2 0.3 0.4; 0.5 0.6 0.7 0.8]'
         v = ColorView{T}(a)
+        @test isa(colorview(T,a), ColorView{T{Float64}})
+        @test isa(channelview(v), Array)
         @test ndims(v) == 1
         @test size(v) == (2,)
         @test eltype(v) == T{Float64}

@@ -35,9 +35,26 @@ immutable ChannelView{T,N,A<:AbstractArray} <: AbstractArray{T,N}
     end
 end
 
-# Creating a ChannelView in a type-stable fashion requires use of tuples to compute N+1
+
+"""
+    ChannelView(A)
+
+creates a "view" of the Colorant array `A`, splitting out (if
+necessary) the separate color channels of `eltype(A)` into a new first
+dimension. For example, if `A` is a m-by-n RGB{U8} array,
+`ChannelView(A)` will return a 3-by-m-by-n U8 array. Color spaces with
+a single element (i.e., grayscale) do not add a new first dimension of
+`A`.
+
+Of relevance for types like RGB and BGR, the channels of the returned
+array will be in constructor-argument order, not memory order (see
+`reinterpret` if you want to use memory order).
+
+The opposite transformation is implemented by `ColorView`.
+"""
 ChannelView(parent::AbstractArray) = _channelview(parent, channelviewsize(parent))
 function _channelview{C<:Colorant,N}(parent::AbstractArray{C}, sz::NTuple{N,Int})
+    # Creating a ChannelView in a type-stable fashion requires use of tuples to compute N+1
     ChannelView{eltype(C),N,typeof(parent)}(parent)
 end
 
@@ -89,8 +106,25 @@ immutable ColorView{C<:Colorant,N,A<:AbstractArray} <: AbstractArray{C,N}
     end
 end
 
-# Creating a ColorView in a type-stable fashion requires use of tuples to compute N+1
+"""
+    ColorView{C}(A)
+
+creates a "view" of the numeric array `A`, interpreting the first
+dimension of `A` as if were the channels of a Colorant `C`. The first
+dimension must have the proper number of elements for the constructor
+of `C`. For example, if `A` is a 3-by-m-by-n U8 array,
+`Colorant{RGB}(A)` will create an m-by-n array with element type
+`RGB{U8}`. Color spaces with a single element (i.e., grayscale) do not
+"consume" the first dimension of `A`.
+
+Of relevance for types like RGB and BGR, the elements of `A`
+are interpreted in constructor-argument order, not memory order (see
+`reinterpret` if you want to use memory order).
+
+The opposite transformation is implemented by `ChannelView`.
+"""
 function (::Type{ColorView{C}}){C<:Colorant,T<:Number}(parent::AbstractArray{T})
+    # Creating a ColorView in a type-stable fashion requires use of tuples to compute N+1
     _colorview(base_colorant_type(C){T}, parent, colorviewsize(C, parent))
 end
 function _colorview{C,N}(::Type{C}, parent::AbstractArray, sz::NTuple{N,Int})
@@ -126,6 +160,35 @@ function Base.similar{S,N}(A::ColorView, ::Type{S}, dims::NTuple{N,Int})
     P = parent(A)
     ColorView{S}(similar(P, celtype(eltype(S), eltype(P)), colparentsize(S, dims)))
 end
+
+## maybe-views
+"""
+    channelview(A)
+
+returns a view of `A`, splitting out (if necessary) the color channels
+of `A` into a new first dimension. This is almost identical to
+`ChannelView(A)`, except that if `A` is a `ColorView`, it will simply
+return the parent of `A` (and hence may not be a `ChannelView` array).
+"""
+channelview(A::AbstractArray) = ChannelView(A)
+channelview(A::ColorView) = parent(A)
+
+"""
+    colorview(C, A)
+
+returns a view of the numeric array `A`, interpreting successive
+elements of `A` as if they were channels of Colorant `C`. This is
+almost identical to `ColorView{C}(A)`, except that if `A` is a
+`ChannelView`, it will simply return the parent of `A` (and hence may
+not be a `ColorView` array).
+"""
+colorview{C<:Colorant}(::Type{C}, A::AbstractArray) = ColorView{C}(A)
+function colorview{C<:Colorant}(::Type{C}, A::ChannelView)
+    P = parent(A)
+    _colorview(base_colorant_type(C), base_colorant_type(eltype(P)), P)
+end
+_colorview{C<:Colorant}(::Type{C}, ::Type{C}, A::AbstractArray) = A
+_colorview(::Type, ::Type, A::AbstractArray) = throw(ArgumentError("changing colorspaces is not supported"))
 
 ## Tuple & indexing utilities
 # color->number

@@ -6,10 +6,16 @@ using Colors: Fractional
 using Base: tail, @pure
 
 export
-    # Types
+    ## Types
     ChannelView,
     ColorView,
-    # functions
+    ## functions
+    # views
+    channelview,
+    colorview,
+    permuteddimsview,
+    rawview,
+    # conversions
 #    float16,
     float32,
     float64,
@@ -19,8 +25,7 @@ export
     ufixed12,
     ufixed14,
     ufixed16,
-    u16,
-    rawview
+    u16
 
 include("colorchannels.jl")
 include("convert_reinterpret.jl")
@@ -33,5 +38,16 @@ their raw underlying storage. For example, if `img` is an `Array{U8}`,
 the view will act like an `Array{UInt8}`.
 """
 rawview{T<:FixedPoint}(a::AbstractArray{T}) = mappedarray((x->x.i, y->T(y,0)), a)
+
+"""
+    permuteddimsview(A, perm)
+
+returns a "view" of `A` with its dimensions permuted as specified by
+`perm`. This is like `permutedims`, except that it produces a view
+rather than a copy of `A`; consequently, any manipulations you make to
+the output will be mirrored in `A`. Compared to the copy, the view is
+much faster to create, but generally slower to use.
+"""
+permuteddimsview(A, perm) = Base.PermutedDimsArrays.PermutedDimsArray(A, perm)
 
 end ## module

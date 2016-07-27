@@ -25,10 +25,23 @@ export
     ufixed12,
     ufixed14,
     ufixed16,
-    u16
+    u16,
+    # traits
+    assert_timedim_last,
+    coords_spatial,
+    height,
+    nimages,
+    pixelspacing,
+    sdims,
+    size_spatial,
+    spacedirections,
+    width,
+    widthheight
 
 include("colorchannels.jl")
 include("convert_reinterpret.jl")
+include("traits.jl")
+include("deprecated.jl")
 
 """
     rawview(img::AbstractArray{FixedPoint})

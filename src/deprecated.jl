@@ -1,15 +1,19 @@
 #### Types and constructors ####
 
-Base.@deprecate_binding AbstractImage AbstractArray
-Base.@deprecate_binding AbstractImageDirect AbstractArray
-Base.@deprecate_binding AbstractImageIndexed AbstractArray
-
 # Convenience constructors
-@deprecate grayim(A) ColorView{Gray}(A)
-grayim(A::AbstractArray{UInt8,2})  = grayim(reinterpret(UFixed8, A))
-grayim(A::AbstractArray{UInt16,2}) = grayim(reinterpret(UFixed16, A))
-grayim(A::AbstractArray{UInt8,3})  = grayim(reinterpret(UFixed8, A))
-grayim(A::AbstractArray{UInt16,3}) = grayim(reinterpret(UFixed16, A))
+export grayim
+function grayim{T<:UFixed}(A::AbstractArray{T})
+    Base.depwarn("grayim is deprecated, please use ColorView{Gray}(A), possibly in conjunction with ufixedview", :grayim)
+    ColorView{Gray}(A)
+end
+grayim(A::Array{UInt8,2})  = grayim(reinterpret(UFixed8, A))
+grayim(A::Array{UInt16,2}) = grayim(reinterpret(UFixed16, A))
+grayim(A::Array{UInt8,3})  = grayim(reinterpret(UFixed8, A))
+grayim(A::Array{UInt16,3}) = grayim(reinterpret(UFixed16, A))
+grayim(A::AbstractArray{UInt8,2})  = grayim(ufixedview(A))
+grayim(A::AbstractArray{UInt8,3})  = grayim(ufixedview(A))
+grayim(A::AbstractArray{UInt16,2}) = grayim(ufixedview(U16, A))
+grayim(A::AbstractArray{UInt16,3}) = grayim(ufixedview(U16, A))
 
 export colorim
 function colorim{T}(A::AbstractArray{T,3})
@@ -20,20 +24,22 @@ function colorim{T}(A::AbstractArray{T,3})
     colorim(A, "RGB")
 end
 function colorim{T<:Fractional}(A::AbstractArray{T,3}, colorspace)
-    Base.depwarn("colorim(A, colorspace) is deprecated, use ColorView{C}(A) instead, possibly in conjunction with permutedview", :colorim)
+    Base.depwarn("colorim(A, colorspace) is deprecated, use ColorView{C}(A) instead, possibly in conjunction with permuteddimsview and/or ufixedview", :colorim)
     CT = getcolortype(colorspace, eltype(A))
     if 3 <= size(A, 1) <= 4 && 3 <= size(A, 3) <= 4
         error("Both first and last dimensions are of size 3 or 4; impossible to guess which is for color. Use the Image constructor directly.")
     elseif 3 <= size(A, 1) <= 4  # Image as returned by imread for regular 2D RGB images
         ColorView{CT}(A)
     elseif 3 <= size(A, 3) <= 4  # "Matlab"-style image, as returned by convert(Array, im).
-        ColorView{CT}(permutedview(A))
+        ColorView{CT}(permuteddimsview(A, (3,1,2)))
     else
         error("Neither the first nor the last dimension is of size 3. This doesn't look like an RGB image.")
     end
 end
-colorim(A::AbstractArray{UInt8,3},  colorspace) = colorim(reinterpret(UFixed8, A), colorspace)
-colorim(A::AbstractArray{UInt16,3}, colorspace) = colorim(reinterpret(UFixed16, A), colorspace)
+colorim(A::Array{UInt8,3},  colorspace) = colorim(reinterpret(UFixed8,  A), colorspace)
+colorim(A::Array{UInt16,3}, colorspace) = colorim(reinterpret(UFixed16, A), colorspace)
+colorim(A::AbstractArray{UInt8,3},  colorspace) = colorim(ufixedview(A), colorspace)
+colorim(A::AbstractArray{UInt16,3}, colorspace) = colorim(ufixedview(U16, A), colorspace)
 
 colorspacedict = Dict{String,Any}()
 for ACV in (Color, AbstractRGB)
@@ -86,21 +92,22 @@ end
 # Here are the two most important assumptions (see also colorspace below):
 defaultarraycolordim = 3
 # defaults for plain arrays ("vertical-major")
-const yx = ["y", "x"]
+const yx = [:y, :x]
 # order used in Cairo & most image file formats (with color as the very first dimension)
-const xy = ["x", "y"]
+const xy = [:x, :y]
+export spatialorder
 function spatialorder(img::AbstractArray)
-    depwarn("spatialorder is deprecated for general AbstractArrays, please switch to ImagesAxes instead", :spatialorder)
+    Base.depwarn("spatialorder is deprecated for general AbstractArrays, please switch to ImagesAxes instead", :spatialorder)
     _spatialorder(img)
 end
-_spatialorder(::Type{Matrix}) = yx
-_spatialorder(img::AbstractArray) = (sdims(img) == 2) ? spatialorder(Matrix) : error("cannot guess spatial order for images with ", sdims(img), " spatial dimensions")
+_spatialorder{M<:Matrix}(::Type{M}) = yx
+_spatialorder(img::AbstractArray) = (sdims(img) == 2) ? _spatialorder(Matrix) : error("cannot guess spatial order for images with ", sdims(img), " spatial dimensions")
 
 @deprecate isdirect(img::AbstractArray) true
 
 export colorspace
 function colorspace(img)
-    depwarn("""
+    Base.depwarn("""
 colorspace(img) is deprecated, use eltype(img) instead, possibly in conjunction
 with colorview(img)""", :colorspace)
     _colorspace(img)
@@ -121,46 +128,43 @@ _colorspace{T}(img::AbstractArray{T,3}) = (size(img, defaultarraycolordim) == 3)
 
 export colordim
 function colordim(img)
-    depwarn("colordim(img) is deprecated, use colorview(img) to represent as a color image", :colordim)
+    Base.depwarn("colordim(img) is deprecated, use colorview(img) to represent as a color image", :colordim)
     _colordim(img)
 end
-_colordim{C<:Colorant}(img::AbstractVector{C}) = 0
-_colordim{C<:Colorant}(img::AbstractMatrix{C}) = 0
-_colordim{C<:Colorant}(img::AbstractArray{C,3}) = 0
-_colordim(img::AbstractVector) = 0
-_colordim(img::AbstractMatrix) = 0
+_colordim{C<:Colorant}(img::AbstractArray{C}) = 0
+_colordim(img::AbstractArray) = 0
 
 export timedim
 function timedim(img)
-    depwarn("timedim(img) is deprecated for general AbstractArrays, please switch to ImagesAxes", :timedim)
+    Base.depwarn("timedim(img) is deprecated for general AbstractArrays, please switch to ImagesAxes", :timedim)
     return 0
 end
 
 export limits
 function limits(img)
-    depwarn("limits(img) is deprecated, use (zero(T),one(T)) where T is the eltype", :limits)
+    Base.depwarn("limits(img) is deprecated, use (zero(T),one(T)) where T is the eltype", :limits)
     _limits(img)
 end
 _limits(img::AbstractArray{Bool}) = 0,1
-_limits{T<:AbstractFloat}(img::AbstractArray{T}) = zero(T), one(T)
+_limits{T}(img::AbstractArray{T}) = zero(T), one(T)
 
 export storageorder
 function storageorder(img::AbstractArray)
-    depwarn("storageorder is deprecated, please switch to ImagesAxes and use `axisnames`", :storageorder)
-    so = Array(String, ndims(img))
-    so[coords_spatial(img)] = spatialorder(img)
+    Base.depwarn("storageorder is deprecated, please switch to ImagesAxes and use `axisnames`", :storageorder)
+    so = Array(Symbol, ndims(img))
+    so[[coords_spatial(img)...]] = spatialorder(img)
     td = timedim(img)
     if td != 0
-        so[td] = "t"
+        so[td] = :t
     end
     so
 end
 
 # number of array elements used for each pixel/voxel
-@deprecate ncolorelem{C<:Colorant}(img::AbstractArray{C}) length(C)
-function ncolorelem(img)
-    depwarn("ncolorelem is deprecated, please encode as a color array (possibly with `colorview`) and use `length(eltype(img))`.\nNumeric arrays are assumed to be grayscale and will return 1.")
-    1
+export ncolorelem
+function ncolorelem{T}(img::AbstractArray{T})
+    Base.depwarn("ncolorelem is deprecated, please encode as a color array (possibly with `colorview`) and use `length(eltype(img))`.\nNumeric arrays are assumed to be grayscale and will return 1.", :ncolorelem)
+    T <: Colorant ? length(T) : 1
 end
 
 #### Utilities for writing "simple algorithms" safely ####
@@ -169,7 +173,7 @@ end
 # Two-dimensional images
 export assert2d
 function assert2d(img::AbstractArray)
-    depwarn("assert2d is deprecated, write your algorithm as `myfunc{T}(img::AbstractArray{T,2}) instead", :assert2d)
+    Base.depwarn("assert2d is deprecated, write your algorithm as `myfunc{T}(img::AbstractArray{T,2}) instead", :assert2d)
     if ndims(img) != 2
         error("Only two-dimensional images are supported")
     end
@@ -178,7 +182,7 @@ end
 # "Scalar color", either grayscale, RGB24, or an immutable type
 export assert_scalar_color
 function assert_scalar_color(img::AbstractArray)
-    depwarn("assert_scalar_color is deprecated and can be removed", :assert_scalar_color)
+    Base.depwarn("assert_scalar_color is deprecated and can be removed", :assert_scalar_color)
     nothing
 end
 
@@ -239,7 +243,7 @@ end
 
 export spatialproperties
 function spatialproperties(img::AbstractArray)
-    depwarn("spatialproperties is deprecated for any arrays other than ImageMeta", :spatialproperties)
+    Base.depwarn("spatialproperties is deprecated for any arrays other than ImageMeta", :spatialproperties)
     String[]
 end
 
@@ -256,4 +260,5 @@ Base.permutedims{S<:Symbol}(img::AbstractArray, pstr::Union{Vector{S}, Tuple{Var
 
 ### Functions ###
 @deprecate raw rawview
-@deprecate separate{C,N}(img::AbstractArray{C,N}) permutedview(ChannelView(img), (ntuple(n->n+1, Val{N})..., 1))
+@deprecate raw{C<:Colorant}(A::AbstractArray{C}) rawview(channelview(A))
+@deprecate separate{C<:Colorant,N}(img::AbstractArray{C,N}) permuteddimsview(channelview(img), (ntuple(n->n+1, Val{N})..., 1))

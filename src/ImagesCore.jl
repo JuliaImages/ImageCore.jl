@@ -1,3 +1,5 @@
+__precompile__()
+
 module ImagesCore
 
 using Colors, FixedPointNumbers, MappedArrays
@@ -15,6 +17,7 @@ export
     colorview,
     permuteddimsview,
     rawview,
+    ufixedview,
     # conversions
 #    float16,
     float32,
@@ -30,6 +33,7 @@ export
     assert_timedim_last,
     coords_spatial,
     height,
+    indices_spatial,
     nimages,
     pixelspacing,
     sdims,
@@ -51,6 +55,20 @@ their raw underlying storage. For example, if `img` is an `Array{U8}`,
 the view will act like an `Array{UInt8}`.
 """
 rawview{T<:FixedPoint}(a::AbstractArray{T}) = mappedarray((x->x.i, y->T(y,0)), a)
+rawview{T<:Real}(a::AbstractArray{T}) = a
+
+"""
+    ufixedview([T], img::AbstractArray{Unsigned})
+
+returns a "view" of `img` where the values are interpreted in terms of
+`UFixed` number types. For example, if `img` is an `Array{UInt8}`, the
+view will act like an `Array{UFixed8}`.  Supply `T` if the element
+type of `img` is `UInt16`, to specify whether you want a `UFixed10`,
+`UFixed12`, `UFixed14`, or `UFixed16` result.
+"""
+ufixedview{T<:FixedPoint,S<:Unsigned}(::Type{T}, a::AbstractArray{S}) = mappedarray((y->T(y,0),x->x.i), a)
+ufixedview(a::AbstractArray{UInt8}) = ufixedview(U8, a)
+ufixedview{T<:UFixed}(::Type{T}, a::AbstractArray{T}) = a
 
 """
     permuteddimsview(A, perm)

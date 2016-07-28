@@ -1,3 +1,5 @@
+__precompile__()
+
 module ImagesCore
 
 using Colors, FixedPointNumbers, MappedArrays

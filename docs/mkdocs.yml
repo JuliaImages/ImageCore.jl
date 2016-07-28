@@ -26,7 +26,7 @@ markdown_extensions:
   - extra
   - tables
   - fenced_code
-  - mdx_math
+#  - mdx_math
 
 docs_dir: build
 
@@ -35,7 +35,7 @@ pages:
 - Views: views.md
 - Traits: traits.md
 - Reference: reference.md
-#- About:
+- About:
+  - License: LICENSE.md
 #  - Contributing: contributing.md
-#  - License: LICENSE.md
 #  - Release Notes: NEWS.md

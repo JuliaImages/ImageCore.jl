@@ -98,14 +98,14 @@ results = run(suite)
 chanvr = results["ChannelView"]
 for f in (cc_getindex_funcs..., cc_setindex_funcs...)
     cv = chanvr[string(f), "ChannelView"]
-    a =  chanvr[string(f), "Array"]
+    ar = chanvr[string(f), "Array"]
     tol = haskey(chanvtol, f) ? chanvtol[f] : chanvdefault
-    @test time(median(cv)) < tol*time(median(a))
+    @test time(median(cv)) < tol*time(median(ar))
 end
 colvr = results["ColorView"]
 for f in (cc_getindex_funcs..., cc_setindex_funcs...)
     cv = colvr[string(f), "ColorView"]
-    a =  colvr[string(f), "Array"]
+    ar = colvr[string(f), "Array"]
     tol = haskey(colvtol, f) ? colvtol[f] : colvdefault
-    @test time(median(cv)) < tol*time(median(a))
+    @test time(median(cv)) < tol*time(median(ar))
 end

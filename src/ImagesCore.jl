@@ -5,7 +5,7 @@ module ImagesCore
 using Colors, FixedPointNumbers, MappedArrays
 using Colors: Fractional
 
-using Base: tail, @pure
+using Base: tail, @pure, Indices
 
 export
     ## Types

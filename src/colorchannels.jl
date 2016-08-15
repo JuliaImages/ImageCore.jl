@@ -63,10 +63,7 @@ parenttype{T,N,A}(::Type{ChannelView{T,N,A}}) = A
 @inline Base.size(A::ChannelView) = channelviewsize(parent(A))
 
 # Can be LinearFast for grayscale (1-channel images), otherwise must be LinearSlow
-@pure Base.linearindexing{T<:ChannelView}(::Type{T}) = _linearindexing(parenttype(T))
-_linearindexing{A}(::Type{A}) = _linearindexing(A, eltype(A))
-_linearindexing{A,C<:Color1}(::Type{A}, ::Type{C}) = Base.linearindexing(A)
-_linearindexing{A,C        }(::Type{A}, ::Type{C}) = Base.LinearSlow()
+@pure Base.linearindexing{T<:ChannelView1}(::Type{T}) = Base.linearindexing(parenttype(T))
 
 # colortype(A::ChannelView) = eltype(parent(A))
 
@@ -137,7 +134,8 @@ Base.parent(A::ColorView) = A.parent
 parenttype{T,N,A}(::Type{ColorView{T,N,A}}) = A
 @inline Base.size(A::ColorView) = colorviewsize(eltype(A), parent(A))
 
-@pure Base.linearindexing{T<:ColorView}(::Type{T}) = _linearindexing(parenttype(T))
+@pure Base.linearindexing{C<:Color1,N,A<:AbstractArray}(::Type{ColorView{C,N,A}}) = Base.linearindexing(A)
+@pure Base.linearindexing{V<:ColorView}(::Type{V}) = Base.LinearSlow()
 
 Base.@propagate_inbounds function Base.getindex{C,N}(A::ColorView{C,N}, I::Vararg{Int,N})
     P = parent(A)
@@ -154,6 +152,17 @@ Base.@propagate_inbounds function Base.setindex!{C,N}(A::ColorView{C,N}, val::C,
 end
 Base.@propagate_inbounds function Base.setindex!{C,N}(A::ColorView{C,N}, val, I::Vararg{Int,N})
     setindex!(A, convert(C, val), I...)
+end
+
+# A grayscale ColorView can be LinearFast, so support this too
+Base.@propagate_inbounds function Base.setindex!{C<:Color1,N}(A::ColorView{C,N}, val::C, i::Int)
+    P = parent(A)
+    @boundscheck checkindex(Bool, linearindices(P), i) || Base.throw_boundserror(A, i)
+    setchannels!(P, val, i)
+    val
+end
+Base.@propagate_inbounds function Base.setindex!{C<:Color1,N}(A::ColorView{C,N}, val, i::Int)
+    setindex!(A, convert(C, val), i)
 end
 
 function Base.similar{S,N}(A::ColorView, ::Type{S}, dims::NTuple{N,Int})

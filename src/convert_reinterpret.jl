@@ -86,9 +86,9 @@ for (fn,T) in (#(:float16, Float16),   # Float16 currently has promotion problem
     @eval begin
         function ($fnscoped){C<:Colorant}(A::AbstractArray{C})
             newC = base_colorant_type(C){$T}
-            convert(Array{newC}, A)
+            convert_toeltype(newC, A)
         end
-        ($fnscoped){S<:Number}(A::AbstractArray{S}) = convert(Array{$T}, A)
+        ($fnscoped){S<:Number}(A::AbstractArray{S}) = convert_toeltype($T, A)
         fname = $(Expr(:quote, fn))
         Tname = $(Expr(:quote, T))
 @doc """
@@ -101,3 +101,9 @@ converts the raw storage type of `img` to `$Tname`, without changing the color s
 end
 const u8 = ufixed8
 const u16 = ufixed16
+
+convert_toeltype{T}(::Type{T}, A) = _convert_toeltype(T, indices(A), A)
+_convert_toeltype{T,N}(::Type{T}, ::NTuple{N,Base.OneTo}, A::AbstractArray{T}) = A
+_convert_toeltype{T,N}(::Type{T}, ::NTuple{N,Base.OneTo}, A::AbstractArray) = convert(Array{T}, A)
+_convert_toeltype{T,N}(::Type{T}, ::NTuple{N}, A::AbstractArray{T}) = A
+_convert_toeltype{T,N}(::Type{T}, inds::NTuple{N}, A::AbstractArray) = copy!(similar(Array{T}, inds), A)

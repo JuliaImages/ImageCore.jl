@@ -2,7 +2,7 @@
 
 # Convenience constructors
 export grayim
-function grayim{T<:UFixed}(A::AbstractArray{T})
+function grayim{T<:Union{UFixed,Bool}}(A::AbstractArray{T})
     Base.depwarn("grayim is deprecated, please use ColorView{Gray}(A), possibly in conjunction with ufixedview", :grayim)
     ColorView{Gray}(A)
 end
@@ -68,6 +68,7 @@ end
 
 #### Data and traits ####
 
+# NOTE: when this is deleted, modify ImagesMeta so it doesn't import this
 export data
 function data(img::AbstractArray)
     Base.depwarn("""
@@ -262,3 +263,6 @@ Base.permutedims{S<:Symbol}(img::AbstractArray, pstr::Union{Vector{S}, Tuple{Var
 @deprecate raw rawview
 @deprecate raw{C<:Colorant}(A::AbstractArray{C}) rawview(channelview(A))
 @deprecate separate{C<:Colorant,N}(img::AbstractArray{C,N}) permuteddimsview(channelview(img), (ntuple(n->n+1, Val{N})..., 1))
+if squeeze1
+    @deprecate separate{C<:Color1,N}(img::AbstractArray{C,N}) channelview(img)
+end

@@ -117,13 +117,13 @@ _colorspace{C<:Colorant}(img::AbstractVector{C}) = ColorTypes.colorant_string(C)
 _colorspace{C<:Colorant}(img::AbstractMatrix{C}) = ColorTypes.colorant_string(C)
 _colorspace{C<:Colorant}(img::AbstractArray{C,3}) = ColorTypes.colorant_string(C)
 _colorspace{C<:Colorant}(img::AbstractArray{C}) = ColorTypes.colorant_string(C)
-_colorspace(img::AbstractVector{Bool}) = "Binary"
-_colorspace(img::AbstractMatrix{Bool}) = "Binary"
-_colorspace(img::AbstractArray{Bool}) = "Binary"
-_colorspace(img::AbstractArray{Bool,3}) = "Binary"
-_colorspace(img::AbstractMatrix{UInt32}) = "RGB24"
-_colorspace(img::AbstractVector) = "Gray"
-_colorspace(img::AbstractMatrix) = "Gray"
+@noinline _colorspace(img::AbstractVector{Bool}) = "Binary"  # noinlines are just for test coverage (julia bug)
+@noinline _colorspace(img::AbstractMatrix{Bool}) = "Binary"
+@noinline _colorspace(img::AbstractArray{Bool}) = "Binary"
+@noinline _colorspace(img::AbstractArray{Bool,3}) = "Binary"
+@noinline _colorspace(img::AbstractMatrix{UInt32}) = "RGB24"
+@noinline _colorspace(img::AbstractVector) = "Gray"
+@noinline _colorspace(img::AbstractMatrix) = "Gray"
 _colorspace{T}(img::AbstractArray{T,3}) = (size(img, defaultarraycolordim) == 3) ? "RGB" : error("Cannot infer colorspace of Array, use a color eltype (e.g., colorview)")
 
 

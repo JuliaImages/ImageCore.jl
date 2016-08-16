@@ -11,6 +11,27 @@ using Base.Test
             @test colordim(img) == 0
             @test img[5,2] === Gray{U8}(9/255)
         end
+        for a in (0x00:0x7c, collect(0x00:0x7c))
+            B = reshape(a, 5, 5, 5)
+            img = grayim(B)
+            @test colorspace(img) == "Gray"
+            @test colordim(img) == 0
+            @test img[5,2,3] === Gray{U8}(59/255)
+        end
+        for a in (0x0000:0x0018, collect(0x0000:0x0018))
+            B = reshape(a, 5, 5)
+            img = grayim(B)
+            @test colorspace(img) == "Gray"
+            @test colordim(img) == 0
+            @test img[5,2] === Gray{U16}(9/65535)
+        end
+        for a in (0x0000:0x007c, collect(0x0000:0x007c))
+            B = reshape(a, 5, 5, 5)
+            img = grayim(B)
+            @test colorspace(img) == "Gray"
+            @test colordim(img) == 0
+            @test img[5,2,3] === Gray{U16}(59/65535)
+        end
         # colorim
         for a in (0x00:0x4a, collect(0x00:0x4a))
             C = reshape(a, 3, 5, 5)
@@ -23,6 +44,20 @@ using Base.Test
             @test colorspace(img) == "RGB"
             @test colordim(img) == 0
             @test img[1,1] === RGB{U8}(0,25/255,50/255)
+            @test_throws ErrorException colorim(reshape(a, 5, 3, 5))
+        end
+        for a in (0x0000:0x004a, collect(0x0000:0x004a))
+            C = reshape(a, 3, 5, 5)
+            img = colorim(C)
+            @test colorspace(img) == "RGB"
+            @test colordim(img) == 0
+            @test img[1,1] === RGB{U16}(0,1/65535,2/65535)
+            C = reshape(a, 5, 5, 3)
+            img = colorim(C)
+            @test colorspace(img) == "RGB"
+            @test colordim(img) == 0
+            @test img[1,1] === RGB{U16}(0,25/65535,50/65535)
+            @test_throws ErrorException colorim(reshape(a, 5, 3, 5))
         end
         for a in (0x00:0x63, collect(0x00:0x63))
             for (S,T) in (("RGBA", RGBA), ("ARGB",ARGB))
@@ -37,6 +72,7 @@ using Base.Test
                 @test colordim(img) == 0
                 @test img[1,1] === T{U8}(0,25/255,50/255,75/255)
             end
+            @test_throws ErrorException colorim(reshape(a, 4, 5, 5), "RRRR")
         end
         # ambiguous sizes
         for a in (0x00:0x2c, collect(0x00:0x2c))
@@ -74,6 +110,19 @@ using Base.Test
             @test_throws ErrorException permutedims(B, ("x", "y"))
             @test_throws ErrorException permutedims(B, (:x, :y))
         end
+        for (B,S) in ((rand(UInt16(1):UInt16(20), 5),"Gray"),
+                      (rand(Gray{Float32}, 5),"Gray"),
+                      (rand(RGB{Float16}, 5),"RGB"),
+                      (bitrand(5),"Binary"))
+            @test colorspace(B) == S
+        end
+        for (B,S) in ((rand(Gray{Float32}, 5, 5, 5),"Gray"),
+                      (rand(RGB{Float16}, 5, 5, 5),"RGB"),
+                      (bitrand(5, 5, 5),"Binary"))
+            @test colorspace(B) == S
+        end
+        @test colorspace(rand(Float32, 5, 5, 3)) == "RGB"
+        @test_throws ErrorException colorspace(rand(Float32, 5, 5, 5))
     end
     @testset "Reinterpret, convert, separate, raw" begin
         # some of these are redundant with convert_reinterpret.jl, but

@@ -169,7 +169,7 @@ permuteddimsview
 </code></pre>
 
 <p>Return a tuple representing the separation between adjacent pixels along each axis of the image.  Defaults to (1,1,...).  Use ImagesAxes for images with anisotropic spacing or to encode the spacing using physical units.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L1-L8' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/5a01eb2119d275a0eeff888aded02165ce2066a9/src/traits.jl#L1-L8' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.spacedirections' href='#ImagesCore.spacedirections'>#</a>
 <strong><code>ImagesCore.spacedirections</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>spacedirections(img) -&gt; (axis1, axis2, ...)
@@ -177,48 +177,48 @@ permuteddimsview
 
 <p>Return a tuple-of-tuples, each <code>axis[i]</code> representing the displacement vector between adjacent pixels along spatial axis <code>i</code> of the image array, relative to some external coordinate system ("physical coordinates").</p>
 <p>By default this is computed from <code>pixelspacing</code>, but you can set this manually using ImagesMeta.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L11-L21' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/5a01eb2119d275a0eeff888aded02165ce2066a9/src/traits.jl#L11-L21' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.sdims' href='#ImagesCore.sdims'>#</a>
 <strong><code>ImagesCore.sdims</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>sdims(img)
 </code></pre>
 
 <p>Return the number of spatial dimensions in the image. Defaults to the same as <code>ndims</code>, but with ImagesAxes you can specify that some axes correspond to other quantities (e.g., time) and thus not included by <code>sdims</code>.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L27-L34' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/5a01eb2119d275a0eeff888aded02165ce2066a9/src/traits.jl#L27-L34' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.coords_spatial' href='#ImagesCore.coords_spatial'>#</a>
 <strong><code>ImagesCore.coords_spatial</code></strong> &mdash; <em>Function</em>.</p>
 <p>coords_spatial(img)</p>
 <p>Return a tuple listing the spatial dimensions of <code>img</code>.</p>
 <p>Note that a better strategy may be to use ImagesAxes and take slices along the time axis.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L37-L43' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/5a01eb2119d275a0eeff888aded02165ce2066a9/src/traits.jl#L37-L43' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.size_spatial' href='#ImagesCore.size_spatial'>#</a>
 <strong><code>ImagesCore.size_spatial</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>size_spatial(img)
 </code></pre>
 
 <p>Return a tuple listing the sizes of the spatial dimensions of the image. Defaults to the same as <code>size</code>, but using ImagesAxes you can mark some axes as being non-spatial.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L54-L60' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/5a01eb2119d275a0eeff888aded02165ce2066a9/src/traits.jl#L54-L60' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.indices_spatial' href='#ImagesCore.indices_spatial'>#</a>
 <strong><code>ImagesCore.indices_spatial</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>indices_spatial(img)
 </code></pre>
 
 <p>Return a tuple with the indices of the spatial dimensions of the image. Defaults to the same as <code>indices</code>, but using ImagesAxes you can mark some axes as being non-spatial.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L63-L69' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/5a01eb2119d275a0eeff888aded02165ce2066a9/src/traits.jl#L63-L69' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.nimages' href='#ImagesCore.nimages'>#</a>
 <strong><code>ImagesCore.nimages</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>nimages(img)
 </code></pre>
 
 <p>Return the number of time-points in the image array. Defaults to 1. Use ImagesAxes if you want to use an explicit time dimension.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L46-L51' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/5a01eb2119d275a0eeff888aded02165ce2066a9/src/traits.jl#L46-L51' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.assert_timedim_last' href='#ImagesCore.assert_timedim_last'>#</a>
 <strong><code>ImagesCore.assert_timedim_last</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>assert_timedim_last(img)
 </code></pre>
 
 <p>Throw an error if the image has a time dimension that is not the last dimension.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L75-L80' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/5a01eb2119d275a0eeff888aded02165ce2066a9/src/traits.jl#L75-L80' class='documenter-source'>source</a><br></p>
               
             </div>
           </div>

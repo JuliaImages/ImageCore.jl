@@ -100,6 +100,9 @@ end
             @test_throws DimensionMismatch similar(v, Float16, (2,5,5))
         end
     end
+    a = reshape([RGB(1,0,0)])  # 0-dimensional
+    v = channelview(a)
+    @test indices(v) === (Base.OneTo(3),)
 end
 
 @testset "Gray+Alpha" begin
@@ -205,6 +208,7 @@ end
     for (a, VT, LI) in ((copy(a0), Array{Gray{U8}}, Base.LinearFast()),
                         (ArrayLF(copy(a0)), ColorView{Gray{U8}}, Base.LinearFast()),
                         (ArrayLS(copy(a0)), ColorView{Gray{U8}}, Base.LinearSlow()))
+        @test_throws ErrorException ColorView(a)
         v = ColorView{Gray}(a)
         @test isa(colorview(Gray,a), VT)
         @test Base.linearindexing(v) == LI
@@ -233,6 +237,32 @@ end
         c = similar(v, Gray{Float16}, ImagesCore.squeeze1 ? (5,5) : (1,5,5))
         @test isa(c, ColorView{Gray{Float16},2,Array{Float16,2}})
         @test size(c) == (ImagesCore.squeeze1 ? (5,5) : (1,5,5))
+        c = similar(v, Float32)
+        @test isa(c, Array{Float32, 1})
+    end
+    # two dimensional images and linear indexing
+    _a0 = U8[0.2 0.4; 0.6 0.8]
+    a0 = ImagesCore.squeeze1 ? _a0 : reshape(_a0, (1, 2, 2))
+    for (a, VT, LI) in ((copy(a0), Array{Gray{U8}}, Base.LinearFast()),
+                        (ArrayLF(copy(a0)), ColorView{Gray{U8}}, Base.LinearFast()),
+                        (ArrayLS(copy(a0)), ColorView{Gray{U8}}, Base.LinearSlow()))
+        @test_throws ErrorException ColorView(a)
+        v = ColorView{Gray}(a)
+        @test isa(colorview(Gray,a), VT)
+        @test Base.linearindexing(v) == LI
+        @test isa(channelview(v), typeof(a))
+        @test ndims(v) == 2
+        @test size(v) == (2,2)
+        @test eltype(v) == Gray{U8}
+        @test parent(v) === a
+        @test v[1] == Gray(U8(0.2))
+        @test v[2] == Gray(U8(0.6))
+        @test_throws BoundsError v[0]
+        @test_throws BoundsError v[5]
+        v[1] = 0.9
+        @test a[1] === U8(0.9)
+        @test_throws BoundsError (v[0] = 0.6)
+        @test_throws BoundsError (v[5] = 0.6)
     end
 end
 
@@ -241,6 +271,7 @@ end
         a0 = [0.1 0.2 0.3; 0.4 0.5 0.6]'
         for (a, VT) in ((copy(a0), T<:Union{BGR,RGB1,RGB4} ? ColorView : Array),
                         (ArrayLS(copy(a0)), ColorView))
+            @test_throws ErrorException ColorView(a)
             v = ColorView{T}(a)
             @test isa(colorview(T,a), VT)
             @test isa(channelview(v), typeof(a))
@@ -265,11 +296,18 @@ end
             c = similar(v, T{Float32})
             @test isa(c, ColorView{T{Float32},1,Array{Float32,2}})
             @test size(c) == (2,)
+            c = similar(v, T)
+            @test isa(c, ColorView{T{Float64},1,Array{Float64,2}})
+            @test size(c) == (2,)
             c = similar(v, T{Float16}, (5,5))
             @test isa(c, ColorView{T{Float16},2,Array{Float16,3}})
             @test size(c) == (5,5)
         end
     end
+    a = rand(RGBA{U8}, 5, 5)
+    vc = channelview(a)
+    @test isa(colorview(RGBA, vc), Array{RGBA{U8},2})
+    @test_throws ArgumentError colorview(ARGB, vc)
 end
 
 @testset "Gray+Alpha" begin

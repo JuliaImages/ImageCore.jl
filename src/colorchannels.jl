@@ -159,6 +159,12 @@ Base.@propagate_inbounds function Base.setindex!{C,N}(A::ColorView{C,N}, val, I:
 end
 
 # A grayscale ColorView can be LinearFast, so support this too
+Base.@propagate_inbounds function Base.getindex{C<:Color1,N}(A::ColorView{C,N}, i::Int)
+    P = parent(A)
+    @boundscheck checkindex(Bool, linearindices(P), i) || Base.throw_boundserror(A, i)
+    @inbounds ret = C(getchannels(P, C, i)[1])
+    ret
+end
 Base.@propagate_inbounds function Base.setindex!{C<:Color1,N}(A::ColorView{C,N}, val::C, i::Int)
     P = parent(A)
     @boundscheck checkindex(Bool, linearindices(P), i) || Base.throw_boundserror(A, i)
@@ -285,8 +291,10 @@ from an `P::AbstractArray{<:Number}`.
 getchannels
 if squeeze1
     @inline getchannels{C<:Color1}(P, ::Type{C}, I) = (@inbounds ret = (P[I...],); ret)
+    @inline getchannels{C<:Color1}(P, ::Type{C}, I::Real) = (@inbounds ret = (P[I],); ret)
 else
     @inline getchannels{C<:Color1}(P, ::Type{C}, I) = (@inbounds ret = (P[1, I...],); ret)
+    @inline getchannels{C<:Color1}(P, ::Type{C}, I::Real) = (@inbounds ret = (P[1, I],); ret)
 end
 @inline function getchannels{C<:Color2}(P, ::Type{C}, I)
     @inbounds ret = (P[1,I...], P[2,I...])

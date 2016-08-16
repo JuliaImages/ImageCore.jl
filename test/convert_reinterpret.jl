@@ -1,4 +1,4 @@
-using ImagesCore, Colors, FixedPointNumbers
+using ImagesCore, Colors, FixedPointNumbers, OffsetArrays
 using Base.Test
 
 @testset "reinterpret" begin
@@ -40,6 +40,11 @@ using Base.Test
         @test isa(rc, Array{T,2})
         @test size(rc) == (4,5)
     end
+    for a in (rand(RGB{U8}, 4), rand(RGB{U8}, (4,5)))
+        b = @inferred(reinterpret(HSV{Float32}, float32(a)))
+        @test isa(b, Array{HSV{Float32}})
+        @test ndims(b) == ndims(a)
+    end
     a = rand(ARGB{U8}, (4,5))
     for T in (ARGB{U8}, AHSV{Float32}, AXYZ{Float64})
         b = @inferred(convert(Array{T}, a))
@@ -68,6 +73,12 @@ using Base.Test
     @test reinterpret(U8, a) == cat(3, [1 0; 0 1; 0 0], [0 1; 0 1; 1 1])
     b = convert(Array{BGR{U8}}, a)
     @test reinterpret(U8, b) == cat(3, [0 0; 0 1; 1 0], [1 1; 0 1; 0 1])
+    # indeterminate type tests
+    a = Array(RGB{AbstractFloat},3)
+    @test_throws ErrorException reinterpret(Float64, a)
+    Tu = TypeVar(:T)
+    a = Array(RGB{Tu},3)
+    @test_throws ErrorException reinterpret(Float64, a)
 end
 
 @testset "convert" begin
@@ -95,6 +106,33 @@ end
 #    @test eltype(float16(a)) == RGB{Float16}
     @test eltype(float32(a)) == RGB{Float32}
     @test eltype(float64(a)) == RGB{Float64}
+
+    a = U8[0.1,0.2,0.3]
+    @test eltype(a) == U8
+    @test eltype(u8(a))       == U8
+    @test eltype(ufixed8(a))  == U8
+    @test eltype(ufixed10(a)) == UFixed10
+    @test eltype(ufixed12(a)) == UFixed12
+    @test eltype(ufixed14(a)) == UFixed14
+    @test eltype(ufixed16(a)) == U16
+    @test eltype(u16(a))      == U16
+#    @test eltype(float16(a)) == Float16
+    @test eltype(float32(a)) == Float32
+    @test eltype(float64(a)) == Float64
+
+    a = OffsetArray(U8[0.1,0.2,0.3], -1:1)
+    @test eltype(a) == U8
+    @test eltype(u8(a))       == U8
+    @test eltype(ufixed8(a))  == U8
+    @test eltype(ufixed10(a)) == UFixed10
+    @test eltype(ufixed12(a)) == UFixed12
+    @test eltype(ufixed14(a)) == UFixed14
+    @test eltype(ufixed16(a)) == U16
+    @test eltype(u16(a))      == U16
+#    @test eltype(float16(a)) == Float16
+    @test eltype(float32(a)) == Float32
+    @test eltype(float64(a)) == Float64
+    @test indices(float32(a)) == (-1:1,)
 end
 
 nothing

@@ -1,3 +1,4 @@
 ColorVectorSpace
 BenchmarkTools
 JLD
+OffsetArrays

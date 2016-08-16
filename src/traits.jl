@@ -89,14 +89,37 @@ width(img::AbstractArray) = widthheight(img)[1]
 height(img::AbstractArray) = widthheight(img)[2]
 
 #### Low-level utilities ####
+"""
+    permutation(to, from) -> p
+
+Calculate the permutation of labels in `from` to produce the order in
+`to`. Any entries in `to` that are missing in `from` will receive an
+index of 0. Any entries in `from` that are missing in `to` will have
+their indices appended to the end of the permutation. Consequently,
+the length of `p` is equal to the longer of `to` and `from`.
+"""
 function permutation(to, from)
     n = length(to)
     nf = length(from)
-    d = Dict([(from[i], i) for i = 1:length(from)])
+    li = linearindices(from)
+    d = Dict(from[i]=>i for i in li)
+    covered = similar(dims->falses(length(li)), li)
     ind = Array(Int, max(n, nf))
-    for i = 1:n
-        ind[i] = get(d, to[i], 0)
+    for (i,toi) in enumerate(to)
+        j = get(d, toi, 0)
+        ind[i] = j
+        if j != 0
+            covered[j] = true
+        end
     end
-    ind[n+1:nf] = n+1:nf
+    k = n
+    for i in li
+        if !covered[i]
+            d[from[i]] != i && throw(ArgumentError("no duplicates in from allowed"))
+            k += 1
+            k > nf && throw(ArgumentError("no incomplete containment allowed in $to and $from"))
+            ind[k] = i
+        end
+    end
     ind
 end

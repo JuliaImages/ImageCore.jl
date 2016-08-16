@@ -152,150 +152,14 @@
 <p><a id='List-of-view-types-1'></a></p>
 <h2 id="list-of-view-types">List of view types</h2>
 <p>With that as an introduction, let's list all the view types supported by this package.  <code>channelview</code> and <code>colorview</code> are opposite transformations, as are <code>rawview</code> and <code>ufixedview</code>. <code>channelview</code> and <code>colorview</code> typically create objects of type <code>ChannelView</code> and <code>ColorView</code>, respectively, unless they are "undoing" a previous view of the opposite type.</p>
-<p><a id='ImagesCore.channelview' href='#ImagesCore.channelview'>#</a>
-<strong><code>ImagesCore.channelview</code></strong> &mdash; <em>Function</em>.</p>
-<pre><code>channelview(A)
+<pre><code>channelview
+ChannelView
+colorview
+ColorView
+rawview
+ufixedview
+permuteddimsview
 </code></pre>
-
-<p>returns a view of <code>A</code>, splitting out (if necessary) the color channels of <code>A</code> into a new first dimension. This is almost identical to <code>ChannelView(A)</code>, except that if <code>A</code> is a <code>ColorView</code>, it will simply return the parent of <code>A</code> (and hence may not be a <code>ChannelView</code> array).</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/colorchannels.jl#L165-172' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">channelview</span><span class="p">(</span><span class="n">A</span><span class="p">::</span><span class="n">ImagesCore.ColorView</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/colorchannels.jl#L174">src/colorchannels.jl:174</a>
-</li>
-<li>
-    <pre class="documenter-inline"><span class="nf">channelview</span><span class="p">(</span><span class="n">A</span><span class="p">::</span><span class="n">AbstractArray</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/colorchannels.jl#L173">src/colorchannels.jl:173</a>
-</li>
-</ul>
-
-<p><a id='ImagesCore.ChannelView' href='#ImagesCore.ChannelView'>#</a>
-<strong><code>ImagesCore.ChannelView</code></strong> &mdash; <em>Type</em>.</p>
-<pre><code>ChannelView(A)
-</code></pre>
-
-<p>creates a "view" of the Colorant array <code>A</code>, splitting out (if necessary) the separate color channels of <code>eltype(A)</code> into a new first dimension. For example, if <code>A</code> is a m-by-n RGB{U8} array, <code>ChannelView(A)</code> will return a 3-by-m-by-n U8 array. Color spaces with a single element (i.e., grayscale) do not add a new first dimension of <code>A</code>.</p>
-<p>Of relevance for types like RGB and BGR, the channels of the returned array will be in constructor-argument order, not memory order (see <code>reinterpret</code> if you want to use memory order).</p>
-<p>The opposite transformation is implemented by <code>ColorView</code>.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/colorchannels.jl#L39-54' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">ChannelView</span><span class="p">(</span><span class="n">parent</span><span class="p">::</span><span class="n">AbstractArray</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/colorchannels.jl#L55">src/colorchannels.jl:55</a>
-</li>
-</ul>
-
-<p><em>Hiding 1 method defined outside of this package.</em></p>
-<p><a id='ImagesCore.colorview' href='#ImagesCore.colorview'>#</a>
-<strong><code>ImagesCore.colorview</code></strong> &mdash; <em>Function</em>.</p>
-<pre><code>colorview(C, A)
-</code></pre>
-
-<p>returns a view of the numeric array <code>A</code>, interpreting successive elements of <code>A</code> as if they were channels of Colorant <code>C</code>. This is almost identical to <code>ColorView{C}(A)</code>, except that if <code>A</code> is a <code>ChannelView</code>, it will simply return the parent of <code>A</code> (and hence may not be a <code>ColorView</code> array).</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/colorchannels.jl#L176-184' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre><span class="nf">colorview</span><span class="p">{</span><span class="n">C<:ColorTypes.Colorant{T,N}</span><span class="p">}</span><span class="p">(</span>
-    <span class="n"></span><span class="p">::</span><span class="n">Type{C}</span><span class="p">,
-</span>    <span class="n">A</span><span class="p">::</span><span class="n">ImagesCore.ChannelView</span>
-<span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/colorchannels.jl#L187">src/colorchannels.jl:187</a>
-</li>
-<li>
-    <pre class="documenter-inline"><span class="nf">colorview</span><span class="p">{</span><span class="n">C<:ColorTypes.Colorant{T,N}</span><span class="p">}</span><span class="p">(</span><span class="n"></span><span class="p">::</span><span class="n">Type{C}</span><span class="p">, </span><span class="n">A</span><span class="p">::</span><span class="n">AbstractArray</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/colorchannels.jl#L185">src/colorchannels.jl:185</a>
-</li>
-</ul>
-
-<p><a id='ImagesCore.ColorView' href='#ImagesCore.ColorView'>#</a>
-<strong><code>ImagesCore.ColorView</code></strong> &mdash; <em>Type</em>.</p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">ColorView</span><span class="p">(</span><span class="n"></span><span class="p">::</span><span class="n">AbstractArray</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/colorchannels.jl#L134">src/colorchannels.jl:134</a>
-</li>
-</ul>
-
-<p><em>Hiding 1 method defined outside of this package.</em></p>
-<p><a id='ImagesCore.rawview' href='#ImagesCore.rawview'>#</a>
-<strong><code>ImagesCore.rawview</code></strong> &mdash; <em>Function</em>.</p>
-<pre><code>rawview(img::AbstractArray{FixedPoint})
-</code></pre>
-
-<p>returns a "view" of <code>img</code> where the values are interpreted in terms of their raw underlying storage. For example, if <code>img</code> is an <code>Array{U8}</code>, the view will act like an <code>Array{UInt8}</code>.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/ImagesCore.jl#L50-56' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">rawview</span><span class="p">{</span><span class="n">T<:FixedPointNumbers.FixedPoint{T<:Integer,f}</span><span class="p">}</span><span class="p">(</span><span class="n">a</span><span class="p">::</span><span class="n">AbstractArray{T,N<:Any}</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/ImagesCore.jl#L57">src/ImagesCore.jl:57</a>
-</li>
-<li>
-    <pre class="documenter-inline"><span class="nf">rawview</span><span class="p">{</span><span class="n">T<:Real</span><span class="p">}</span><span class="p">(</span><span class="n">a</span><span class="p">::</span><span class="n">AbstractArray{T,N<:Any}</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/ImagesCore.jl#L58">src/ImagesCore.jl:58</a>
-</li>
-</ul>
-
-<p><a id='ImagesCore.ufixedview' href='#ImagesCore.ufixedview'>#</a>
-<strong><code>ImagesCore.ufixedview</code></strong> &mdash; <em>Function</em>.</p>
-<pre><code>ufixedview([T], img::AbstractArray{Unsigned})
-</code></pre>
-
-<p>returns a "view" of <code>img</code> where the values are interpreted in terms of <code>UFixed</code> number types. For example, if <code>img</code> is an <code>Array{UInt8}</code>, the view will act like an <code>Array{UFixed8}</code>.  Supply <code>T</code> if the element type of <code>img</code> is <code>UInt16</code>, to specify whether you want a <code>UFixed10</code>, <code>UFixed12</code>, <code>UFixed14</code>, or <code>UFixed16</code> result.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/ImagesCore.jl#L60-68' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre><span class="nf">ufixedview</span><span class="p">{</span><span class="n">T<:FixedPointNumbers.FixedPoint{T<:Integer,f}</span><span class="p">, </span><span class="n">S<:Unsigned</span><span class="p">}</span><span class="p">(</span>
-    <span class="n"></span><span class="p">::</span><span class="n">Type{T}</span><span class="p">,
-</span>    <span class="n">a</span><span class="p">::</span><span class="n">AbstractArray{S,N<:Any}</span>
-<span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/ImagesCore.jl#L69">src/ImagesCore.jl:69</a>
-</li>
-<li>
-    <pre class="documenter-inline"><span class="nf">ufixedview</span><span class="p">(</span><span class="n">a</span><span class="p">::</span><span class="n">AbstractArray{UInt8,N<:Any}</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/ImagesCore.jl#L70">src/ImagesCore.jl:70</a>
-</li>
-<li>
-    <pre><span class="nf">ufixedview</span><span class="p">{</span><span class="n">T<:FixedPointNumbers.UFixed{T<:Unsigned,f}</span><span class="p">}</span><span class="p">(</span>
-    <span class="n"></span><span class="p">::</span><span class="n">Type{T}</span><span class="p">,
-</span>    <span class="n">a</span><span class="p">::</span><span class="n">AbstractArray{T,N<:Any}</span>
-<span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/ImagesCore.jl#L71">src/ImagesCore.jl:71</a>
-</li>
-</ul>
-
-<p><a id='ImagesCore.permuteddimsview' href='#ImagesCore.permuteddimsview'>#</a>
-<strong><code>ImagesCore.permuteddimsview</code></strong> &mdash; <em>Function</em>.</p>
-<pre><code>permuteddimsview(A, perm)
-</code></pre>
-
-<p>returns a "view" of <code>A</code> with its dimensions permuted as specified by <code>perm</code>. This is like <code>permutedims</code>, except that it produces a view rather than a copy of <code>A</code>; consequently, any manipulations you make to the output will be mirrored in <code>A</code>. Compared to the copy, the view is much faster to create, but generally slower to use.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/ImagesCore.jl#L73-81' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">permuteddimsview</span><span class="p">(</span><span class="n">A</span><span class="p">, </span><span class="n">perm</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/ImagesCore.jl#L82">src/ImagesCore.jl:82</a>
-</li>
-</ul>
 
 <p><a id='List-of-traits-1'></a></p>
 <h2 id="list-of-traits">List of traits</h2>
@@ -305,16 +169,7 @@
 </code></pre>
 
 <p>Return a tuple representing the separation between adjacent pixels along each axis of the image.  Defaults to (1,1,...).  Use ImagesAxes for images with anisotropic spacing or to encode the spacing using physical units.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L1-8' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">pixelspacing</span><span class="p">{</span><span class="n">T</span><span class="p">, </span><span class="n">N</span><span class="p">}</span><span class="p">(</span><span class="n">img</span><span class="p">::</span><span class="n">AbstractArray{T,N}</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L9">src/traits.jl:9</a>
-</li>
-</ul>
-
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L1-L8' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.spacedirections' href='#ImagesCore.spacedirections'>#</a>
 <strong><code>ImagesCore.spacedirections</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>spacedirections(img) -&gt; (axis1, axis2, ...)
@@ -322,110 +177,48 @@
 
 <p>Return a tuple-of-tuples, each <code>axis[i]</code> representing the displacement vector between adjacent pixels along spatial axis <code>i</code> of the image array, relative to some external coordinate system ("physical coordinates").</p>
 <p>By default this is computed from <code>pixelspacing</code>, but you can set this manually using ImagesMeta.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L11-21' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">spacedirections</span><span class="p">(</span><span class="n">img</span><span class="p">::</span><span class="n">AbstractArray</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L22">src/traits.jl:22</a>
-</li>
-</ul>
-
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L11-L21' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.sdims' href='#ImagesCore.sdims'>#</a>
 <strong><code>ImagesCore.sdims</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>sdims(img)
 </code></pre>
 
 <p>Return the number of spatial dimensions in the image. Defaults to the same as <code>ndims</code>, but with ImagesAxes you can specify that some axes correspond to other quantities (e.g., time) and thus not included by <code>sdims</code>.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L27-34' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">sdims</span><span class="p">(</span><span class="n">img</span><span class="p">::</span><span class="n">AbstractArray</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L35">src/traits.jl:35</a>
-</li>
-</ul>
-
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L27-L34' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.coords_spatial' href='#ImagesCore.coords_spatial'>#</a>
 <strong><code>ImagesCore.coords_spatial</code></strong> &mdash; <em>Function</em>.</p>
 <p>coords_spatial(img)</p>
 <p>Return a tuple listing the spatial dimensions of <code>img</code>.</p>
 <p>Note that a better strategy may be to use ImagesAxes and take slices along the time axis.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L37-43' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">coords_spatial</span><span class="p">{</span><span class="n">T</span><span class="p">, </span><span class="n">N</span><span class="p">}</span><span class="p">(</span><span class="n">img</span><span class="p">::</span><span class="n">AbstractArray{T,N}</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L44">src/traits.jl:44</a>
-</li>
-</ul>
-
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L37-L43' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.size_spatial' href='#ImagesCore.size_spatial'>#</a>
 <strong><code>ImagesCore.size_spatial</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>size_spatial(img)
 </code></pre>
 
 <p>Return a tuple listing the sizes of the spatial dimensions of the image. Defaults to the same as <code>size</code>, but using ImagesAxes you can mark some axes as being non-spatial.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L54-60' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">size_spatial</span><span class="p">(</span><span class="n">img</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L61">src/traits.jl:61</a>
-</li>
-</ul>
-
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L54-L60' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.indices_spatial' href='#ImagesCore.indices_spatial'>#</a>
 <strong><code>ImagesCore.indices_spatial</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>indices_spatial(img)
 </code></pre>
 
 <p>Return a tuple with the indices of the spatial dimensions of the image. Defaults to the same as <code>indices</code>, but using ImagesAxes you can mark some axes as being non-spatial.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L63-69' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">indices_spatial</span><span class="p">(</span><span class="n">img</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L70">src/traits.jl:70</a>
-</li>
-</ul>
-
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L63-L69' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.nimages' href='#ImagesCore.nimages'>#</a>
 <strong><code>ImagesCore.nimages</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>nimages(img)
 </code></pre>
 
 <p>Return the number of time-points in the image array. Defaults to 1. Use ImagesAxes if you want to use an explicit time dimension.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L46-51' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">nimages</span><span class="p">(</span><span class="n">img</span><span class="p">::</span><span class="n">AbstractArray</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L52">src/traits.jl:52</a>
-</li>
-</ul>
-
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L46-L51' class='documenter-source'>source</a><br></p>
 <p><a id='ImagesCore.assert_timedim_last' href='#ImagesCore.assert_timedim_last'>#</a>
 <strong><code>ImagesCore.assert_timedim_last</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>assert_timedim_last(img)
 </code></pre>
 
 <p>Throw an error if the image has a time dimension that is not the last dimension.</p>
-<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L75-80' class='documenter-source'>source</a><br></p>
-<p><strong>Methods</strong></p>
-<ul class="documenter-methodtable">
-<li>
-    <pre class="documenter-inline"><span class="nf">assert_timedim_last</span><span class="p">(</span><span class="n">img</span><span class="p">::</span><span class="n">AbstractArray</span><span class="p">)</span></pre>
-    defined at
-    <a target="_blank" href="https://github.com/JuliaImages/ImagesCore.jl/tree/c10bb94fa82451c0c6ac17d1159391b863f8202a/src/traits.jl#L81">src/traits.jl:81</a>
-</li>
-</ul>
+<p><a target='_blank' href='https://github.com/JuliaImages/ImagesCore.jl/tree/e754bf422eafa04fac685e321db509dc5bad6836/src/traits.jl#L75-L80' class='documenter-source'>source</a><br></p>
               
             </div>
           </div>

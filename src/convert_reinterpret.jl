@@ -85,10 +85,12 @@ for (fn,T) in (#(:float16, Float16),   # Float16 currently has promotion problem
     fnscoped = T <: FixedPoint ? Expr(:., :FixedPointNumbers, QuoteNode(fn)) : fn
     @eval begin
         function ($fnscoped){C<:Colorant}(A::AbstractArray{C})
-            newC = base_colorant_type(C){$T}
+            newC = $fn(C)
             convert_toeltype(newC, A)
         end
         ($fnscoped){S<:Number}(A::AbstractArray{S}) = convert_toeltype($T, A)
+        ($fnscoped){C<:Colorant}(::Type{C}) = base_colorant_type(C){$T}
+        ($fnscoped){S<:Number  }(::Type{S}) = $T
         fname = $(Expr(:quote, fn))
         Tname = $(Expr(:quote, T))
 @doc """

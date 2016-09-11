@@ -93,6 +93,10 @@ end
 end
 
 @testset "eltype conversion" begin
+    @test float32(Float64) == Float32
+    @test float32(U8)      == Float32
+    @test float64(RGB{U8}) == RGB{Float64}
+
     a = [RGB(1,0,0) RGB(0,0,1);
          RGB(0,1,0) RGB(1,1,1)]
     @test eltype(a) == RGB{U8}

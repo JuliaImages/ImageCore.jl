@@ -81,20 +81,16 @@ for (fn,T) in (#(:float16, Float16),   # Float16 currently has promotion problem
                (:float32, Float32), (:float64, Float64),
                (:ufixed8, UFixed8), (:ufixed10, UFixed10),
                (:ufixed12, UFixed12), (:ufixed14, UFixed14), (:ufixed16, UFixed16))
-    # Since ufixed8 et al are defined in FixedPointNumbers, we need to extend them
-    fnscoped = T <: FixedPoint ? Expr(:., :FixedPointNumbers, QuoteNode(fn)) : fn
     @eval begin
-        function ($fnscoped){C<:Colorant}(A::AbstractArray{C})
-            newC = $fn(C)
-            convert_toeltype(newC, A)
-        end
-        ($fnscoped){S<:Number}(A::AbstractArray{S}) = convert_toeltype($T, A)
-        ($fnscoped){C<:Colorant}(::Type{C}) = base_colorant_type(C){$T}
-        ($fnscoped){S<:Number  }(::Type{S}) = $T
+        ($fn){C<:Colorant}(::Type{C}) = base_colorant_type(C){$T}
+        ($fn){S<:Number  }(::Type{S}) = $T
+        ($fn)(c::Colorant) = convert(($fn)(typeof(c)), c)
+        ($fn)(n::Number)   = convert(($fn)(typeof(n)), n)
+        @deprecate ($fn){C<:Colorant}(A::AbstractArray{C}) ($fn).(A)
         fname = $(Expr(:quote, fn))
         Tname = $(Expr(:quote, T))
 @doc """
-    $fname(img)
+    $fname.(img)
 
 converts the raw storage type of `img` to `$Tname`, without changing the color space.
 """ $fn
@@ -103,9 +99,3 @@ converts the raw storage type of `img` to `$Tname`, without changing the color s
 end
 const u8 = ufixed8
 const u16 = ufixed16
-
-convert_toeltype{T}(::Type{T}, A) = _convert_toeltype(T, indices(A), A)
-_convert_toeltype{T,N}(::Type{T}, ::NTuple{N,Base.OneTo}, A::AbstractArray{T}) = A
-_convert_toeltype{T,N}(::Type{T}, ::NTuple{N,Base.OneTo}, A::AbstractArray) = convert(Array{T}, A)
-_convert_toeltype{T,N}(::Type{T}, ::NTuple{N}, A::AbstractArray{T}) = A
-_convert_toeltype{T,N}(::Type{T}, inds::NTuple{N}, A::AbstractArray) = copy!(similar(Array{T}, inds), A)

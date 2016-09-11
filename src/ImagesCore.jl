@@ -7,6 +7,8 @@ using Colors: Fractional
 
 using Base: tail, @pure, Indices
 
+import FixedPointNumbers: ufixed8, ufixed10, ufixed12, ufixed14, ufixed16
+
 export
     ## Types
     ChannelView,

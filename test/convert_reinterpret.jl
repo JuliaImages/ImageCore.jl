@@ -41,7 +41,7 @@ using Base.Test
         @test size(rc) == (4,5)
     end
     for a in (rand(RGB{U8}, 4), rand(RGB{U8}, (4,5)))
-        b = @inferred(reinterpret(HSV{Float32}, float32(a)))
+        b = @inferred(reinterpret(HSV{Float32}, float32.(a)))
         @test isa(b, Array{HSV{Float32}})
         @test ndims(b) == ndims(a)
     end
@@ -100,43 +100,43 @@ end
     a = [RGB(1,0,0) RGB(0,0,1);
          RGB(0,1,0) RGB(1,1,1)]
     @test eltype(a) == RGB{U8}
-    @test eltype(u8(a))       == RGB{U8}
-    @test eltype(ufixed8(a))  == RGB{U8}
-    @test eltype(ufixed10(a)) == RGB{UFixed10}
-    @test eltype(ufixed12(a)) == RGB{UFixed12}
-    @test eltype(ufixed14(a)) == RGB{UFixed14}
-    @test eltype(ufixed16(a)) == RGB{U16}
-    @test eltype(u16(a))      == RGB{U16}
-#    @test eltype(float16(a)) == RGB{Float16}
-    @test eltype(float32(a)) == RGB{Float32}
-    @test eltype(float64(a)) == RGB{Float64}
+    @test eltype(u8.(a))       == RGB{U8}
+    @test eltype(ufixed8.(a))  == RGB{U8}
+    @test eltype(ufixed10.(a)) == RGB{UFixed10}
+    @test eltype(ufixed12.(a)) == RGB{UFixed12}
+    @test eltype(ufixed14.(a)) == RGB{UFixed14}
+    @test eltype(ufixed16.(a)) == RGB{U16}
+    @test eltype(u16.(a))      == RGB{U16}
+#    @test eltype(float16.(a)) == RGB{Float16}
+    @test eltype(float32.(a)) == RGB{Float32}
+    @test eltype(float64.(a)) == RGB{Float64}
 
     a = U8[0.1,0.2,0.3]
     @test eltype(a) == U8
-    @test eltype(u8(a))       == U8
-    @test eltype(ufixed8(a))  == U8
-    @test eltype(ufixed10(a)) == UFixed10
-    @test eltype(ufixed12(a)) == UFixed12
-    @test eltype(ufixed14(a)) == UFixed14
-    @test eltype(ufixed16(a)) == U16
-    @test eltype(u16(a))      == U16
-#    @test eltype(float16(a)) == Float16
-    @test eltype(float32(a)) == Float32
-    @test eltype(float64(a)) == Float64
+    @test eltype(u8.(a))       == U8
+    @test eltype(ufixed8.(a))  == U8
+    @test eltype(ufixed10.(a)) == UFixed10
+    @test eltype(ufixed12.(a)) == UFixed12
+    @test eltype(ufixed14.(a)) == UFixed14
+    @test eltype(ufixed16.(a)) == U16
+    @test eltype(u16.(a))      == U16
+#    @test eltype(float16.(a)) == Float16
+    @test eltype(float32.(a)) == Float32
+    @test eltype(float64.(a)) == Float64
 
     a = OffsetArray(U8[0.1,0.2,0.3], -1:1)
     @test eltype(a) == U8
-    @test eltype(u8(a))       == U8
-    @test eltype(ufixed8(a))  == U8
-    @test eltype(ufixed10(a)) == UFixed10
-    @test eltype(ufixed12(a)) == UFixed12
-    @test eltype(ufixed14(a)) == UFixed14
-    @test eltype(ufixed16(a)) == U16
-    @test eltype(u16(a))      == U16
-#    @test eltype(float16(a)) == Float16
-    @test eltype(float32(a)) == Float32
-    @test eltype(float64(a)) == Float64
-    @test indices(float32(a)) == (-1:1,)
+    @test eltype(u8.(a))       == U8
+    @test eltype(ufixed8.(a))  == U8
+    @test eltype(ufixed10.(a)) == UFixed10
+    @test eltype(ufixed12.(a)) == UFixed12
+    @test eltype(ufixed14.(a)) == UFixed14
+    @test eltype(ufixed16.(a)) == U16
+    @test eltype(u16.(a))      == U16
+#    @test eltype(float16.(a)) == Float16
+    @test eltype(float32.(a)) == Float32
+    @test eltype(float64.(a)) == Float64
+    @test indices(float32.(a)) == (-1:1,)
 end
 
 nothing

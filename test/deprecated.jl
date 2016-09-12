@@ -1,4 +1,4 @@
-using ImagesCore, Colors, FixedPointNumbers, ColorVectorSpace
+using ImageCore, Colors, FixedPointNumbers, ColorVectorSpace
 using Base.Test
 
 @testset "Deprecated" begin
@@ -152,7 +152,7 @@ using Base.Test
         @test ufixed8(rawrgb32) == rawrgb8
         @test reinterpret(UFixed8, rawrgb8) == A8
         # imrgb8 = convert(Image, rawrgb8)
-        # @test spatialorder(imrgb8) == ImagesCore.yx
+        # @test spatialorder(imrgb8) == ImageCore.yx
         # cvt = convert(Image, imrgb8)
         # @test cvt == imrgb8 && typeof(cvt) == typeof(imrgb8)
         # cvt = convert(Image{RGB{UFixed8}}, imrgb8)
@@ -173,7 +173,7 @@ using Base.Test
         A = reinterpret(UFixed8, UInt8[1 2; 3 4])
         # imgray = convert(Image{Gray{UFixed8}}, A)
         imgray = convert(Array{Gray{U8}}, A)
-        @test spatialorder(imgray) == ImagesCore.yx
+        @test spatialorder(imgray) == ImageCore.yx
         @test data(imgray) == reinterpret(Gray{UFixed8}, [0x01 0x02; 0x03 0x04])
         # @test eltype(convert(Image{HSV{Float32}}, imrgb8)) == HSV{Float32}
         # @test eltype(convert(Image{HSV}, float32(imrgb8))) == HSV{Float32}

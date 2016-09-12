@@ -1,4 +1,4 @@
-using ImagesCore, Colors, FixedPointNumbers, ColorVectorSpace
+using ImageCore, Colors, FixedPointNumbers, ColorVectorSpace
 using Base.Test
 
 @testset "Image traits" begin
@@ -21,7 +21,7 @@ using Base.Test
 end
 
 @testset "Utilities" begin
-    using ImagesCore.permutation
+    using ImageCore.permutation
     @test permutation((1,2,3), (1,2,3)) == [1,2,3]
     @test permutation((3,1,2), (1,2,3)) == [3,1,2]
     @test permutation(["b", "c", "a"], ["a", "b", "c"]) == [2,3,1]

@@ -1,6 +1,6 @@
-# ImagesCore.jl
+# ImageCore.jl
 
-ImagesCore is the lowest-level component of the system of packages
+ImageCore is the lowest-level component of the system of packages
 designed to support image processing and computer vision. Its main
 role is to simplify "conversions" between different image
 representations through different "view" types, and to provide some

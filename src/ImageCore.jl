@@ -1,6 +1,6 @@
 __precompile__()
 
-module ImagesCore
+module ImageCore
 
 using Colors, FixedPointNumbers, MappedArrays
 using Colors: Fractional

@@ -1,4 +1,4 @@
-module ImagesCoreTests
+module ImageCoreTests
 
 include("colorchannels.jl")
 include("views.jl")
@@ -7,7 +7,7 @@ include("traits.jl")
 include("deprecated.jl")
 
 # run these last
-@test isempty(detect_ambiguities(ImagesCore,Base,Core))
+@test isempty(detect_ambiguities(ImageCore,Base,Core))
 if Base.JLOptions().can_inline == 1
     include("benchmarks.jl")  # these fail if inlining is off
 end

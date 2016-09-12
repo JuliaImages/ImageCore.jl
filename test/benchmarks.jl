@@ -1,4 +1,4 @@
-using ImagesCore, Colors, ColorVectorSpace
+using ImageCore, Colors, ColorVectorSpace
 using Base.Test, BenchmarkTools, JLD
 
 # Different access patterns (getindex)

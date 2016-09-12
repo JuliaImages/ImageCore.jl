@@ -1,7 +1,7 @@
-site_name: ImagesCore.jl
+site_name: ImageCore.jl
 site_description: Julia types for representing images
 site_author: Tim Holy
-repo_url: https://github.com/JuliaImages/ImagesCore.jl.git
+repo_url: https://github.com/JuliaImages/ImageCore.jl.git
 repo_name: GitHub
 use_directory_urls: true
 

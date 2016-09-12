@@ -1,6 +1,6 @@
-using Documenter, ImagesCore
+using Documenter, ImageCore
 
-makedocs(modules = [ImagesCore])
+makedocs(modules = [ImageCore])
 
 deploydocs(deps   = Deps.pip("mkdocs", "python-markdown-math"),
-           repo   = "github.com/JuliaImages/ImagesCore.jl.git")
+           repo   = "github.com/JuliaImages/ImageCore.jl.git")

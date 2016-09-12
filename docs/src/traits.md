@@ -1,6 +1,6 @@
 # Traits
 
-ImagesCore supports several "traits" that are sometimes useful in
+ImageCore supports several "traits" that are sometimes useful in
 viewing or analyzing images. Many of these traits become much more
 powerful if you are using add-on packages like ImagesAxes, which
 allows you to give "physical meaning" to the different axes of your
@@ -12,7 +12,7 @@ using plain arrays to represent images, most of the traits default to
 Let's illustrate with a couple of examples:
 
 ```julia
-julia> using Colors, ImagesCore
+julia> using Colors, ImageCore
 
 julia> img = rand(RGB{U8}, 680, 480);
 
@@ -26,7 +26,7 @@ information, for example for use in microscopy or biomedical imaging.
 
 ```@meta
 DocTestSetup = quote
-    using Colors, ImagesCore
+    using Colors, ImageCore
     img = rand(RGB{U8}, 680, 480);
 end
 ```

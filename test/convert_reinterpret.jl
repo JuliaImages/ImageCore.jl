@@ -1,4 +1,4 @@
-using ImagesCore, Colors, FixedPointNumbers, OffsetArrays
+using ImageCore, Colors, FixedPointNumbers, OffsetArrays
 using Base.Test
 
 @testset "reinterpret" begin
@@ -6,7 +6,7 @@ using Base.Test
     for T in (Gray{U8}, Gray{Float32}, Gray{Float64})
         b = @inferred(convert(Array{T}, a))
         rb = @inferred(reinterpret(eltype(T), b))
-        if ImagesCore.squeeze1
+        if ImageCore.squeeze1
             @test isa(rb, Array{eltype(T),2})
             @test size(rb) == (4,5)
         else

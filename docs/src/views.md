@@ -1,6 +1,6 @@
 # Views
 
-ImagesCore provides several different kinds of "views." Generically, a
+ImageCore provides several different kinds of "views." Generically, a
 view is an *interpretation* of array data, one that may change the
 apparent meaning of the array but which shares the same underlying
 storage: change an element of the view, and you also change the
@@ -23,7 +23,7 @@ julia> img = [RGB(1,0,0) RGB(0,1,0);
 
 ```@meta
 DocTestSetup = quote
-    using Colors, ImagesCore
+    using Colors, ImageCore
     img = [RGB(1,0,0) RGB(0,1,0);
            RGB(0,0,1) RGB(0,0,0)]
     v = channelview(img)
@@ -57,7 +57,7 @@ That said, occassionally there are reasons to want to treat `RGB` as a
 
 ```julia
 julia> v = channelview(img)
-3×2×2 ImagesCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}}:
+3×2×2 ImageCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}}:
 [:, :, 1] =
  UFixed8(1.0)  UFixed8(0.0)
  UFixed8(0.0)  UFixed8(0.0)
@@ -82,7 +82,7 @@ type, `rawview`, illuminating:
 
 ```julia
 julia> r = rawview(v)
-3×2×2 MappedArrays.MappedArray{UInt8,3,ImagesCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}},ImagesCore.##11#13,ImagesCore.##12#14{FixedPointNumbers.UFixed{UInt8,8}}}:
+3×2×2 MappedArrays.MappedArray{UInt8,3,ImageCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}},ImageCore.##11#13,ImageCore.##12#14{FixedPointNumbers.UFixed{UInt8,8}}}:
 [:, :, 1] =
  0xff  0x00
  0x00  0x00
@@ -110,7 +110,7 @@ julia> r[3,1,1] = 128
 128
 
 julia> r
-3×2×2 MappedArrays.MappedArray{UInt8,3,ImagesCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}},ImagesCore.##11#13,ImagesCore.##12#14{FixedPointNumbers.UFixed{UInt8,8}}}:
+3×2×2 MappedArrays.MappedArray{UInt8,3,ImageCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}},ImageCore.##11#13,ImageCore.##12#14{FixedPointNumbers.UFixed{UInt8,8}}}:
 [:, :, 1] =
  0xff  0x00
  0x00  0x00
@@ -122,7 +122,7 @@ julia> r
  0x00  0x00
 
 julia> v
-3×2×2 ImagesCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}}:
+3×2×2 ImageCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}}:
 [:, :, 1] =
  UFixed8(1.0)    UFixed8(0.0)
  UFixed8(0.0)    UFixed8(0.0)
@@ -150,7 +150,7 @@ rather than the first. We can achieve that using `permuteddimsview`:
 
 ```@meta
 DocTestSetup = quote
-    using Colors, ImagesCore
+    using Colors, ImageCore
     img = [RGB(1,0,0) RGB(0,1,0);
            RGB(0,0,1) RGB(0,0,0)]
     v = channelview(img)
@@ -161,7 +161,7 @@ end
 
 ```julia
 julia> p = permuteddimsview(v, (2,3,1))
-2×2×3 Base.PermutedDimsArrays.PermutedDimsArray{FixedPointNumbers.UFixed{UInt8,8},3,(2,3,1),(3,1,2),ImagesCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}}}:
+2×2×3 Base.PermutedDimsArrays.PermutedDimsArray{FixedPointNumbers.UFixed{UInt8,8},3,(2,3,1),(3,1,2),ImageCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}}}:
 [:, :, 1] =
  UFixed8(1.0)  UFixed8(0.0)
  UFixed8(0.0)  UFixed8(0.0)
@@ -178,7 +178,7 @@ julia> p[1,2,:] = 0.25
 0.25
 
 julia> p
-2×2×3 Base.PermutedDimsArrays.PermutedDimsArray{FixedPointNumbers.UFixed{UInt8,8},3,(2,3,1),(3,1,2),ImagesCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}}}:
+2×2×3 Base.PermutedDimsArrays.PermutedDimsArray{FixedPointNumbers.UFixed{UInt8,8},3,(2,3,1),(3,1,2),ImageCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}}}:
 [:, :, 1] =
  UFixed8(1.0)  UFixed8(0.251)
  UFixed8(0.0)  UFixed8(0.0)
@@ -192,7 +192,7 @@ julia> p
  UFixed8(1.0)    UFixed8(0.0)
 
 julia> v
-3×2×2 ImagesCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}}:
+3×2×2 ImageCore.ChannelView{FixedPointNumbers.UFixed{UInt8,8},3,Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}}:
 [:, :, 1] =
  UFixed8(1.0)    UFixed8(0.0)
  UFixed8(0.0)    UFixed8(0.0)

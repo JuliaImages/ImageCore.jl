@@ -1,4 +1,4 @@
-using Colors, ImagesCore, Base.Test
+using Colors, ImageCore, Base.Test
 
 immutable ArrayLF{T,N} <: AbstractArray{T,N}
     A::Array{T,N}
@@ -27,8 +27,8 @@ Base.setindex!{T,N}(A::ArrayLS{T,N}, val, i::Vararg{Int,N}) = A.A[i...] = val
         @test isa(channelview(a), VT)
         @test Base.linearindexing(v) == LI
         @test isa(colorview(Gray, v), typeof(a))
-        @test ndims(v) == 2 - ImagesCore.squeeze1
-        @test size(v) == (ImagesCore.squeeze1 ? (2,) : (1, 2))
+        @test ndims(v) == 2 - ImageCore.squeeze1
+        @test size(v) == (ImageCore.squeeze1 ? (2,) : (1, 2))
         @test eltype(v) == U8
         @test parent(v) === a
         @test v[1] == U8(0.2)
@@ -42,15 +42,15 @@ Base.setindex!{T,N}(A::ArrayLS{T,N}, val, i::Vararg{Int,N}) = A.A[i...] = val
         c = similar(v)
         @test isa(c, ChannelView{U8,1,Array{Gray{U8},1}})
         @test length(c) == 2
-        c = similar(v, ImagesCore.squeeze1 ? 3 : (1,3))
+        c = similar(v, ImageCore.squeeze1 ? 3 : (1,3))
         @test isa(c, ChannelView{U8,1,Array{Gray{U8},1}})
         @test length(c) == 3
         c = similar(v, Float32)
         @test isa(c, ChannelView{Float32,1,Array{Gray{Float32},1}})
         @test length(c) == 2
-        c = similar(v, Float16, ImagesCore.squeeze1 ? (5,5) : (1,5,5))
+        c = similar(v, Float16, ImageCore.squeeze1 ? (5,5) : (1,5,5))
         @test isa(c, ChannelView{Float16,2,Array{Gray{Float16},2}})
-        @test size(c) == (ImagesCore.squeeze1 ? (5,5) : (1,5,5))
+        @test size(c) == (ImageCore.squeeze1 ? (5,5) : (1,5,5))
     end
 end
 
@@ -204,7 +204,7 @@ end
 
 @testset "grayscale" begin
     _a0 = [U8(0.2), U8(0.4)]
-    a0 = ImagesCore.squeeze1 ? _a0 : reshape(_a0, (1, 2))
+    a0 = ImageCore.squeeze1 ? _a0 : reshape(_a0, (1, 2))
     for (a, VT, LI) in ((copy(a0), Array{Gray{U8}}, Base.LinearFast()),
                         (ArrayLF(copy(a0)), ColorView{Gray{U8}}, Base.LinearFast()),
                         (ArrayLS(copy(a0)), ColorView{Gray{U8}}, Base.LinearSlow()))
@@ -228,21 +228,21 @@ end
         c = similar(v)
         @test isa(c, ColorView{Gray{U8},1,Array{U8,1}})
         @test length(c) == 2
-        c = similar(v, ImagesCore.squeeze1 ? 3 : (1,3))
+        c = similar(v, ImageCore.squeeze1 ? 3 : (1,3))
         @test isa(c, ColorView{Gray{U8},1,Array{U8,1}})
         @test length(c) == 3
         c = similar(v, Gray{Float32})
         @test isa(c, ColorView{Gray{Float32},1,Array{Float32,1}})
         @test length(c) == 2
-        c = similar(v, Gray{Float16}, ImagesCore.squeeze1 ? (5,5) : (1,5,5))
+        c = similar(v, Gray{Float16}, ImageCore.squeeze1 ? (5,5) : (1,5,5))
         @test isa(c, ColorView{Gray{Float16},2,Array{Float16,2}})
-        @test size(c) == (ImagesCore.squeeze1 ? (5,5) : (1,5,5))
+        @test size(c) == (ImageCore.squeeze1 ? (5,5) : (1,5,5))
         c = similar(v, Float32)
         @test isa(c, Array{Float32, 1})
     end
     # two dimensional images and linear indexing
     _a0 = U8[0.2 0.4; 0.6 0.8]
-    a0 = ImagesCore.squeeze1 ? _a0 : reshape(_a0, (1, 2, 2))
+    a0 = ImageCore.squeeze1 ? _a0 : reshape(_a0, (1, 2, 2))
     for (a, VT, LI) in ((copy(a0), Array{Gray{U8}}, Base.LinearFast()),
                         (ArrayLF(copy(a0)), ColorView{Gray{U8}}, Base.LinearFast()),
                         (ArrayLS(copy(a0)), ColorView{Gray{U8}}, Base.LinearSlow()))

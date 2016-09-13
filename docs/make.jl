@@ -5,5 +5,9 @@ makedocs(modules  = [ImageCore],
          sitename = "ImageCore",
          pages    = ["index.md", "views.md", "traits.md", "reference.md"])
 
-deploydocs(repo   = "github.com/JuliaImages/ImageCore.jl.git")
+deploydocs(repo   = "github.com/JuliaImages/ImageCore.jl.git",
+           julia  = "0.5",
+           target = "build",
+           deps   = nothing,
+           make   = nothing)
 #           deps   = Deps.pip("mkdocs", "python-markdown-math"))

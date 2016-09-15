@@ -114,7 +114,7 @@ creates a "view" of the numeric array `A`, interpreting the first
 dimension of `A` as if were the channels of a Colorant `C`. The first
 dimension must have the proper number of elements for the constructor
 of `C`. For example, if `A` is a 3-by-m-by-n U8 array,
-`Colorant{RGB}(A)` will create an m-by-n array with element type
+`ColorView{RGB}(A)` will create an m-by-n array with element type
 `RGB{U8}`. Color spaces with a single element (i.e., grayscale) do not
 "consume" the first dimension of `A`.
 
@@ -212,6 +212,12 @@ almost identical to `ColorView{C}(A)`, except that if `A` is a
 `ChannelView`, it will simply return the parent of `A`, or use
 `reinterpret` when appropriate. Consequently, the output may not be a
 `ColorView` array.
+
+# Example
+```jl
+A = rand(3, 10, 10)
+img = colorview(RGB, A)
+```
 """
 colorview{C<:Colorant}(::Type{C}, A::AbstractArray) = ColorView{C}(A)
 colorview{C<:RGB}(::Type{C}, A::Array) = reinterpret(C, A)

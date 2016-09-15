@@ -2,3 +2,4 @@ julia 0.5-
 FixedPointNumbers
 Colors
 MappedArrays
+Graphics

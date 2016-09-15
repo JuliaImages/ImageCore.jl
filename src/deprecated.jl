@@ -250,7 +250,6 @@ end
 
 @deprecate spatialpermutation permutation
 
-# width and height, translating "x" and "y" spatialorder into horizontal and vertical, respectively
 # Permute the dimensions of an image, also permuting the relevant properties. If you have non-default properties that are vectors or matrices relative to spatial dimensions, include their names in the list of spatialprops.
 import Base: permutedims
 @deprecate permutedims{S<:AbstractString}(img::StridedArray, pstr::Union{Vector{S}, Tuple{S,Vararg{S}}}, spatialprops::Vector=spatialproperties(img)) permutedims(img, map(Symbol, pstr), spatialprops)

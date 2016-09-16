@@ -1,5 +1,5 @@
 using ImageCore, Colors, ColorVectorSpace
-using Base.Test, BenchmarkTools, JLD
+using Base.Test
 
 # Different access patterns (getindex)
 function mysum_elt_boundscheck(A)
@@ -46,14 +46,35 @@ function myfill2!(A, val)
     A
 end
 
-suite = BenchmarkGroup()
-BenchmarkTools.DEFAULT_PARAMETERS.seconds = 0.1
-ssz = (100,100)
+# Rather than using BenchmarkTools (and thus run one test repeatedly,
+# accumulating timings), we run the same test interleaving the two
+# array types. This is designed to reduce the risk of spurious
+# failure, particularly on shared machines like Travis where they may
+# get "distracted" by other tasks
+function test_getindex(f, ar, cv, n)
+    t_ar = Array{Float64}(n)
+    t_cv = Array{Float64}(n)
+    for i = 1:n
+        t_ar[i] = @elapsed f(ar)
+        t_cv[i] = @elapsed f(cv)
+    end
+    median(t_ar), median(t_cv)
+end
+function test_setindex(f, ar, cv, n)
+    t_ar = Array{Float64}(n)
+    t_cv = Array{Float64}(n)
+    for i = 1:n
+        t_ar[i] = @elapsed f(ar, zero(eltype(ar)))
+        t_cv[i] = @elapsed f(cv, zero(eltype(cv)))
+    end
+    median(t_ar), median(t_cv)
+end
+
+ssz = (1000,1000)
 a = rand(3,ssz...)
 c = reinterpret(RGB{Float64}, a, ssz)
 vchan = ChannelView(c)
 vcol = ColorView{RGB}(a)
-suite["ChannelView"] = BenchmarkGroup()
 cc_getindex_funcs = (mysum_elt_boundscheck,
                      mysum_index_boundscheck,
                      mysum_elt_inbounds,
@@ -61,51 +82,29 @@ cc_getindex_funcs = (mysum_elt_boundscheck,
 cc_setindex_funcs = (myfill1!,
                      myfill2!)
 chanvtol = Dict(mysum_index_inbounds_simd => 20,   # @simd doesn't work for ChannelView :(
+                mysum_elt_boundscheck => 20,
                 myfill1! => 20,                    # crappy setindex! performance
                 myfill2! => 20)
 chanvdefault = 10
 colvtol = Dict(mysum_elt_boundscheck=>5, mysum_index_boundscheck=>5)
 colvdefault = 3
 
-for f in cc_getindex_funcs
-    for x in (a, vchan)
-        suite["ChannelView"][string(f), string(typeof(x).name.name)] = @benchmarkable $(f)($x)
+for (suite, testf) in ((cc_getindex_funcs, test_getindex),
+                       (cc_setindex_funcs, test_setindex))
+    for f in suite
+        # Channelview
+        t_ar, t_cv = testf(f, a, vchan, 10^2)
+        tol = haskey(chanvtol, f) ? chanvtol[f] : chanvdefault
+        if t_cv >= tol*t_ar
+            println("ChannelView: failed on $f, time ratio $(t_cv/t_ar), tol $tol")
+        end
+        @test t_cv < tol*t_ar
+        # ColorView
+        t_ar, t_cv = testf(f, c, vcol, 10^2)
+        tol = haskey(colvtol, f) ? colvtol[f] : colvdefault
+        if t_cv >= tol*t_ar
+            println("ColorView: failed on $f, time ratio $(t_cv/t_ar), tol $tol")
+        end
+        @test t_cv < tol*t_ar
     end
-end
-for f in cc_setindex_funcs
-    for x in (a, vchan)
-        suite["ChannelView"][string(f), string(typeof(x).name.name)] = @benchmarkable $(f)($x, 0)
-    end
-end
-
-suite["ColorView"] = BenchmarkGroup()
-for f in cc_getindex_funcs
-    for x in (c, vcol)
-        suite["ColorView"][string(f), string(typeof(x).name.name)] = @benchmarkable $(f)($x)
-    end
-end
-for f in cc_setindex_funcs
-    for x in (c, vcol)
-        suite["ColorView"][string(f), string(typeof(x).name.name)] = @benchmarkable $(f)($x, $(zero(eltype(c))))
-    end
-end
-
-# tune!(suite)
-# save("params.jld", "suite", params(suite))
-loadparams!(suite, load("params.jld", "suite"), :evals, :samples, :seconds)
-results = run(suite)
-
-chanvr = results["ChannelView"]
-for f in (cc_getindex_funcs..., cc_setindex_funcs...)
-    cv = chanvr[string(f), "ChannelView"]
-    ar = chanvr[string(f), "Array"]
-    tol = haskey(chanvtol, f) ? chanvtol[f] : chanvdefault
-    @test time(median(cv)) < tol*time(median(ar))
-end
-colvr = results["ColorView"]
-for f in (cc_getindex_funcs..., cc_setindex_funcs...)
-    cv = colvr[string(f), "ColorView"]
-    ar = colvr[string(f), "Array"]
-    tol = haskey(colvtol, f) ? colvtol[f] : colvdefault
-    @test time(median(cv)) < tol*time(median(ar))
 end

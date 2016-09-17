@@ -269,7 +269,14 @@ Base.permutedims{S<:Symbol}(img::AbstractArray, pstr::Union{Vector{S}, Tuple{Var
 ### Functions ###
 @deprecate raw rawview
 @deprecate raw{C<:Colorant}(A::AbstractArray{C}) rawview(channelview(A))
-@deprecate separate{C<:Colorant,N}(img::AbstractArray{C,N}) permuteddimsview(channelview(img), (ntuple(n->n+1, Val{N})..., 1))
+function separate{C<:Colorant,N}(img::AbstractArray{C,N})
+    # To avoid having a complex ntuple expression appearing in the
+    # depwarn, specialize the warning on the dimensionality
+    perm = (ntuple(n->n+1, Val{N})..., 1)
+    Base.depwarn("separate{C<:Colorant}(img::AbstractArray{C,$N}) is deprecated, use permuteddimsview(channelview(img), $perm) instead.", :separate)
+    permuteddimsview(channelview(img), perm)
+end
 if squeeze1
     @deprecate separate{C<:Color1,N}(img::AbstractArray{C,N}) channelview(img)
 end
+@deprecate separate(img) img

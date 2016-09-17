@@ -2,7 +2,7 @@
 
 # Convenience constructors
 export grayim
-function grayim{T<:Union{UFixed,Bool}}(A::AbstractArray{T})
+function grayim{T<:Union{Fractional,Bool}}(A::AbstractArray{T})
     Base.depwarn("grayim is deprecated, please use ColorView{Gray}(A), possibly in conjunction with ufixedview", :grayim)
     ColorView{Gray}(A)
 end
@@ -14,9 +14,13 @@ grayim(A::AbstractArray{UInt8,2})  = grayim(ufixedview(A))
 grayim(A::AbstractArray{UInt8,3})  = grayim(ufixedview(A))
 grayim(A::AbstractArray{UInt16,2}) = grayim(ufixedview(U16, A))
 grayim(A::AbstractArray{UInt16,3}) = grayim(ufixedview(U16, A))
+grayim{C<:Gray}(A::AbstractArray{C}) = A
+function grayim{T<:Union{Int8,Int16,Int32,Int64,Int128}}(A::AbstractArray{T})
+    throw(ArgumentError("grayim does not support arrays of element type $T.\n  If all values are positive, consider using ufixedview([U], mappedarray($(unsigned(T)), A)).\n  Or convert to floating point."))
+end
 
 export colorim
-function colorim{T}(A::AbstractArray{T,3})
+function colorim{T<:Union{Fractional,Unsigned}}(A::AbstractArray{T,3})
     if size(A, 1) == 4 || size(A, 3) == 4
         error("The array looks like a 4-channel color image. Please specify the colorspace explicitly (e.g. \"ARGB\" or \"RGBA\".)")
     end
@@ -40,6 +44,10 @@ colorim(A::Array{UInt8,3},  colorspace) = colorim(reinterpret(UFixed8,  A), colo
 colorim(A::Array{UInt16,3}, colorspace) = colorim(reinterpret(UFixed16, A), colorspace)
 colorim(A::AbstractArray{UInt8,3},  colorspace) = colorim(ufixedview(A), colorspace)
 colorim(A::AbstractArray{UInt16,3}, colorspace) = colorim(ufixedview(U16, A), colorspace)
+colorim{C<:Colorant}(A::AbstractArray{C}) = A
+function colorim{T<:Union{Int8,Int16,Int32,Int64,Int128}}(A::AbstractArray{T})
+    throw(ArgumentError("colorim does not support arrays of element type $T.\n  If all values are positive, consider using ufixedview([U], mappedarray($(unsigned(T)), A)).\n  Or convert to floating point."))
+end
 
 colorspacedict = Dict{String,Any}()
 for ACV in (Color, AbstractRGB)

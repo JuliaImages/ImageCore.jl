@@ -107,8 +107,6 @@ using Base.Test
             assert_yfirst(B)
             @test_throws ErrorException assert_xfirst(B)
             @test spatialproperties(B) == String[]
-            @test_throws ErrorException permutedims(B, ("x", "y"))
-            @test_throws ErrorException permutedims(B, (:x, :y))
         end
         for (B,S) in ((rand(UInt16(1):UInt16(20), 5),"Gray"),
                       (rand(Gray{Float32}, 5),"Gray"),

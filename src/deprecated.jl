@@ -256,15 +256,7 @@ function spatialproperties(img::AbstractArray)
     String[]
 end
 
-@deprecate spatialpermutation permutation
-
-# Permute the dimensions of an image, also permuting the relevant properties. If you have non-default properties that are vectors or matrices relative to spatial dimensions, include their names in the list of spatialprops.
-import Base: permutedims
-@deprecate permutedims{S<:AbstractString}(img::StridedArray, pstr::Union{Vector{S}, Tuple{S,Vararg{S}}}, spatialprops::Vector=spatialproperties(img)) permutedims(img, map(Symbol, pstr), spatialprops)
-@deprecate permutedims{S<:AbstractString}(img::AbstractArray, pstr::Union{Vector{S}, Tuple{S,Vararg{S}}}, spatialprops::Vector=spatialproperties(img)) permutedims(img, map(Symbol, pstr), spatialprops)
-
-Base.permutedims{S<:Symbol}(img::StridedArray, pstr::Union{Vector{S}, Tuple{Vararg{S}}}, spatialprops::Vector = spatialproperties(img)) = error("not supported, please switch to ImagesAxes")
-Base.permutedims{S<:Symbol}(img::AbstractArray, pstr::Union{Vector{S}, Tuple{Vararg{S}}}, spatialprops::Vector = spatialproperties(img)) = error("not supported, please switch to ImagesAxes")
+@deprecate spatialpermutation AxisArrays.permutation
 
 ### Functions ###
 @deprecate raw rawview

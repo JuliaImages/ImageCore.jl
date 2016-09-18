@@ -95,10 +95,10 @@ using Base.Test
             @test colorspace(B) == S
             @test colordim(B) == 0
             @test timedim(B) == 0
-            @test spatialorder(B) == [:y,:x]
+            @test spatialorder(B) == (:y,:x)
             @test isdirect(B)
             @test limits(B) == (T==Bool ? (0,1) : (zero(T),one(T)))
-            @test storageorder(B) == [:y,:x]
+            @test storageorder(B) == (:y,:x)
             @test ncolorelem(B) == (T <: Colorant ? length(T) : 1)
             assert2d(B)
             assert_scalar_color(B)

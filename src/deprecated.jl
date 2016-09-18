@@ -101,9 +101,9 @@ end
 # Here are the two most important assumptions (see also colorspace below):
 defaultarraycolordim = 3
 # defaults for plain arrays ("vertical-major")
-const yx = [:y, :x]
+const yx = (:y, :x)
 # order used in Cairo & most image file formats (with color as the very first dimension)
-const xy = [:x, :y]
+const xy = (:x, :y)
 export spatialorder
 function spatialorder(img::AbstractArray)
     Base.depwarn("spatialorder is deprecated for general AbstractArrays, please switch to ImagesAxes instead", :spatialorder)
@@ -161,12 +161,12 @@ export storageorder
 function storageorder(img::AbstractArray)
     Base.depwarn("storageorder is deprecated, please switch to ImagesAxes and use `axisnames`", :storageorder)
     so = Array(Symbol, ndims(img))
-    so[[coords_spatial(img)...]] = spatialorder(img)
+    so[[coords_spatial(img)...]] = [spatialorder(img)...]
     td = timedim(img)
     if td != 0
         so[td] = :t
     end
-    so
+    (so...,)
 end
 
 # number of array elements used for each pixel/voxel

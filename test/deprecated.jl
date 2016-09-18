@@ -99,7 +99,7 @@ using Base.Test
             @test isdirect(B)
             @test limits(B) == (T==Bool ? (0,1) : (zero(T),one(T)))
             @test storageorder(B) == (:y,:x)
-            @test ncolorelem(B) == (T <: Colorant ? length(T) : 1)
+            @test ncolorelem(B) == 1
             assert2d(B)
             assert_scalar_color(B)
             @test isyfirst(B)
@@ -119,8 +119,8 @@ using Base.Test
                       (bitrand(5, 5, 5),"Binary"))
             @test colorspace(B) == S
         end
-        @test colorspace(rand(Float32, 5, 5, 3)) == "RGB"
-        @test_throws ErrorException colorspace(rand(Float32, 5, 5, 5))
+        @test colorspace(rand(Float32, 5, 5, 3)) == "Gray"
+        @test colorspace(rand(Float32, 5, 5, 5)) == "Gray"
     end
     @testset "Reinterpret, convert, separate, raw" begin
         # some of these are redundant with convert_reinterpret.jl, but
@@ -161,7 +161,7 @@ using Base.Test
         @test reinterpret(UInt8, imrgb8) == Au8
         @test reinterpret(RGB, im8) == imrgb8
         ims8 = separate(imrgb8)
-        @test colorspace(ims8) == "RGB"
+        @test colorspace(ims8) == "Gray"
         # cvt = convert(Image, ims8)
         # @test cvt == ims8 && typeof(cvt) == typeof(ims8)
         # @test (cvt = convert(Image{UFixed8}, ims8)) == ims8 && typeof(cvt) == typeof(ims8)

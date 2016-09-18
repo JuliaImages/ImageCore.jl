@@ -129,10 +129,10 @@ _colorspace{C<:Colorant}(img::AbstractArray{C}) = ColorTypes.colorant_string(C)
 @noinline _colorspace(img::AbstractMatrix{Bool}) = "Binary"
 @noinline _colorspace(img::AbstractArray{Bool}) = "Binary"
 @noinline _colorspace(img::AbstractArray{Bool,3}) = "Binary"
-@noinline _colorspace(img::AbstractMatrix{UInt32}) = "RGB24"
+@noinline _colorspace(img::AbstractMatrix{UInt32}) = "RGB24"  # bad, bad
 @noinline _colorspace(img::AbstractVector) = "Gray"
 @noinline _colorspace(img::AbstractMatrix) = "Gray"
-_colorspace{T}(img::AbstractArray{T,3}) = (size(img, defaultarraycolordim) == 3) ? "RGB" : error("Cannot infer colorspace of Array, use a color eltype (e.g., colorview)")
+_colorspace{T}(img::AbstractArray{T,3}) = "Gray"
 
 
 export colordim
@@ -172,8 +172,8 @@ end
 # number of array elements used for each pixel/voxel
 export ncolorelem
 function ncolorelem{T}(img::AbstractArray{T})
-    Base.depwarn("ncolorelem is deprecated, please encode as a color array (possibly with `colorview`) and use `length(eltype(img))`.\nNumeric arrays are assumed to be grayscale and will return 1.", :ncolorelem)
-    T <: Colorant ? length(T) : 1
+    Base.depwarn("ncolorelem is deprecated; if you want color, please encode as a color array (possibly with `colorview`). This function will always return 1.", :ncolorelem)
+    1
 end
 
 #### Utilities for writing "simple algorithms" safely ####

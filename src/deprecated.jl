@@ -3,8 +3,8 @@
 # Convenience constructors
 export grayim
 function grayim{T<:Union{Fractional,Bool}}(A::AbstractArray{T})
-    Base.depwarn("grayim is deprecated, please use ColorView{Gray}(A), possibly in conjunction with ufixedview", :grayim)
-    ColorView{Gray}(A)
+    Base.depwarn("grayim is deprecated, please use colorview(Gray, A), possibly in conjunction with ufixedview", :grayim)
+    colorview(Gray, A)
 end
 grayim(A::Array{UInt8,2})  = grayim(reinterpret(UFixed8, A))
 grayim(A::Array{UInt16,2}) = grayim(reinterpret(UFixed16, A))
@@ -28,14 +28,14 @@ function colorim{T<:Union{Fractional,Unsigned}}(A::AbstractArray{T,3})
     colorim(A, "RGB")
 end
 function colorim{T<:Fractional}(A::AbstractArray{T,3}, colorspace)
-    Base.depwarn("colorim(A, colorspace) is deprecated, use ColorView{C}(A) instead, possibly in conjunction with permuteddimsview and/or ufixedview", :colorim)
+    Base.depwarn("colorim(A, colorspace) is deprecated, use colorview(C, A) instead, possibly in conjunction with permuteddimsview and/or ufixedview", :colorim)
     CT = getcolortype(colorspace, eltype(A))
     if 3 <= size(A, 1) <= 4 && 3 <= size(A, 3) <= 4
         error("Both first and last dimensions are of size 3 or 4; impossible to guess which is for color. Use the Image constructor directly.")
     elseif 3 <= size(A, 1) <= 4  # Image as returned by imread for regular 2D RGB images
-        ColorView{CT}(A)
+        colorview(CT, A)
     elseif 3 <= size(A, 3) <= 4  # "Matlab"-style image, as returned by convert(Array, im).
-        ColorView{CT}(permuteddimsview(A, (3,1,2)))
+        colorview(CT, permuteddimsview(A, (3,1,2)))
     else
         error("Neither the first nor the last dimension is of size 3. This doesn't look like an RGB image.")
     end

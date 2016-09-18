@@ -5,6 +5,8 @@ Base.reinterpret{CV1<:Colorant,CV2<:Colorant}(::Type{CV1}, A::Array{CV2,1}) = _r
 Base.reinterpret{CV1<:Colorant,CV2<:Colorant}(::Type{CV1}, A::Array{CV2})   = _reinterpret_cvarray(CV1, A)
 Base.reinterpret{T<:Number,CV<:Colorant}(::Type{T}, A::Array{CV,1}) = _reinterpret_cvarray(T, A)
 Base.reinterpret{T<:Number,CV<:Colorant}(::Type{T}, A::Array{CV})   = _reinterpret_cvarray(T, A)
+Base.reinterpret{CV<:NonparametricColors}(::Type{UInt32}, A::Array{CV,1}) = reinterpret(UInt32, A, size(A))
+Base.reinterpret{CV<:NonparametricColors}(::Type{UInt32}, A::Array{CV})   = reinterpret(UInt32, A, size(A))
 
 function _reinterpret_cvarray{CV1<:Colorant,CV2}(::Type{CV1}, A::Array{CV2})
     reinterpret(CV1, A, size(A))
@@ -47,6 +49,9 @@ end
 
 function _reinterpret_array_cv{T,CV<:Colorant}(::Type{CV}, A::Array{T})
     reinterpret(CV, A, tail(size(A)))
+end
+function _reinterpret_array_cv{CV<:NonparametricColors}(::Type{CV}, A::Array{UInt32})
+    reinterpret(CV, A, size(A))
 end
 if squeeze1
     function _reinterpret_array_cv{T,CV<:Color1}(::Type{CV}, A::Array{T})

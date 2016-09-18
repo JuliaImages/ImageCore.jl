@@ -22,6 +22,7 @@ typealias Color3{T} Colorant{T,3}
 typealias Color4{T} Colorant{T,4}
 typealias AColor{N,C,T} AlphaColor{C,T,N}
 typealias ColorA{N,C,T} ColorAlpha{C,T,N}
+typealias NonparametricColors Union{RGB24,ARGB32,Gray24,AGray32}
 
 ## ChannelView
 
@@ -180,6 +181,10 @@ function Base.similar{S<:Colorant,N}(A::ColorView, ::Type{S}, dims::NTuple{N,Int
     ColorView{S}(similar(P, celtype(eltype(S), eltype(P)), colparentsize(S, dims)))
 end
 function Base.similar{S<:Number,N}(A::ColorView, ::Type{S}, dims::NTuple{N,Int})
+    P = parent(A)
+    similar(P, S, dims)
+end
+function Base.similar{S<:NonparametricColors,N}(A::ColorView, ::Type{S}, dims::NTuple{N,Int})
     P = parent(A)
     similar(P, S, dims)
 end

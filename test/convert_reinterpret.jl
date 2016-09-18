@@ -73,6 +73,18 @@ using Base.Test
     @test reinterpret(U8, a) == cat(3, [1 0; 0 1; 0 0], [0 1; 0 1; 1 1])
     b = convert(Array{BGR{U8}}, a)
     @test reinterpret(U8, b) == cat(3, [0 0; 0 1; 1 0], [1 1; 0 1; 0 1])
+    # RGB24, ARGB32
+    a = rand(UInt32, (4,5))
+    for T in (RGB24, ARGB32)
+        for b in (@inferred(convert(Array{T}, a)),
+                  @inferred(reinterpret(T, a)))
+            @test isa(b, Array{T,2})
+            @test size(b) == (4,5)
+            @test eltype(b) == T
+            @test reinterpret(UInt32, b) == a
+        end
+    end
+
     # indeterminate type tests
     a = Array(RGB{AbstractFloat},3)
     @test_throws ErrorException reinterpret(Float64, a)

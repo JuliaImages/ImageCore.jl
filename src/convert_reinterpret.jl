@@ -90,6 +90,26 @@ function Base.convert{Cdest<:Colorant,n,Csrc<:Colorant}(::Type{Array{Cdest,n}},
     copy!(Array{ccolor(Cdest, Csrc)}(size(img)), img)
 end
 
+function Base.convert{Cdest<:Color1,n}(::Type{Array{Cdest}},
+                                       img::BitArray{n})
+    convert(Array{Cdest,n}, img)
+end
+
+function Base.convert{Cdest<:Color1,n,T<:Real}(::Type{Array{Cdest}},
+                                               img::AbstractArray{T,n})
+    convert(Array{Cdest,n}, img)
+end
+
+function Base.convert{Cdest<:Color1,n}(::Type{Array{Cdest,n}},
+                                       img::BitArray{n})
+    copy!(Array{ccolor(Cdest, Gray{Bool})}(size(img)), img)
+end
+
+function Base.convert{Cdest<:Color1,n,T<:Real}(::Type{Array{Cdest,n}},
+                                               img::AbstractArray{T,n})
+    copy!(Array{ccolor(Cdest, Gray{T})}(size(img)), img)
+end
+
 # float32, float64, etc. Used for conversions like
 #     Array{RGB{U8}} -> Array{RGB{Float32}},
 # since

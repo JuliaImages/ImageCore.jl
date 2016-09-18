@@ -102,6 +102,13 @@ end
     @test eltype(c) == BGR{Float32}
     c = @inferred(convert(Array{Lab}, a))
     @test eltype(c) == Lab{Float32}
+    for a in (rand(Float32, (4,5)),
+              bitrand(4,5))
+        b = @inferred(convert(Array{Gray}, a))
+        @test eltype(b) == Gray{eltype(a)}
+        b = @inferred(convert(Array{Gray{U8}}, a))
+        @test eltype(b) == Gray{U8}
+    end
 end
 
 @testset "eltype conversion" begin

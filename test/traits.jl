@@ -20,16 +20,4 @@ using Base.Test
     end
 end
 
-@testset "Utilities" begin
-    using ImageCore.permutation
-    @test permutation((1,2,3), (1,2,3)) == [1,2,3]
-    @test permutation((3,1,2), (1,2,3)) == [3,1,2]
-    @test permutation(["b", "c", "a"], ["a", "b", "c"]) == [2,3,1]
-    @test_throws ArgumentError permutation(["b", "c", "a"], ["a", "bb", "c"])
-    @test permutation(["b", "c", "a"], ["a", "bb", "b", "c"]) == [3,4,1,2]
-    @test permutation(["a", "bb", "b", "c"], ["b", "c", "a"]) == [3,0,1,2]
-    @test_throws ArgumentError permutation(["a", "b"], [:cat, :dog])
-    @test_throws ArgumentError permutation(["a", "b"], ["a", "a", "b"])
-end
-
 nothing

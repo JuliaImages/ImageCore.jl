@@ -95,11 +95,11 @@ using Base.Test
             @test colorspace(B) == S
             @test colordim(B) == 0
             @test timedim(B) == 0
-            @test spatialorder(B) == [:y,:x]
+            @test spatialorder(B) == (:y,:x)
             @test isdirect(B)
             @test limits(B) == (T==Bool ? (0,1) : (zero(T),one(T)))
-            @test storageorder(B) == [:y,:x]
-            @test ncolorelem(B) == (T <: Colorant ? length(T) : 1)
+            @test storageorder(B) == (:y,:x)
+            @test ncolorelem(B) == 1
             assert2d(B)
             assert_scalar_color(B)
             @test isyfirst(B)
@@ -107,8 +107,6 @@ using Base.Test
             assert_yfirst(B)
             @test_throws ErrorException assert_xfirst(B)
             @test spatialproperties(B) == String[]
-            @test_throws ErrorException permutedims(B, ("x", "y"))
-            @test_throws ErrorException permutedims(B, (:x, :y))
         end
         for (B,S) in ((rand(UInt16(1):UInt16(20), 5),"Gray"),
                       (rand(Gray{Float32}, 5),"Gray"),
@@ -121,8 +119,8 @@ using Base.Test
                       (bitrand(5, 5, 5),"Binary"))
             @test colorspace(B) == S
         end
-        @test colorspace(rand(Float32, 5, 5, 3)) == "RGB"
-        @test_throws ErrorException colorspace(rand(Float32, 5, 5, 5))
+        @test colorspace(rand(Float32, 5, 5, 3)) == "Gray"
+        @test colorspace(rand(Float32, 5, 5, 5)) == "Gray"
     end
     @testset "Reinterpret, convert, separate, raw" begin
         # some of these are redundant with convert_reinterpret.jl, but
@@ -163,7 +161,7 @@ using Base.Test
         @test reinterpret(UInt8, imrgb8) == Au8
         @test reinterpret(RGB, im8) == imrgb8
         ims8 = separate(imrgb8)
-        @test colorspace(ims8) == "RGB"
+        @test colorspace(ims8) == "Gray"
         # cvt = convert(Image, ims8)
         # @test cvt == ims8 && typeof(cvt) == typeof(ims8)
         # @test (cvt = convert(Image{UFixed8}, ims8)) == ims8 && typeof(cvt) == typeof(ims8)

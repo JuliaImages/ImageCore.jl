@@ -2,9 +2,9 @@
 
 # Convenience constructors
 export grayim
-function grayim{T<:Union{UFixed,Bool}}(A::AbstractArray{T})
-    Base.depwarn("grayim is deprecated, please use ColorView{Gray}(A), possibly in conjunction with ufixedview", :grayim)
-    ColorView{Gray}(A)
+function grayim{T<:Union{Fractional,Bool}}(A::AbstractArray{T})
+    Base.depwarn("grayim is deprecated, please use colorview(Gray, A), possibly in conjunction with ufixedview", :grayim)
+    colorview(Gray, A)
 end
 grayim(A::Array{UInt8,2})  = grayim(reinterpret(UFixed8, A))
 grayim(A::Array{UInt16,2}) = grayim(reinterpret(UFixed16, A))
@@ -14,9 +14,13 @@ grayim(A::AbstractArray{UInt8,2})  = grayim(ufixedview(A))
 grayim(A::AbstractArray{UInt8,3})  = grayim(ufixedview(A))
 grayim(A::AbstractArray{UInt16,2}) = grayim(ufixedview(U16, A))
 grayim(A::AbstractArray{UInt16,3}) = grayim(ufixedview(U16, A))
+grayim{C<:Gray}(A::AbstractArray{C}) = A
+function grayim{T<:Union{Int8,Int16,Int32,Int64,Int128}}(A::AbstractArray{T})
+    throw(ArgumentError("grayim does not support arrays of element type $T.\n  If all values are positive, consider using ufixedview([U], mappedarray($(unsigned(T)), A)).\n  Or convert to floating point."))
+end
 
 export colorim
-function colorim{T}(A::AbstractArray{T,3})
+function colorim{T<:Union{Fractional,Unsigned}}(A::AbstractArray{T,3})
     if size(A, 1) == 4 || size(A, 3) == 4
         error("The array looks like a 4-channel color image. Please specify the colorspace explicitly (e.g. \"ARGB\" or \"RGBA\".)")
     end
@@ -24,14 +28,14 @@ function colorim{T}(A::AbstractArray{T,3})
     colorim(A, "RGB")
 end
 function colorim{T<:Fractional}(A::AbstractArray{T,3}, colorspace)
-    Base.depwarn("colorim(A, colorspace) is deprecated, use ColorView{C}(A) instead, possibly in conjunction with permuteddimsview and/or ufixedview", :colorim)
+    Base.depwarn("colorim(A, colorspace) is deprecated, use colorview(C, A) instead, possibly in conjunction with permuteddimsview and/or ufixedview", :colorim)
     CT = getcolortype(colorspace, eltype(A))
     if 3 <= size(A, 1) <= 4 && 3 <= size(A, 3) <= 4
         error("Both first and last dimensions are of size 3 or 4; impossible to guess which is for color. Use the Image constructor directly.")
     elseif 3 <= size(A, 1) <= 4  # Image as returned by imread for regular 2D RGB images
-        ColorView{CT}(A)
+        colorview(CT, A)
     elseif 3 <= size(A, 3) <= 4  # "Matlab"-style image, as returned by convert(Array, im).
-        ColorView{CT}(permuteddimsview(A, (3,1,2)))
+        colorview(CT, permuteddimsview(A, (3,1,2)))
     else
         error("Neither the first nor the last dimension is of size 3. This doesn't look like an RGB image.")
     end
@@ -40,6 +44,10 @@ colorim(A::Array{UInt8,3},  colorspace) = colorim(reinterpret(UFixed8,  A), colo
 colorim(A::Array{UInt16,3}, colorspace) = colorim(reinterpret(UFixed16, A), colorspace)
 colorim(A::AbstractArray{UInt8,3},  colorspace) = colorim(ufixedview(A), colorspace)
 colorim(A::AbstractArray{UInt16,3}, colorspace) = colorim(ufixedview(U16, A), colorspace)
+colorim{C<:Colorant}(A::AbstractArray{C}) = A
+function colorim{T<:Union{Int8,Int16,Int32,Int64,Int128}}(A::AbstractArray{T})
+    throw(ArgumentError("colorim does not support arrays of element type $T.\n  If all values are positive, consider using ufixedview([U], mappedarray($(unsigned(T)), A)).\n  Or convert to floating point."))
+end
 
 colorspacedict = Dict{String,Any}()
 for ACV in (Color, AbstractRGB)
@@ -93,9 +101,9 @@ end
 # Here are the two most important assumptions (see also colorspace below):
 defaultarraycolordim = 3
 # defaults for plain arrays ("vertical-major")
-const yx = [:y, :x]
+const yx = (:y, :x)
 # order used in Cairo & most image file formats (with color as the very first dimension)
-const xy = [:x, :y]
+const xy = (:x, :y)
 export spatialorder
 function spatialorder(img::AbstractArray)
     Base.depwarn("spatialorder is deprecated for general AbstractArrays, please switch to ImagesAxes instead", :spatialorder)
@@ -121,10 +129,10 @@ _colorspace{C<:Colorant}(img::AbstractArray{C}) = ColorTypes.colorant_string(C)
 @noinline _colorspace(img::AbstractMatrix{Bool}) = "Binary"
 @noinline _colorspace(img::AbstractArray{Bool}) = "Binary"
 @noinline _colorspace(img::AbstractArray{Bool,3}) = "Binary"
-@noinline _colorspace(img::AbstractMatrix{UInt32}) = "RGB24"
+@noinline _colorspace(img::AbstractMatrix{UInt32}) = "RGB24"  # bad, bad
 @noinline _colorspace(img::AbstractVector) = "Gray"
 @noinline _colorspace(img::AbstractMatrix) = "Gray"
-_colorspace{T}(img::AbstractArray{T,3}) = (size(img, defaultarraycolordim) == 3) ? "RGB" : error("Cannot infer colorspace of Array, use a color eltype (e.g., colorview)")
+_colorspace{T}(img::AbstractArray{T,3}) = "Gray"
 
 
 export colordim
@@ -153,19 +161,19 @@ export storageorder
 function storageorder(img::AbstractArray)
     Base.depwarn("storageorder is deprecated, please switch to ImagesAxes and use `axisnames`", :storageorder)
     so = Array(Symbol, ndims(img))
-    so[[coords_spatial(img)...]] = spatialorder(img)
+    so[[coords_spatial(img)...]] = [spatialorder(img)...]
     td = timedim(img)
     if td != 0
         so[td] = :t
     end
-    so
+    (so...,)
 end
 
 # number of array elements used for each pixel/voxel
 export ncolorelem
 function ncolorelem{T}(img::AbstractArray{T})
-    Base.depwarn("ncolorelem is deprecated, please encode as a color array (possibly with `colorview`) and use `length(eltype(img))`.\nNumeric arrays are assumed to be grayscale and will return 1.", :ncolorelem)
-    T <: Colorant ? length(T) : 1
+    Base.depwarn("ncolorelem is deprecated; if you want color, please encode as a color array (possibly with `colorview`). This function will always return 1.", :ncolorelem)
+    1
 end
 
 #### Utilities for writing "simple algorithms" safely ####
@@ -248,20 +256,19 @@ function spatialproperties(img::AbstractArray)
     String[]
 end
 
-@deprecate spatialpermutation permutation
-
-# Permute the dimensions of an image, also permuting the relevant properties. If you have non-default properties that are vectors or matrices relative to spatial dimensions, include their names in the list of spatialprops.
-import Base: permutedims
-@deprecate permutedims{S<:AbstractString}(img::StridedArray, pstr::Union{Vector{S}, Tuple{S,Vararg{S}}}, spatialprops::Vector=spatialproperties(img)) permutedims(img, map(Symbol, pstr), spatialprops)
-@deprecate permutedims{S<:AbstractString}(img::AbstractArray, pstr::Union{Vector{S}, Tuple{S,Vararg{S}}}, spatialprops::Vector=spatialproperties(img)) permutedims(img, map(Symbol, pstr), spatialprops)
-
-Base.permutedims{S<:Symbol}(img::StridedArray, pstr::Union{Vector{S}, Tuple{Vararg{S}}}, spatialprops::Vector = spatialproperties(img)) = error("not supported, please switch to ImagesAxes")
-Base.permutedims{S<:Symbol}(img::AbstractArray, pstr::Union{Vector{S}, Tuple{Vararg{S}}}, spatialprops::Vector = spatialproperties(img)) = error("not supported, please switch to ImagesAxes")
+@deprecate spatialpermutation AxisArrays.permutation
 
 ### Functions ###
 @deprecate raw rawview
 @deprecate raw{C<:Colorant}(A::AbstractArray{C}) rawview(channelview(A))
-@deprecate separate{C<:Colorant,N}(img::AbstractArray{C,N}) permuteddimsview(channelview(img), (ntuple(n->n+1, Val{N})..., 1))
+function separate{C<:Colorant,N}(img::AbstractArray{C,N})
+    # To avoid having a complex ntuple expression appearing in the
+    # depwarn, specialize the warning on the dimensionality
+    perm = (ntuple(n->n+1, Val{N})..., 1)
+    Base.depwarn("separate{C<:Colorant}(img::AbstractArray{C,$N}) is deprecated, use permuteddimsview(channelview(img), $perm) instead.", :separate)
+    permuteddimsview(channelview(img), perm)
+end
 if squeeze1
     @deprecate separate{C<:Color1,N}(img::AbstractArray{C,N}) channelview(img)
 end
+@deprecate separate(img) img

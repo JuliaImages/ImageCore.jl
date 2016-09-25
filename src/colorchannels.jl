@@ -22,6 +22,7 @@ typealias Color3{T} Colorant{T,3}
 typealias Color4{T} Colorant{T,4}
 typealias AColor{N,C,T} AlphaColor{C,T,N}
 typealias ColorA{N,C,T} ColorAlpha{C,T,N}
+typealias NonparametricColors Union{RGB24,ARGB32,Gray24,AGray32}
 
 ## ChannelView
 
@@ -183,6 +184,10 @@ function Base.similar{S<:Number,N}(A::ColorView, ::Type{S}, dims::NTuple{N,Int})
     P = parent(A)
     similar(P, S, dims)
 end
+function Base.similar{S<:NonparametricColors,N}(A::ColorView, ::Type{S}, dims::NTuple{N,Int})
+    P = parent(A)
+    similar(P, S, dims)
+end
 
 ## Construct a view that's conceptually equivalent to a ChannelView or ColorView,
 ## but which may be simpler (i.e., strip off a wrapper or use reinterpret)
@@ -247,10 +252,14 @@ function check_ncolorchan{C<:Colorant}(::AbstractArray{C}, dims)
 end
 chanparentsize{C<:Colorant}(::AbstractArray{C}, dims) = tail(dims)
 @inline colparentsize{C<:Colorant}(::Type{C}, dims) = (length(C), dims...)
+
+channelview_dims_offset{C<:Colorant}(parent::AbstractArray{C}) = 1
+
 if squeeze1
     check_ncolorchan{C<:Color1}(::AbstractArray{C}, dims) = nothing
     chanparentsize{C<:Color1}(::AbstractArray{C}, dims) = dims
     colparentsize{C<:Color1}(::Type{C}, dims) = dims
+    channelview_dims_offset{C<:Color1}(parent::AbstractArray{C}) = 0
 end
 
 @inline indexsplit{C<:Colorant}(A::AbstractArray{C}, I) = I[1], tail(I)

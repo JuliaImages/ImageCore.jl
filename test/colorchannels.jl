@@ -302,6 +302,9 @@ end
             c = similar(v, T{Float16}, (5,5))
             @test isa(c, ColorView{T{Float16},2,Array{Float16,3}})
             @test size(c) == (5,5)
+            c = similar(v, RGB24)
+            @test eltype(c) == RGB24
+            @test size(c) == size(v)
         end
     end
     a = rand(RGBA{U8}, 5, 5)

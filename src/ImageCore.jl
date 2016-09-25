@@ -48,6 +48,7 @@ export
 include("colorchannels.jl")
 include("convert_reinterpret.jl")
 include("traits.jl")
+include("functions.jl")
 include("deprecated.jl")
 
 """
@@ -58,6 +59,7 @@ their raw underlying storage. For example, if `img` is an `Array{U8}`,
 the view will act like an `Array{UInt8}`.
 """
 rawview{T<:FixedPoint}(a::AbstractArray{T}) = mappedarray((x->x.i, y->T(y,0)), a)
+rawview{T<:FixedPoint}(a::Array{T}) = reinterpret(FixedPointNumbers.rawtype(T), a)
 rawview{T<:Real}(a::AbstractArray{T}) = a
 
 """
@@ -70,8 +72,10 @@ type of `img` is `UInt16`, to specify whether you want a `UFixed10`,
 `UFixed12`, `UFixed14`, or `UFixed16` result.
 """
 ufixedview{T<:FixedPoint,S<:Unsigned}(::Type{T}, a::AbstractArray{S}) = mappedarray((y->T(y,0),x->x.i), a)
-ufixedview(a::AbstractArray{UInt8}) = ufixedview(U8, a)
+ufixedview{T<:FixedPoint,S<:Unsigned}(::Type{T}, a::Array{S}) = reinterpret(T, a)
 ufixedview{T<:UFixed}(::Type{T}, a::AbstractArray{T}) = a
+ufixedview(a::AbstractArray{UInt8}) = ufixedview(U8, a)
+ufixedview{T<:UFixed}(a::AbstractArray{T}) = a
 
 """
     permuteddimsview(A, perm)

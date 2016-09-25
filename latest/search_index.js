@@ -125,7 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "ImageCore.nimages",
     "category": "Function",
-    "text": "nimages(img)\n\nReturn the number of time-points in the image array. Defaults to 1. Use ImagesAxes if you want to use an explicit time dimension.\n\n\n\n"
+    "text": "nimages(img)\n\nReturn the number of time-points in the image array. Defaults to\n\nUse ImagesAxes if you want to use an explicit time dimension.\n\n\n\n"
 },
 
 {

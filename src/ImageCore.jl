@@ -48,6 +48,7 @@ export
 include("colorchannels.jl")
 include("convert_reinterpret.jl")
 include("traits.jl")
+include("functions.jl")
 include("deprecated.jl")
 
 """

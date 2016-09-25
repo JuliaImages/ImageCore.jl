@@ -252,10 +252,14 @@ function check_ncolorchan{C<:Colorant}(::AbstractArray{C}, dims)
 end
 chanparentsize{C<:Colorant}(::AbstractArray{C}, dims) = tail(dims)
 @inline colparentsize{C<:Colorant}(::Type{C}, dims) = (length(C), dims...)
+
+channelview_dims_offset{C<:Colorant}(parent::AbstractArray{C}) = 1
+
 if squeeze1
     check_ncolorchan{C<:Color1}(::AbstractArray{C}, dims) = nothing
     chanparentsize{C<:Color1}(::AbstractArray{C}, dims) = dims
     colparentsize{C<:Color1}(::Type{C}, dims) = dims
+    channelview_dims_offset{C<:Color1}(parent::AbstractArray{C}) = 0
 end
 
 @inline indexsplit{C<:Colorant}(A::AbstractArray{C}, I) = I[1], tail(I)

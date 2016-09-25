@@ -4,6 +4,7 @@ include("colorchannels.jl")
 include("views.jl")
 include("convert_reinterpret.jl")
 include("traits.jl")
+include("functions.jl")
 include("deprecated.jl")
 
 # run these last

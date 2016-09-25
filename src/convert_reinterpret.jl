@@ -61,7 +61,12 @@ end
 
 function throw_color_typeerror{CV,T<:Unsigned}(::Type{CV}, ::Type{T}, funcs)
     funcstr = join(funcs, " or ")
-    throw(ArgumentError("$(CV.name.name){$T} is not an allowed type; for an array with element type $T, consider calling ufixedview before $funcstr"))
+    throw(ArgumentError("$(CV.name.name){$T} is not an allowed type; for an array with element type $T,\n  before calling $funcstr consider calling ufixedview, or specify the UFixed{$T,f} element type"))
+end
+
+function throw_color_typeerror{CV,T<:Integer}(::Type{CV}, ::Type{T}, funcs)
+    funcstr = join(funcs, " or ")
+    throw(ArgumentError("$(CV.name.name){$T} is not an allowed type; before calling $funcstr, please specify the concrete\n   element type as a Fixed{$T,f} type"))
 end
 
 # This version is used by the deserializer to convert UInt8 buffers

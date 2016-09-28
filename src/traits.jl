@@ -80,7 +80,7 @@ dimension.
 """
 assert_timedim_last(img::AbstractArray) = nothing
 
-widthheight(img::AbstractArray) = size(img,1), size(img,2)
+widthheight(img::AbstractArray) = size(img,2), size(img,1)
 
 width(img::AbstractArray) = widthheight(img)[1]
 height(img::AbstractArray) = widthheight(img)[2]

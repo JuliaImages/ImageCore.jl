@@ -1,0 +1,201 @@
+# Infrastructure for value transformation
+
+"""
+    clamp01(x) -> y
+
+Produce a value `y` that lies between 0 and 1, and equal to `x` when
+`x` is already in this range. Equivalent to `clamp(x, 0, 1)` for
+numeric values. For colors, this function is applied to each color
+channel separately.
+
+See also: clamp01nan.
+"""
+clamp01(x::Union{UFixed8,UFixed16}) = x
+clamp01(x::Number) = clamp(x, zero(x), one(x))
+clamp01(c::Colorant) = mapc(clamp01, c)
+
+"""
+    clamp01nan(x) -> y
+
+Similar to `clamp01`, except that any `NaN` values are changed to 0.
+
+See also: clamp01.
+"""
+clamp01nan(x) = clamp01(x)
+clamp01nan(x::AbstractFloat) = ifelse(isnan(x), zero(x), clamp01(x))
+clamp01nan(c::Colorant) = mapc(clamp01nan, c)
+
+"""
+    scaleminmax(min, max) -> f
+    scaleminmax(T, min, max) -> f
+
+Return a function `f` which maps values less than or equal to `min` to
+0, values greater than or equal to `max` to 1, and uses a linear scale
+in between. `min` and `max` should be real values.
+
+Optionally specify the return type `T`. If `T` is a colorant (e.g.,
+RGB), then scaling is applied to each color channel.
+
+# Examples
+
+## Example 1
+julia> f = scaleminmax(-10, 10)
+(::#9) (generic function with 1 method)
+
+julia> f(10)
+1.0
+
+julia> f(-10)
+0.0
+
+julia> f(5)
+0.75
+
+## Example 2
+
+julia> c = RGB(255.0,128.0,0.0)
+RGB{Float64}(255.0,128.0,0.0)
+
+julia> f = scaleminmax(RGB, 0, 255)
+(::#13) (generic function with 1 method)
+
+julia> f(c)
+RGB{Float64}(1.0,0.5019607843137255,0.0)
+
+See also: takemap.
+"""
+scaleminmax{T}(min::T, max::T) = function(x)
+    y = clamp(x, min, max)
+    (y-min)/(max-min)
+end
+scaleminmax{Tout,T}(::Type{Tout}, min::T, max::T) = function(x)
+    y = clamp(x, min, max)
+    Tout((y-min)/(max-min))
+end
+function scaleminmax{C<:Colorant, T<:Real}(::Type{C}, min::T, max::T)
+    freal = scaleminmax(min, max)
+    c -> C(mapc(freal, c))
+end
+scaleminmax(min, max) = scaleminmax(promote(min, max)...)
+scaleminmax{T}(::Type{T}, min, max) = scaleminmax(T, promote(min, max)...)
+
+ColorTypes.mapc(f, x::Number) = f(x)
+
+function takemap{T<:Real}(::typeof(scaleminmax), A::AbstractArray{T})
+    min, max = extrema(A)
+    scaleminmax(min, max)
+end
+function takemap{C<:Colorant}(::typeof(scaleminmax), A::AbstractArray{C})
+    min, max = extrema(channelview(A))
+    scaleminmax(C, min, max)
+end
+function takemap{Tout,T<:Real}(::typeof(scaleminmax), ::Type{Tout}, A::AbstractArray{T})
+    min, max = extrema(A)
+    scaleminmax(Tout, min, max)
+end
+function takemap{Cout<:Colorant,C<:Colorant}(::typeof(scaleminmax), ::Type{Cout}, A::AbstractArray{C})
+    min, max = extrema(channelview(A))
+    scaleminmax(Cout, min, max)
+end
+
+"""
+    scalesigned(maxabs) -> f
+
+Return a function `f` which scales values in the range `[-maxabs,
+maxabs]` (clamping values that lie outside this range) to the range
+`[-1, 1]`.
+
+See also: colorsigned.
+"""
+function scalesigned(maxabs::Real)
+    maxabs > 0 || throw(ArgumentError("maxabs must be positive, got $maxabs"))
+    x -> clamp(x, -maxabs, maxabs)/maxabs
+end
+
+"""
+    scalesigned(min, center, max) -> f
+
+Return a function `f` which scales values in the range `[min, center]`
+to `[-1,0]` and `[center,max]` to `[0,1]`. Values smaller than
+`min`/`max` get clamped to `min`/`max`, respectively.
+
+See also: colorsigned.
+"""
+function scalesigned{T<:Real}(min::T, center::T, max::T)
+    min <= center <= max || throw(ArgumentError("values must be ordered, got $min, $center, $max"))
+    sneg, spos = 1/(center-min), 1/(max-center)
+    function(x)
+        Δy = clamp(x, min, max) - center
+        ifelse(Δy < 0, sneg*Δy, spos*Δy)
+    end
+end
+scalesigned(min::Real, center::Real, max::Real) = scalesigned(promote(min, center, max)...)
+
+function takemap{T<:Real}(::typeof(scalesigned), A::AbstractArray{T})
+    mn, mx = extrema(A)
+    scalesigned(max(abs(mn), abs(mx)))
+end
+
+"""
+    colorsigned()
+    colorsigned(colorneg, colorpos) -> f
+    colorsigned(colorneg, colorcenter, colorpos) -> f
+
+Define a function that maps negative values (in the range [-1,0]) to
+the linear colormap between `colorneg` and `colorcenter`, and positive
+values (in the range [0,1]) to the linear colormap between
+`colorcenter` and `colorpos`.
+
+The default colors are:
+
+- `colorcenter`: white
+- `colorneg`: green1
+- `colorpos`: magenta
+
+See also: scalesigned.
+"""
+colorsigned{C<:Color}(neg::C, center::C, pos::C) = function(x)
+    y = clamp(x, -one(x), one(x))
+    yabs = abs(y)
+    C(ifelse(y>0, weighted_color_mean(yabs, pos, center),
+                  weighted_color_mean(yabs, neg, center)))
+end
+
+function colorsigned{C<:Color}(colorneg::C, colorpos::C)
+    colorsigned(colorneg, C(colorant"white"), colorpos)
+end
+
+colorsigned() = colorsigned(colorant"green1", colorant"magenta")
+
+
+"""
+    takemap(f, A) -> fnew
+    takemap(f, T, A) -> fnew
+
+Given a value-mapping function `f` and an array `A`, return a
+"concrete" mapping function `fnew`. When applied to elements of `A`,
+`fnew` should return valid values for storage or display, for example
+in the range from 0 to 1 (for grayscale) or valid colorants. `fnew`
+may be adapted to the actual values present in `A`, and may not
+produce valid values for any inputs not in `A`.
+
+Optionally one can specify the output type `T` that `fnew` should produce.
+
+# Example:
+```julia
+julia> A = [0, 1, 1000];
+
+julia> f = takemap(scaleminmax, A)
+(::#7) (generic function with 1 method)
+
+julia> f.(A)
+3-element Array{Float64,1}:
+ 0.0
+ 0.001
+ 1.0
+```
+"""
+takemap
+
+takemap(f, A) = f
+takemap{T}(f, ::Type{T}, A) = x->T(f(x))

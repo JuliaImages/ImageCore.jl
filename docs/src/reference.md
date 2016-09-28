@@ -19,6 +19,17 @@ ufixedview
 permuteddimsview
 ```
 
+## List of value-transformations (map functions)
+
+```@docs
+clamp01
+clamp01nan
+scaleminmax
+scalesigned
+colorsigned
+takemap
+```
+
 ## List of traits
 
 ```@docs

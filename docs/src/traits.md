@@ -22,7 +22,7 @@ julia> pixelspacing(img)
 
 `pixelspacing` returns the spacing between adjacent pixels along each
 axis. Using ImagesAxes, you can even use physical units to encode this
-information, for example for use in microscopy or biomedical imaging.
+information, which might be important for microscopy or biomedical imaging.
 
 ```@meta
 DocTestSetup = quote
@@ -30,6 +30,8 @@ DocTestSetup = quote
     img = rand(RGB{U8}, 680, 480);
 end
 ```
+
+Another simple trait is `coords_spatial`:
 
 ```julia
 julia> coords_spatial(img)

@@ -97,17 +97,6 @@ end
 
 ## ColorView
 
-immutable ColorView{C<:Colorant,N,A<:AbstractArray} <: AbstractArray{C,N}
-    parent::A
-
-    function ColorView{T<:Number}(parent::AbstractArray{T})
-        n = length(colorviewsize(C, parent))
-        n == N || throw(DimensionMismatch("for an $N-dimensional ColorView with color type $C, input dimensionality should be $n instead of $(ndims(parent))"))
-        checkdim1(C, size(parent))
-        new(parent)
-    end
-end
-
 """
     ColorView{C}(A)
 
@@ -125,6 +114,17 @@ are interpreted in constructor-argument order, not memory order (see
 
 The opposite transformation is implemented by `ChannelView`.
 """
+immutable ColorView{C<:Colorant,N,A<:AbstractArray} <: AbstractArray{C,N}
+    parent::A
+
+    function ColorView{T<:Number}(parent::AbstractArray{T})
+        n = length(colorviewsize(C, parent))
+        n == N || throw(DimensionMismatch("for an $N-dimensional ColorView with color type $C, input dimensionality should be $n instead of $(ndims(parent))"))
+        checkdim1(C, size(parent))
+        new(parent)
+    end
+end
+
 function (::Type{ColorView{C}}){C<:Colorant,T<:Number}(parent::AbstractArray{T})
     # Creating a ColorView in a type-stable fashion requires use of tuples to compute N+1
     _colorview(base_colorant_type(C){T}, parent, colorviewsize(C, parent))

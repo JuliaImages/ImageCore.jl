@@ -15,8 +15,8 @@ using Base.Test
         @test size_spatial(B) == (3,5)
         @test indices_spatial(B) == (Base.OneTo(3), Base.OneTo(5))
         assert_timedim_last(B)
-        @test width(B) == 3
-        @test height(B) == 5
+        @test width(B) == 5
+        @test height(B) == 3
     end
 end
 

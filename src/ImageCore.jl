@@ -10,6 +10,9 @@ using Base: tail, @pure, Indices
 import FixedPointNumbers: ufixed8, ufixed10, ufixed12, ufixed14, ufixed16
 import Graphics: width, height
 
+typealias AbstractGray{T} Color{T,1}
+typealias RealLike Union{Real,AbstractGray}
+
 export
     ## Types
     ChannelView,
@@ -32,6 +35,13 @@ export
     ufixed14,
     ufixed16,
     u16,
+    # mapping values
+    clamp01,
+    clamp01nan,
+    colorsigned,
+    scaleminmax,
+    scalesigned,
+    takemap,
     # traits
     assert_timedim_last,
     coords_spatial,
@@ -48,6 +58,7 @@ export
 include("colorchannels.jl")
 include("convert_reinterpret.jl")
 include("traits.jl")
+include("map.jl")
 include("functions.jl")
 include("deprecated.jl")
 

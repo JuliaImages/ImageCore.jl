@@ -206,6 +206,10 @@ channelview(A::ColorView) = parent(A)
 channelview{T}(A::Array{RGB{T}}) = reinterpret(T, A)
 channelview{C<:AbstractRGB}(A::Array{C}) = ChannelView(A) # BGR, RGB1, etc don't satisfy conditions
 channelview{C<:Color}(A::Array{C}) = reinterpret(eltype(C), A)
+channelview{C<:ColorAlpha}(A::Array{C}) = _channelview(base_color_type(C), A)
+_channelview(::Type{RGB}, A) = reinterpret(eltype(eltype(A)), A)
+_channelview{C<:AbstractRGB}(::Type{C}, A) = ChannelView(A)
+_channelview{C<:Color}(::Type{C}, A) = reinterpret(eltype(eltype(A)), A)
 
 
 """
@@ -228,6 +232,11 @@ colorview{C<:Colorant}(::Type{C}, A::AbstractArray) = ColorView{C}(A)
 colorview{C<:RGB}(::Type{C}, A::Array) = reinterpret(C, A)
 colorview{C<:AbstractRGB}(::Type{C}, A::Array) = ColorView{C}(A)
 colorview{C<:Color}(::Type{C}, A::Array) = reinterpret(C, A)
+colorview{C<:ColorAlpha}(::Type{C}, A::Array) = _colorviewalpha(base_color_type(C), C, A)
+_colorviewalpha{C<:RGB,CA}(::Type{C}, ::Type{CA}, A::Array) = reinterpret(CA, A)
+_colorviewalpha{C<:AbstractRGB,CA}(::Type{C}, ::Type{CA}, A::Array) = ColorView{CA}(A)
+_colorviewalpha{C<:Color,CA}(::Type{C}, ::Type{CA}, A::Array) = reinterpret(CA, A)
+
 function colorview{C<:Colorant}(::Type{C}, A::ChannelView)
     P = parent(A)
     _colorview(base_colorant_type(C), base_colorant_type(eltype(P)), P)

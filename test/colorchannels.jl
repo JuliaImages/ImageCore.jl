@@ -106,10 +106,10 @@ end
 end
 
 @testset "Gray+Alpha" begin
-    for T in (AGray,GrayA)
+    for (T,VT) in ((AGray,ChannelView),(GrayA,Array))
         a = [T(0.1f0,0.2f0), T(0.3f0,0.4f0), T(0.5f0,0.6f0)]
         v = ChannelView(a)
-        @test isa(channelview(a), ChannelView)
+        @test isa(channelview(a), VT)
         @test isa(colorview(T, v), Array)
         @test ndims(v) == 2
         @test size(v) == (2,3)
@@ -151,11 +151,19 @@ end
 end
 
 @testset "Alpha+RGB, HSV, etc" begin
-    for T in (ARGB, ABGR, AHSV, ALab, AXYZ,
-              RGBA, BGRA, HSVA, LabA, XYZA)
+    for (T, VT) in ((ARGB, ChannelView),
+                    (ABGR, ChannelView),
+                    (AHSV, ChannelView),
+                    (ALab, ChannelView),
+                    (AXYZ, ChannelView),
+                    (RGBA, Array),
+                    (BGRA, ChannelView),
+                    (HSVA, Array),
+                    (LabA, Array),
+                    (XYZA, Array))
         a = [T(0.1,0.2,0.3,0.4), T(0.5,0.6,0.7,0.8)]
         v = ChannelView(a)
-        @test isa(channelview(a), ChannelView)
+        @test isa(channelview(a), VT)
         @test isa(colorview(T, v), Array)
         @test ndims(v) == 2
         @test size(v) == (4,2)
@@ -307,17 +315,17 @@ end
             @test size(c) == size(v)
         end
     end
-    a = rand(RGBA{U8}, 5, 5)
+    a = rand(ARGB{U8}, 5, 5)
     vc = channelview(a)
-    @test isa(colorview(RGBA, vc), Array{RGBA{U8},2})
-    @test_throws ArgumentError colorview(ARGB, vc)
+    @test isa(colorview(ARGB, vc), Array{ARGB{U8},2})
+    @test_throws ArgumentError colorview(RGBA, vc)
 end
 
 @testset "Gray+Alpha" begin
-    for T in (AGray,GrayA)
+    for (T,VT) in ((AGray,ColorView),(GrayA,Array))
         a = [0.1f0 0.2f0; 0.3f0 0.4f0; 0.5f0 0.6f0]'
         v = ColorView{T}(a)
-        @test isa(colorview(T,a), ColorView{T{Float32}})
+        @test isa(colorview(T,a), VT{T{Float32}})
         @test isa(channelview(v), Array)
         @test ndims(v) == 1
         @test size(v) == (3,)
@@ -349,11 +357,19 @@ end
 end
 
 @testset "Alpha+RGB, HSV, etc" begin
-    for T in (ARGB, ABGR, AHSV, ALab, AXYZ,
-              RGBA, BGRA, HSVA, LabA, XYZA)
+    for (T,VT) in ((ARGB, ColorView),
+                   (ABGR, ColorView),
+                   (AHSV, ColorView),
+                   (ALab, ColorView),
+                   (AXYZ, ColorView),
+                   (RGBA, Array),
+                   (BGRA, ColorView),
+                   (HSVA, Array),
+                   (LabA, Array),
+                   (XYZA, Array))
         a = [0.1 0.2 0.3 0.4; 0.5 0.6 0.7 0.8]'
         v = ColorView{T}(a)
-        @test isa(colorview(T,a), ColorView{T{Float64}})
+        @test isa(colorview(T,a), VT{T{Float64}})
         @test isa(channelview(v), Array)
         @test ndims(v) == 1
         @test size(v) == (2,)

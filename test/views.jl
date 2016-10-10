@@ -101,6 +101,19 @@ end
     V = @inferred(StackedView{U8}(a, zeroarray, b))
     @test eltype(V) == U8
 
+    # With colorview
+    a = [0.1 0.2; 0.3 0.4]
+    b = [0.5 0.6; 0.7 0.8]
+    v = @inferred(colorview(RGB{U8}, a, zeroarray, b))
+    @test @inferred(v[2,1]) === RGB{U8}(0.3,0,0.7)
+    z = zeros(2,2)  # because setindex! won't work with zeroarray
+    v = colorview(RGB{U8}, a, z, b)
+    @test @inferred(v[2,1]) === RGB{U8}(0.3,0,0.7)
+    v[2,1] = RGB(0,0.9,0)
+    @test @inferred(v[2,1]) === RGB{U8}(0,0.9,0)
+    @test a[2,1] == b[2,1] == 0
+    @test z[2,1] == U8(0.9)
+
     @test_throws DimensionMismatch StackedView(rand(2,3), rand(2,5))
 end
 

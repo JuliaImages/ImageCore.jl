@@ -245,6 +245,36 @@ end
 _colorview{C<:Colorant}(::Type{C}, ::Type{C}, A::AbstractArray) = A
 _colorview(::Type, ::Type, A::AbstractArray) = throw(ArgumentError("changing colorspaces is not supported"))
 
+"""
+    colorview(C, gray1, gray2, ...) -> imgC
+
+Combine numeric/grayscale images `gray1`, `gray2`, etc., into the
+separate color channels of an array `imgC` with element type
+`C<:Colorant`.
+
+As a convenience, the constant `zeroarray` fills in an array of
+matched size with all zeros.
+
+# Example
+```julia
+imgC = colorview(RGB, r, zeroarray, b)
+```
+
+creates an image with `r` in the red chanel, `b` in the blue channel,
+and nothing in the green channel.
+
+See also: StackedView.
+"""
+function colorview{C<:Colorant}(::Type{C}, gray1, gray2, grays...)
+    T = _colorview_type(eltype(C), promote_eleltype_all(gray1, gray2, grays...))
+    sv = StackedView{T}(gray1, gray2, grays...)
+    CT = base_colorant_type(C){T}
+    colorview(CT, sv)
+end
+
+_colorview_type{T}(::Type{Any}, ::Type{T}) = T
+_colorview_type{T1,T2}(::Type{T1}, ::Type{T2}) = T1
+
 Base.@pure promote_eleltype_all(gray, grays...) = _promote_eleltype_all(eltype(eltype(gray)), grays...)
 @inline function _promote_eleltype_all{T}(::Type{T}, gray, grays...)
     _promote_eleltype_all(promote_type(T, eltype(eltype(gray))), grays...)

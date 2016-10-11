@@ -19,6 +19,9 @@ Base.setindex!{T,N}(A::ArrayLS{T,N}, val, i::Vararg{Int,N}) = A.A[i...] = val
 @testset "ChannelView" begin
 
 @testset "grayscale" begin
+    a = rand(2,3)
+    @test channelview(a) === a
+
     a0 = [Gray(U8(0.2)), Gray(U8(0.4))]
     for (a, VT, LI) in ((copy(a0), Array, Base.LinearFast()),
                        (ArrayLF(copy(a0)), ChannelView, Base.LinearFast()),

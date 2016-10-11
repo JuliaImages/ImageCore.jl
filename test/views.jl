@@ -104,17 +104,43 @@ end
     # With colorview
     a = [0.1 0.2; 0.3 0.4]
     b = [0.5 0.6; 0.7 0.8]
+    z = zeros(2,2)  # because setindex! won't work with zeroarray
+    # GrayA
+    v = @inferred(colorview(GrayA, a, b))
+    @test eltype(v) == GrayA{Float64}
+    @test @inferred(v[2,1]) === GrayA(0.3,0.7)
+    v = @inferred(colorview(GrayA{U8}, a, b))
+    @test @inferred(v[2,1]) === GrayA{U8}(0.3,0.7)
+    v[1,2] = GrayA(0.25, 0.25)
+    @test @inferred(v[1,2]) === GrayA{U8}(0.25, 0.25)
+    v = @inferred(colorview(GrayA{U8}, a, zeroarray))
+    @test @inferred(v[2,1]) === GrayA{U8}(0.3,0)
+    @test_throws ErrorException (v[1,2] = GrayA(0.25, 0.25))
+    # RGB
     v = @inferred(colorview(RGB{U8}, a, zeroarray, b))
     @test @inferred(v[2,1]) === RGB{U8}(0.3,0,0.7)
-    z = zeros(2,2)  # because setindex! won't work with zeroarray
     v = colorview(RGB{U8}, a, z, b)
     @test @inferred(v[2,1]) === RGB{U8}(0.3,0,0.7)
     v[2,1] = RGB(0,0.9,0)
     @test @inferred(v[2,1]) === RGB{U8}(0,0.9,0)
     @test a[2,1] == b[2,1] == 0
     @test z[2,1] == U8(0.9)
+    # RGBA
+    v = @inferred(colorview(RGBA{U8}, a, zeroarray, b, b))
+    @test @inferred(v[2,2]) === RGBA{U8}(0.4,0,0.8,0.8)
+    v = colorview(RGBA{U8}, a, copy(z), b, copy(z))
+    v[2,2] = RGBA(0.75,0.8,0.75,0.8)
+    @test @inferred(v[2,2]) === RGBA{U8}(0.75,0.8,0.75,0.8)
+    @test a[2,2] == b[2,2] == U8(0.75)
 
+    @test eltype(zeroarray) == Union{}
+    @test_throws ErrorException colorview(RGB{U8}, zeroarray, zeroarray, zeroarray)
     @test_throws DimensionMismatch StackedView(rand(2,3), rand(2,5))
+
+    # Just to boost coverage. These methods are necessary to
+    # make inference happy.
+    @test_throws ErrorException ImageCore._unsafe_getindex(1, (1,1))
+    @test_throws ErrorException ImageCore._unsafe_setindex!(1, (1,1), 0)
 end
 
 nothing

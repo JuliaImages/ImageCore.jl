@@ -106,13 +106,11 @@ using Base.Test
     for sz in ((4,), (4,5))
         a = rand(UInt32, sz)
         for T in (RGB24, ARGB32)
-            for b in (@inferred(convert(Array{T}, a)),
-                      @inferred(reinterpret(T, a)))
-                @test isa(b, Array{T,length(sz)})
-                @test size(b) == sz
-                @test eltype(b) == T
-                @test reinterpret(UInt32, b) == a
-            end
+            b = @inferred(reinterpret(T, a))
+            @test isa(b, Array{T,length(sz)})
+            @test size(b) == sz
+            @test eltype(b) == T
+            @test reinterpret(UInt32, b) == a
         end
     end
 

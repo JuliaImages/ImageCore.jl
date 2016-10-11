@@ -17,6 +17,9 @@ export
     ## Types
     ChannelView,
     ColorView,
+    StackedView,
+    ## constants
+    zeroarray,
     ## functions
     # views
     channelview,
@@ -56,6 +59,7 @@ export
     widthheight
 
 include("colorchannels.jl")
+include("stackedviews.jl")
 include("convert_reinterpret.jl")
 include("traits.jl")
 include("map.jl")

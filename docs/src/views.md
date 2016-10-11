@@ -211,3 +211,37 @@ julia> img
 
 Once again, `p` is a view, and as a consequence changing it leads to
 changes in all the coupled arrays and views.
+
+Finally, you can combine multiple arrays into a "virtual" multichannel
+array. In conjunction with `colorview`, this can be used to combine
+two or three grayscale images into single color image. We'll use the
+[lighthouse](http://juliaimages.github.io/TestImages.jl/images/lighthouse.png)
+image:
+
+```julia
+using ImageCore, TestImages, Colors
+img = testimage("lighthouse")
+# Split out into separate channels
+cv = channelview(img)
+# Recombine the channels, filling in 0 for the middle (green) channel
+s = StackedView(cv[1,:,:], zeroarray, cv[3,:,:])
+
+julia> size(s)
+(3,512,768)
+
+sc = colorview(RGB, s)
+```
+
+Within the context of `StackedView`, `zeroarray` stands for an
+all-zeros array of size that matches the other arguments of
+`StackedView`.
+
+`sc` looks like this:
+
+![redblue](redblue.png)
+
+In this case, we could have done the same thing somewhat more simply
+with `cv[2,:,:] = 0` and then visualize `img`. However, more generally
+`StackedView` lets you link two images that might have come from
+different sources, "stacking" them along the first dimension (which is
+readily reinterpreted as a color channel).

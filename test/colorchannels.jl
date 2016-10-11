@@ -1,4 +1,4 @@
-using Colors, ImageCore, Base.Test
+using Colors, ImageCore, OffsetArrays, Base.Test
 
 immutable ArrayLF{T,N} <: AbstractArray{T,N}
     A::Array{T,N}
@@ -207,6 +207,13 @@ end
         @test size(c) == (4,5,5)
         @test_throws DimensionMismatch similar(v, Float16, (3,5,5))
     end
+
+    @testset "Non-1 indices" begin
+        a = OffsetArray(rand(RGB{U8}, 3, 5), -1:1, -2:2)
+        v = channelview(a)
+        @test @inferred(indices(v)) === (1:3, -1:1, -2:2)
+        @test @inferred(v[1,0,0]) === a[0,0].r
+    end
 end
 
 end
@@ -401,6 +408,15 @@ end
         c = similar(v, T{Float16}, (5,5))
         @test isa(c, ColorView{T{Float16},2,Array{Float16,3}})
         @test size(c) == (5,5)
+    end
+
+    @testset "Non-1 indices" begin
+        a = OffsetArray(rand(3, 3, 5), 1:3, -1:1, -2:2)
+        v = colorview(RGB, a)
+        @test @inferred(indices(v)) === (-1:1, -2:2)
+        @test @inferred(v[0,0]) === RGB(a[1,0,0], a[2,0,0], a[3,0,0])
+        a = OffsetArray(rand(3, 3, 5), 0:2, -1:1, -2:2)
+        @test_throws DimensionMismatch colorview(RGB, a)
     end
 end
 

@@ -118,16 +118,16 @@ immutable ColorView{C<:Colorant,N,A<:AbstractArray} <: AbstractArray{C,N}
     parent::A
 
     function ColorView{T<:Number}(parent::AbstractArray{T})
-        n = length(colorviewsize(C, parent))
+        n = length(colorview_size(C, parent))
         n == N || throw(DimensionMismatch("for an $N-dimensional ColorView with color type $C, input dimensionality should be $n instead of $(ndims(parent))"))
-        checkdim1(C, size(parent))
+        checkdim1(C, indices(parent))
         new(parent)
     end
 end
 
 function (::Type{ColorView{C}}){C<:Colorant,T<:Number}(parent::AbstractArray{T})
     # Creating a ColorView in a type-stable fashion requires use of tuples to compute N+1
-    _colorview(base_colorant_type(C){T}, parent, colorviewsize(C, parent))
+    _colorview(base_colorant_type(C){T}, parent, colorview_size(C, parent))
 end
 function _colorview{C,N}(::Type{C}, parent::AbstractArray, sz::NTuple{N,Int})
     ColorView{C,N,typeof(parent)}(parent)
@@ -137,7 +137,8 @@ ColorView(::AbstractArray) = error("specify the desired colorspace with ColorVie
 
 Base.parent(A::ColorView) = A.parent
 parenttype{T,N,A}(::Type{ColorView{T,N,A}}) = A
-@inline Base.size(A::ColorView) = colorviewsize(eltype(A), parent(A))
+@inline Base.size(A::ColorView) = colorview_size(eltype(A), parent(A))
+@inline Base.indices(A::ColorView) = colorview_indices(eltype(A), parent(A))
 
 @pure Base.linearindexing{C<:Color1,N,A<:AbstractArray}(::Type{ColorView{C,N,A}}) = Base.linearindexing(A)
 @pure Base.linearindexing{V<:ColorView}(::Type{V}) = Base.LinearSlow()
@@ -282,14 +283,17 @@ end
 _promote_eleltype_all{T}(::Type{T}) = T
 
 ## Tuple & indexing utilities
+
+_size(A::AbstractArray) = map(length, indices(A))
+
 # color->number
-@inline channelview_size{C<:Colorant}(parent::AbstractArray{C}) = (length(C), size(parent)...)
+@inline channelview_size{C<:Colorant}(parent::AbstractArray{C}) = (length(C), _size(parent)...)
 @inline channelview_indices{C<:Colorant}(parent::AbstractArray{C}) =
     _cvi(Base.OneTo(length(C)), indices(parent))
 _cvi(rc, ::Tuple{}) = (rc,)
 _cvi{R<:AbstractUnitRange}(rc, inds::Tuple{R,Vararg{R}}) = (convert(R, rc), inds...)
 if squeeze1
-    @inline channelview_size{C<:Color1}(parent::AbstractArray{C}) = size(parent)
+    @inline channelview_size{C<:Color1}(parent::AbstractArray{C}) = _size(parent)
     @inline channelview_indices{C<:Color1}(parent::AbstractArray{C}) = indices(parent)
 end
 
@@ -315,13 +319,15 @@ if squeeze1
 end
 
 # number->color
-@inline colorviewsize{C<:Colorant}(::Type{C}, parent::AbstractArray) = tail(size(parent))
+@inline colorview_size{C<:Colorant}(::Type{C}, parent::AbstractArray) = tail(_size(parent))
+@inline colorview_indices{C<:Colorant}(::Type{C}, parent::AbstractArray) = tail(indices(parent))
 if squeeze1
-    @inline colorviewsize{C<:Color1}(::Type{C}, parent::AbstractArray) = size(parent)
+    @inline colorview_size{C<:Color1}(::Type{C}, parent::AbstractArray) = _size(parent)
+    @inline colorview_indices{C<:Color1}(::Type{C}, parent::AbstractArray) = indices(parent)
 end
 
-function checkdim1{C<:Colorant}(::Type{C}, dims)
-    dims[1] == length(C) || throw(DimensionMismatch("dimension 1 must have size $(length(C))"))
+function checkdim1{C<:Colorant}(::Type{C}, inds)
+    inds[1] == (1:length(C)) || throw(DimensionMismatch("dimension 1 must have indices 1:$(length(C)), got $(inds[1])"))
     nothing
 end
 if squeeze1

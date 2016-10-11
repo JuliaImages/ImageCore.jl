@@ -201,6 +201,7 @@ of `A` into a new first dimension. This is almost identical to
 return the parent of `A`, or will use `reinterpret` when appropriate.
 Consequently, the output may not be a `ChannelView` array.
 """
+channelview{T<:Number}(A::AbstractArray{T}) = A
 channelview(A::AbstractArray) = ChannelView(A)
 channelview(A::ColorView) = parent(A)
 channelview{T}(A::Array{RGB{T}}) = reinterpret(T, A)
@@ -243,6 +244,12 @@ function colorview{C<:Colorant}(::Type{C}, A::ChannelView)
 end
 _colorview{C<:Colorant}(::Type{C}, ::Type{C}, A::AbstractArray) = A
 _colorview(::Type, ::Type, A::AbstractArray) = throw(ArgumentError("changing colorspaces is not supported"))
+
+Base.@pure promote_eleltype_all(gray, grays...) = _promote_eleltype_all(eltype(eltype(gray)), grays...)
+@inline function _promote_eleltype_all{T}(::Type{T}, gray, grays...)
+    _promote_eleltype_all(promote_type(T, eltype(eltype(gray))), grays...)
+end
+_promote_eleltype_all{T}(::Type{T}) = T
 
 ## Tuple & indexing utilities
 # color->number

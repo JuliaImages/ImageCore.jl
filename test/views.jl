@@ -47,4 +47,61 @@ end
     @test v == permutedims(a, (2,3,1))
 end
 
+@testset "StackedView" begin
+    for (A, B, T) = (([1 3;2 4], [-1 -5; -2 -3], Int),
+                     ([1 3;2 4], [-1.0 -5.0; -2.0 -3.0], Float64))
+        V = @inferred(StackedView(A, B))
+        @test eltype(V) == T
+        @test size(V) == (2, 2, 2)
+        @test indices(V) === (Base.OneTo(2), Base.OneTo(2), Base.OneTo(2))
+        @test @inferred(V[1,1,1]) === T(1)
+        @test @inferred(V[2,1,1]) === T(-1)
+        @test V[1,:,:] == A
+        @test V[2,:,:] == B
+        @test_throws BoundsError V[0,1,1]
+        @test_throws BoundsError V[3,1,1]
+        @test_throws BoundsError V[2,0,1]
+        @test_throws BoundsError V[2,3,1]
+        @test_throws BoundsError V[1,1,0]
+        @test_throws BoundsError V[1,1,3]
+        V32 = @inferred(StackedView{Float32}(A, B))
+        @test eltype(V32) == Float32
+        @test V32[1,1,2] == Float32(3)
+        V[1,2,2] = 0
+        @test A[2,2] == 0
+        V[2,1,2] = 11
+        @test B[1,2] == 11
+
+        V = @inferred(StackedView(A, zeroarray, B))
+        @test eltype(V) == T
+        @test size(V) == (3, 2, 2)
+        @test indices(V) === (Base.OneTo(3), Base.OneTo(2), Base.OneTo(2))
+        @test V[1,:,:] == A
+        @test all(V[2,:,:] .== 0)
+        @test V[3,:,:] == B
+        @test_throws ErrorException V[2,1,1] = 7
+        V32 = @inferred(StackedView{Float32}(A, zeroarray, B))
+        @test eltype(V32) == Float32
+        @test V32[1,1,2] == Float32(3)
+    end
+
+    # With mixed grayscale/real arrays
+    a, b = Gray{U8}[0.1 0.2; 0.3 0.4], [0.5 0.6; 0.7 0.8]
+    V = @inferred(StackedView(a, b))
+    @test eltype(V) == Float64
+    @test V[1,1,1] === Float64(U8(0.1))
+    @test V[2,1,1] === 0.5
+    V = @inferred(StackedView{U8}(a, b))
+    @test eltype(V) == U8
+    @test V[1,1,1] === U8(0.1)
+    @test V[2,1,1] === U8(0.5)
+    @test b[1,1] === 0.5
+    V = @inferred(StackedView(a, zeroarray, b))
+    @test eltype(V) == Float64
+    V = @inferred(StackedView{U8}(a, zeroarray, b))
+    @test eltype(V) == U8
+
+    @test_throws DimensionMismatch StackedView(rand(2,3), rand(2,5))
+end
+
 nothing

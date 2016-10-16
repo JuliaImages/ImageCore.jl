@@ -10,6 +10,7 @@ include("convert_reinterpret.jl")
 include("traits.jl")
 include("map.jl")
 include("functions.jl")
+include("show.jl")
 include("deprecated.jl")
 
 # run these last

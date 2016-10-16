@@ -2,7 +2,8 @@ __precompile__()
 
 module ImageCore
 
-using Colors, FixedPointNumbers, MappedArrays, Graphics
+using Colors, FixedPointNumbers, MappedArrays, Graphics, ShowItLikeYouBuildIt
+using OffsetArrays # for show.jl
 using Colors: Fractional
 
 using Base: tail, @pure, Indices
@@ -64,6 +65,7 @@ include("convert_reinterpret.jl")
 include("traits.jl")
 include("map.jl")
 include("functions.jl")
+include("show.jl")
 include("deprecated.jl")
 
 """
@@ -73,7 +75,7 @@ returns a "view" of `img` where the values are interpreted in terms of
 their raw underlying storage. For example, if `img` is an `Array{U8}`,
 the view will act like an `Array{UInt8}`.
 """
-rawview{T<:FixedPoint}(a::AbstractArray{T}) = mappedarray((x->x.i, y->T(y,0)), a)
+rawview{T<:FixedPoint}(a::AbstractArray{T}) = mappedarray((reinterpret, y->T(y,0)), a)
 rawview{T<:FixedPoint}(a::Array{T}) = reinterpret(FixedPointNumbers.rawtype(T), a)
 rawview{T<:Real}(a::AbstractArray{T}) = a
 
@@ -86,7 +88,7 @@ view will act like an `Array{UFixed8}`.  Supply `T` if the element
 type of `img` is `UInt16`, to specify whether you want a `UFixed10`,
 `UFixed12`, `UFixed14`, or `UFixed16` result.
 """
-ufixedview{T<:FixedPoint,S<:Unsigned}(::Type{T}, a::AbstractArray{S}) = mappedarray((y->T(y,0),x->x.i), a)
+ufixedview{T<:FixedPoint,S<:Unsigned}(::Type{T}, a::AbstractArray{S}) = mappedarray((y->T(y,0),reinterpret), a)
 ufixedview{T<:FixedPoint,S<:Unsigned}(::Type{T}, a::Array{S}) = reinterpret(T, a)
 ufixedview{T<:UFixed}(::Type{T}, a::AbstractArray{T}) = a
 ufixedview(a::AbstractArray{UInt8}) = ufixedview(U8, a)
@@ -102,5 +104,19 @@ the output will be mirrored in `A`. Compared to the copy, the view is
 much faster to create, but generally slower to use.
 """
 permuteddimsview(A, perm) = Base.PermutedDimsArrays.PermutedDimsArray(A, perm)
+
+# Support transpose
+function Base.transpose{C<:Colorant}(a::AbstractMatrix{C})
+    inds = indices(a)
+    out = similar(Array{C}, (inds[2], inds[1]))
+    transpose!(out, a)
+end
+function Base.transpose{C<:Colorant}(a::AbstractVector{C})
+    out = similar(Array{C}, (Base.OneTo(1), indices(a, 1)))
+    transpose!(out, a)
+end
+
+Base.ctranspose{C<:Colorant}(a::AbstractMatrix{C}) = transpose(a)
+Base.ctranspose{C<:Colorant}(a::AbstractVector{C}) = transpose(a)
 
 end ## module

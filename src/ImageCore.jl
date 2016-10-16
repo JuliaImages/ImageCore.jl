@@ -106,14 +106,13 @@ much faster to create, but generally slower to use.
 permuteddimsview(A, perm) = Base.PermutedDimsArrays.PermutedDimsArray(A, perm)
 
 # Support transpose
-function Base.transpose{C<:Colorant}(a::AbstractMatrix{C})
-    inds = indices(a)
-    out = similar(Array{C}, (inds[2], inds[1]))
-    transpose!(out, a)
-end
+Base.transpose{C<:Colorant}(a::AbstractMatrix{C}) = permutedims(a, (2,1))
 function Base.transpose{C<:Colorant}(a::AbstractVector{C})
-    out = similar(Array{C}, (Base.OneTo(1), indices(a, 1)))
-    transpose!(out, a)
+    ind = indices(a, 1)
+    out = similar(Array{C}, (oftype(ind, Base.OneTo(1)), ind))
+    outr = reshape(out, ind)
+    copy!(outr, a)
+    out
 end
 
 Base.ctranspose{C<:Colorant}(a::AbstractMatrix{C}) = transpose(a)

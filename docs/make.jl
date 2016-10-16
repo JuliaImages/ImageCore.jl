@@ -1,7 +1,7 @@
 using Documenter, ImageCore
 
 makedocs(modules  = [ImageCore],
-         format   = Documenter.Formats.HTML,
+         format   = :html,
          sitename = "ImageCore",
          pages    = ["index.md", "views.md", "map.md", "traits.md", "reference.md"])
 

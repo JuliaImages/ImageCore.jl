@@ -19,6 +19,13 @@ using Base.Test
         @test contains(ret.value.msg, "$dims")
         @test irfft(rfft(channelview(a), dims), 4, dims) ≈ channelview(a)
     end
+
+
+    a = [RGB(1,0,0), RGB(0,1,0), RGB(0,0,1)]
+    @test a' == [RGB(1,0,0) RGB(0,1,0) RGB(0,0,1)]
+
+    a = [RGB(1,0,0) RGB(0,1,0); RGB(0,0,1) RGB(0, 0, 0)]
+    @test a' == [RGB(1,0,0) RGB(0,0,1); RGB(0,1,0) RGB(0, 0, 0)]
 end
 
 nothing

@@ -14,7 +14,7 @@ Let's illustrate with a couple of examples:
 ```julia
 julia> using Colors, ImageCore
 
-julia> img = rand(RGB{U8}, 680, 480);
+julia> img = rand(RGB{N0f8}, 680, 480);
 
 julia> pixelspacing(img)
 (1,1)
@@ -27,7 +27,7 @@ information, which might be important for microscopy or biomedical imaging.
 ```@meta
 DocTestSetup = quote
     using Colors, ImageCore
-    img = rand(RGB{U8}, 680, 480);
+    img = rand(RGB{N0f8}, 680, 480);
 end
 ```
 

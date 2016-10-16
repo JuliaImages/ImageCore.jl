@@ -20,7 +20,7 @@ julia> using Colors
 
 julia> img = [RGB(1,0,0) RGB(0,1,0);
               RGB(0,0,1) RGB(0,0,0)]
-2×2 Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}:
+2×2 Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}:
  RGB{N0f8}(1.0,0.0,0.0)  RGB{N0f8}(0.0,1.0,0.0)
  RGB{N0f8}(0.0,0.0,1.0)  RGB{N0f8}(0.0,0.0,0.0)
 ```
@@ -50,7 +50,7 @@ That said, occassionally there are reasons to want to treat `RGB` as a
 
 ```julia
 julia> v = channelview(img)
-3×2×2 Array{FixedPointNumbers.UFixed{UInt8,8},3}:
+3×2×2 Array{FixedPointNumbers.Normed{UInt8,8},3}:
 [:, :, 1] =
  1.0N0f8  0.0N0f8
  0.0N0f8  0.0N0f8
@@ -111,7 +111,7 @@ julia> r
  0x00  0x00
 
 julia> v
-3×2×2 Array{FixedPointNumbers.UFixed{UInt8,8},3}:
+3×2×2 Array{FixedPointNumbers.Normed{UInt8,8},3}:
 [:, :, 1] =
  1.0N0f8    0.0N0f8
  0.0N0f8    0.0N0f8
@@ -123,13 +123,13 @@ julia> v
  0.0N0f8  0.0N0f8
 
 julia> img
-2×2 Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}:
- RGB{U8}(1.0,0.0,0.502)  RGB{U8}(0.0,1.0,0.0)
- RGB{U8}(0.0,0.0,1.0)    RGB{U8}(0.0,0.0,0.0)
+2×2 Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}:
+ RGB{N0f8}(1.0,0.0,0.502)  RGB{N0f8}(0.0,1.0,0.0)
+ RGB{N0f8}(0.0,0.0,1.0)    RGB{N0f8}(0.0,0.0,0.0)
 ```
 
 The hexidecimal representation of 128 is 0x80; this is approximately
-halfway to 255, and as a consequence the `UFixed8` representation is
+halfway to 255, and as a consequence the `N0f8` representation is
 very near 0.5.  You can see the same change is reflected in `r`, `v`,
 and `img`: there is only one underlying array, `img`, and the two
 views simply reference it.
@@ -150,7 +150,7 @@ end
 
 ```julia
 julia> p = permuteddimsview(v, (2,3,1))
-2×2×3 permuteddimsview(Array{FixedPointNumbers.UFixed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.UFixed{UInt8,8}:
+2×2×3 permuteddimsview(Array{FixedPointNumbers.Normed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.Normed{UInt8,8}:
 [:, :, 1] =
  1.0N0f8  0.0N0f8
  0.0N0f8  0.0N0f8
@@ -167,7 +167,7 @@ julia> p[1,2,:] = 0.25
 0.25
 
 julia> p
-2×2×3 permuteddimsview(Array{FixedPointNumbers.UFixed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.UFixed{UInt8,8}:
+2×2×3 permuteddimsview(Array{FixedPointNumbers.Normed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.Normed{UInt8,8}:
 [:, :, 1] =
  1.0N0f8  0.251N0f8
  0.0N0f8  0.0N0f8
@@ -181,7 +181,7 @@ julia> p
  1.0N0f8    0.0N0f8
 
 julia> v
-3×2×2 Array{FixedPointNumbers.UFixed{UInt8,8},3}:
+3×2×2 Array{FixedPointNumbers.Normed{UInt8,8},3}:
 [:, :, 1] =
  1.0N0f8    0.0N0f8
  0.0N0f8    0.0N0f8
@@ -193,7 +193,7 @@ julia> v
  0.251N0f8  0.0N0f8
 
 julia> img
-2×2 Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}:
+2×2 Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}:
  RGB{N0f8}(1.0,0.0,0.502)  RGB{N0f8}(0.251,0.251,0.251)
  RGB{N0f8}(0.0,0.0,1.0)    RGB{N0f8}(0.0,0.0,0.0)
 ```
@@ -260,12 +260,12 @@ DocTestSetup = quote
 
 ```julia
 julia> img
-2×2 Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}:
+2×2 Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}:
  RGB{N0f8}(1.0,0.0,0.0)  RGB{N0f8}(0.0,1.0,0.0)
  RGB{N0f8}(0.0,0.0,1.0)  RGB{N0f8}(0.0,0.0,0.0)
 
 julia> cv = channelview(img)
-3×2×2 Array{FixedPointNumbers.UFixed{UInt8,8},3}:
+3×2×2 Array{FixedPointNumbers.Normed{UInt8,8},3}:
 [:, :, 1] =
  1.0N0f8  0.0N0f8
  0.0N0f8  0.0N0f8
@@ -316,7 +316,7 @@ If your application requires consistency, you can use `ChannelView` directly:
 
 ```julia
 julia> ChannelView(img)
-3×2×2 ChannelView(::Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}) with element type FixedPointNumbers.UFixed{UInt8,8}:
+3×2×2 ChannelView(::Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}) with element type FixedPointNumbers.Normed{UInt8,8}:
 [:, :, 1] =
  1.0N0f8  0.0N0f8
  0.0N0f8  0.0N0f8

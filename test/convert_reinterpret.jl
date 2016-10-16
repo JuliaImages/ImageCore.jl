@@ -4,8 +4,8 @@ using Base.Test
 @testset "reinterpret" begin
     # Gray
     for sz in ((4,), (4,5))
-        a = rand(Gray{U8}, sz)
-        for T in (Gray{U8}, Gray{Float32}, Gray{Float64})
+        a = rand(Gray{N0f8}, sz)
+        for T in (Gray{N0f8}, Gray{Float32}, Gray{Float64})
             b = @inferred(convert(Array{T}, a))
             rb = @inferred(reinterpret(eltype(T), b))
             if ImageCore.squeeze1
@@ -33,7 +33,7 @@ using Base.Test
         @test size(rc) == sz
     end
     for sz in ((4,), (4,5))
-        b = Gray24.(reinterpret(U8, rand(UInt8, sz)))
+        b = Gray24.(reinterpret(N0f8, rand(UInt8, sz)))
         for T in (UInt32, RGB24)
             rb = @inferred(reinterpret(T, b))
             @test isa(rb, Array{T,length(sz)})
@@ -45,8 +45,8 @@ using Base.Test
         end
     end
     # TransparentGray
-    a = rand(AGray{U8}, (4,5))
-    for T in (AGray{U8}, GrayA{Float32}, AGray{Float64})
+    a = rand(AGray{N0f8}, (4,5))
+    for T in (AGray{N0f8}, GrayA{Float32}, AGray{Float64})
         b = @inferred(convert(Array{T}, a))
         rb = @inferred(reinterpret(eltype(T), b))
         @test isa(rb, Array{eltype(T),3})
@@ -57,8 +57,8 @@ using Base.Test
         @test size(rc) == (4,5)
     end
     # Color3
-    a = rand(RGB{U8}, (4,5))
-    for T in (RGB{U8}, HSV{Float32}, XYZ{Float64})
+    a = rand(RGB{N0f8}, (4,5))
+    for T in (RGB{N0f8}, HSV{Float32}, XYZ{Float64})
         b = @inferred(convert(Array{T}, a))
         rb = @inferred(reinterpret(eltype(T), b))
         @test isa(rb, Array{eltype(T),3})
@@ -68,14 +68,14 @@ using Base.Test
         @test isa(rc, Array{T,2})
         @test size(rc) == (4,5)
     end
-    for a in (rand(RGB{U8}, 4), rand(RGB{U8}, (4,5)))
+    for a in (rand(RGB{N0f8}, 4), rand(RGB{N0f8}, (4,5)))
         b = @inferred(reinterpret(HSV{Float32}, float32.(a)))
         @test isa(b, Array{HSV{Float32}})
         @test ndims(b) == ndims(a)
     end
     # Transparent color
-    a = rand(ARGB{U8}, (4,5))
-    for T in (ARGB{U8}, AHSV{Float32}, AXYZ{Float64})
+    a = rand(ARGB{N0f8}, (4,5))
+    for T in (ARGB{N0f8}, AHSV{Float32}, AXYZ{Float64})
         b = @inferred(convert(Array{T}, a))
         rb = @inferred(reinterpret(eltype(T), b))
         @test isa(rb, Array{eltype(T),3})
@@ -86,8 +86,8 @@ using Base.Test
         @test size(rc) == (4,5)
     end
     # RGB1/RGB4
-    a = rand(RGB{U8}, (4,5))
-    for T in (RGB1{U8},RGB4{Float32})
+    a = rand(RGB{N0f8}, (4,5))
+    for T in (RGB1{N0f8},RGB4{Float32})
         b = @inferred(convert(Array{T}, a))
         rb = @inferred(reinterpret(eltype(T), b))
         @test isa(rb, Array{eltype(T),3})
@@ -99,9 +99,9 @@ using Base.Test
     end
     a = [RGB(1,0,0) RGB(0,0,1);
          RGB(0,1,0) RGB(1,1,1)]
-    @test reinterpret(U8, a) == cat(3, [1 0; 0 1; 0 0], [0 1; 0 1; 1 1])
-    b = convert(Array{BGR{U8}}, a)
-    @test reinterpret(U8, b) == cat(3, [0 0; 0 1; 1 0], [1 1; 0 1; 0 1])
+    @test reinterpret(N0f8, a) == cat(3, [1 0; 0 1; 0 0], [0 1; 0 1; 1 1])
+    b = convert(Array{BGR{N0f8}}, a)
+    @test reinterpret(N0f8, b) == cat(3, [0 0; 0 1; 1 0], [1 1; 0 1; 0 1])
     # RGB24, ARGB32
     for sz in ((4,), (4,5))
         a = rand(UInt32, sz)
@@ -124,7 +124,7 @@ using Base.Test
     # Invalid conversions
     a = rand(UInt8, 4,5)
     ret = @test_throws ArgumentError reinterpret(Gray, a)
-    @test contains(ret.value.msg, "ufixedview")
+    @test contains(ret.value.msg, "normedview")
     @test contains(ret.value.msg, "reinterpret")
     a = rand(Int8, 4,5)
     ret = @test_throws ArgumentError reinterpret(Gray, a)
@@ -137,7 +137,7 @@ end
     a = [RGB(1,0,0) RGB(0,0,1);
          RGB(0,1,0) RGB(1,1,1)]
     c = @inferred(convert(Array{BGR}, a))
-    @test eltype(c) == BGR{U8}
+    @test eltype(c) == BGR{N0f8}
     c = @inferred(convert(Array{BGR{Float32}}, a))
     @test eltype(c) == BGR{Float32}
     c = @inferred(convert(Array{Lab}, a))
@@ -146,52 +146,46 @@ end
               bitrand(4,5))
         b = @inferred(convert(Array{Gray}, a))
         @test eltype(b) == Gray{eltype(a)}
-        b = @inferred(convert(Array{Gray{U8}}, a))
-        @test eltype(b) == Gray{U8}
+        b = @inferred(convert(Array{Gray{N0f8}}, a))
+        @test eltype(b) == Gray{N0f8}
     end
 end
 
 @testset "eltype conversion" begin
     @test float32(Float64) == Float32
-    @test float32(U8)      == Float32
-    @test float64(RGB{U8}) == RGB{Float64}
+    @test float32(N0f8)      == Float32
+    @test float64(RGB{N0f8}) == RGB{Float64}
 
     a = [RGB(1,0,0) RGB(0,0,1);
          RGB(0,1,0) RGB(1,1,1)]
-    @test eltype(a) == RGB{U8}
-    @test eltype(u8.(a))       == RGB{U8}
-    @test eltype(ufixed8.(a))  == RGB{U8}
-    @test eltype(ufixed10.(a)) == RGB{UFixed10}
-    @test eltype(ufixed12.(a)) == RGB{UFixed12}
-    @test eltype(ufixed14.(a)) == RGB{UFixed14}
-    @test eltype(ufixed16.(a)) == RGB{U16}
-    @test eltype(u16.(a))      == RGB{U16}
+    @test eltype(a) == RGB{N0f8}
+    @test eltype(n0f8.(a))       == RGB{N0f8}
+    @test eltype(n6f10.(a)) == RGB{N6f10}
+    @test eltype(n4f12.(a)) == RGB{N4f12}
+    @test eltype(n2f14.(a)) == RGB{N2f14}
+    @test eltype(n0f16.(a)) == RGB{N0f16}
 #    @test eltype(float16.(a)) == RGB{Float16}
     @test eltype(float32.(a)) == RGB{Float32}
     @test eltype(float64.(a)) == RGB{Float64}
 
-    a = U8[0.1,0.2,0.3]
-    @test eltype(a) == U8
-    @test eltype(u8.(a))       == U8
-    @test eltype(ufixed8.(a))  == U8
-    @test eltype(ufixed10.(a)) == UFixed10
-    @test eltype(ufixed12.(a)) == UFixed12
-    @test eltype(ufixed14.(a)) == UFixed14
-    @test eltype(ufixed16.(a)) == U16
-    @test eltype(u16.(a))      == U16
+    a = N0f8[0.1,0.2,0.3]
+    @test eltype(a) == N0f8
+    @test eltype(n0f8.(a))       == N0f8
+    @test eltype(n6f10.(a)) == N6f10
+    @test eltype(n4f12.(a)) == N4f12
+    @test eltype(n2f14.(a)) == N2f14
+    @test eltype(n0f16.(a)) == N0f16
 #    @test eltype(float16.(a)) == Float16
     @test eltype(float32.(a)) == Float32
     @test eltype(float64.(a)) == Float64
 
-    a = OffsetArray(U8[0.1,0.2,0.3], -1:1)
-    @test eltype(a) == U8
-    @test eltype(u8.(a))       == U8
-    @test eltype(ufixed8.(a))  == U8
-    @test eltype(ufixed10.(a)) == UFixed10
-    @test eltype(ufixed12.(a)) == UFixed12
-    @test eltype(ufixed14.(a)) == UFixed14
-    @test eltype(ufixed16.(a)) == U16
-    @test eltype(u16.(a))      == U16
+    a = OffsetArray(N0f8[0.1,0.2,0.3], -1:1)
+    @test eltype(a) == N0f8
+    @test eltype(n0f8.(a))       == N0f8
+    @test eltype(n6f10.(a)) == N6f10
+    @test eltype(n4f12.(a)) == N4f12
+    @test eltype(n2f14.(a)) == N2f14
+    @test eltype(n0f16.(a)) == N0f16
 #    @test eltype(float16.(a)) == Float16
     @test eltype(float32.(a)) == Float32
     @test eltype(float64.(a)) == Float64

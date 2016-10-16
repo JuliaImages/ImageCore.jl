@@ -10,7 +10,7 @@ channel separately.
 
 See also: clamp01nan.
 """
-clamp01(x::Union{UFixed8,UFixed16}) = x
+clamp01(x::Union{N0f8,N0f16}) = x
 clamp01(x::Number) = clamp(x, zero(x), one(x))
 clamp01(c::Colorant) = mapc(clamp01, c)
 

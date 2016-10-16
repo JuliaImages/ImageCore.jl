@@ -4,7 +4,7 @@
 
 With that as an introduction, let's list all the view types supported
 by this package.  `channelview` and `colorview` are opposite
-transformations, as are `rawview` and `ufixedview`. `channelview` and
+transformations, as are `rawview` and `normedview`. `channelview` and
 `colorview` typically create objects of type `ChannelView` and
 `ColorView`, respectively, unless they are "undoing" a previous view
 of the opposite type.
@@ -15,7 +15,7 @@ ChannelView
 colorview
 ColorView
 rawview
-ufixedview
+normedview
 permuteddimsview
 ```
 

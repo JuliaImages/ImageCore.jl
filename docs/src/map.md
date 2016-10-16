@@ -86,16 +86,16 @@ julia> f = x->col(sc(x))            # combine the two
 (::#1) (generic function with 1 method)
 
 julia> f(-5)
-RGB{U8}(0.0,1.0,0.0)
+RGB{N0f8}(0.0,1.0,0.0)
 
 julia> f(20)
-RGB{U8}(1.0,0.0,1.0)
+RGB{N0f8}(1.0,0.0,1.0)
 
 julia> f(0)
-RGB{U8}(1.0,1.0,1.0)
+RGB{N0f8}(1.0,1.0,1.0)
 
 julia> f(10)
-RGB{U8}(1.0,0.502,1.0)
+RGB{N0f8}(1.0,0.502,1.0)
 ```
 
 Finally, [`takemap`](@ref) exists to automatically set the parameters of

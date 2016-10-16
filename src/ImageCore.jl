@@ -3,6 +3,7 @@ __precompile__()
 module ImageCore
 
 using Colors, FixedPointNumbers, MappedArrays, Graphics, ShowItLikeYouBuildIt
+using OffsetArrays # for show.jl
 using Colors: Fractional
 
 using Base: tail, @pure, Indices

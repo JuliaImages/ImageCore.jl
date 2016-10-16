@@ -38,7 +38,7 @@ Base.summary{T<:Integer,N,AA}(A::MappedArray{T,N,AA,typeof(reinterpret)}) = summ
 typealias AAInteger{T<:Integer,N} AbstractArray{T,N}
 function ShowItLikeYouBuildIt.showarg{T<:FixedPoint,N,AA<:AAInteger,F}(io::IO, A::MappedArray{T,N,AA,F,typeof(reinterpret)})
     print(io, "ufixedview(")
-    showfptype(io, T)
+    showcoloranttype(io, T)
     print(io, ", ")
     showarg(io, parent(A))
     print(io, ')')
@@ -46,28 +46,47 @@ end
 
 Base.summary{T<:FixedPoint,N,AA,F}(A::MappedArray{T,N,AA,F,typeof(reinterpret)}) = summary_build(A)
 
-# These are a little scary
-function ShowItLikeYouBuildIt.showarg{T<:FixedPoint,N}(io::IO, A::Array{T,N})
-    print(io, "::Array{")
-    showfptype(io, T)
-    print(io, ',', N, '}')
+## Specializations of other containers based on a color or fixed-point eltype
+# These may be going too far, but let's see how it works out
+function ShowItLikeYouBuildIt.showarg{T<:Union{FixedPoint,Colorant},N}(io::IO, A::Array{T,N})
+    print(io, "::")
+    _showarg_type(io, A)
 end
-# Base.summary{T<:FixedPoint,N}(A::Array{T,N}) = summary_build(A)
+function _showarg_type(io::IO, A::Array)
+    print(io, "Array{")
+    showcoloranttype(io, eltype(A))
+    print(io, ',', ndims(A), '}')
+end
 
-function ShowItLikeYouBuildIt.showarg{C<:Colorant,N}(io::IO, A::Array{C,N})
-    print(io, "::Array{")
-    showcoloranttype(io, C)
-    print(io, ',', N, '}')
+function Base.summary{T<:Union{FixedPoint,Colorant}}(A::Array{T})
+    io = IOBuffer()
+    print(io, ShowItLikeYouBuildIt.dimstring(indices(A)), ' ')
+    _showarg_type(io, A)
+    String(io)
 end
-# Base.summary{C<:Colorant,N}(A::Array{C,N}) = summary_build(A)
+
+function ShowItLikeYouBuildIt.showarg{T<:Union{FixedPoint,Colorant},N,AA<:Array}(io::IO, A::OffsetArray{T,N,AA})
+    print(io, "::")
+    _showarg_type(io, A)
+end
+function _showarg_type{T,N,AA<:Array}(io::IO, A::OffsetArray{T,N,AA})
+    print(io, "OffsetArray{")
+    showcoloranttype(io, T)
+    print(io, ',', ndims(A), '}')
+end
+
+function Base.summary{T<:Union{FixedPoint,Colorant}}(A::OffsetArray{T})
+    io = IOBuffer()
+    print(io, ShowItLikeYouBuildIt.dimstring(indices(A)), ' ')
+    _showarg_type(io, A)
+    String(io)
+end
 
 function showcoloranttype{C<:Colorant}(io, ::Type{C})
     print(io, ColorTypes.colorant_string(C), '{')
-    _showcoloranttype(io, eltype(C))
+    showcoloranttype(io, eltype(C))
     print(io, '}')
 end
-_showcoloranttype{T<:FixedPoint}(io, ::Type{T}) = showfptype(io, T)
-_showcoloranttype{T}(io, ::Type{T}) = show(io, T)
-
-showfptype(io, ::Type{U8}) = print(io, "U8")
-showfptype{T<:FixedPoint}(io, ::Type{T}) = print(io, T)
+showcoloranttype(io, ::Type{U8}) = print(io, "U8")
+showcoloranttype{T<:FixedPoint}(io, ::Type{T}) = show(io, T)
+showcoloranttype{T}(io, ::Type{T}) = show(io, T)

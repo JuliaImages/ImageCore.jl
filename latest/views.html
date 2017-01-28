@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Views · ImageCore</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/styles/default.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Ubuntu+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="assets/documenter.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="../versions.js"></script></head><body><nav class="toc"><h1>ImageCore</h1><form class="search" action="search.html"><select id="version-selector" onChange="window.location.href=this.value"><option value="#" selected="selected" disabled="disabled">Version</option></select><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="index.html">ImageCore.jl</a></li><li class="current"><a class="toctext" href="views.html">Views</a><ul class="internal"><li><a class="toctext" href="#View-types-defined-in-ImageCore-1">View types defined in ImageCore</a></li><li><a class="toctext" href="#A-note-on-the-return-types-from-the-views-1">A note on the return types from the views</a></li></ul></li><li><a class="toctext" href="map.html">Lazy transformation of values</a></li><li><a class="toctext" href="traits.html">Traits</a></li><li><a class="toctext" href="reference.html">Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href="views.html">Views</a></li></ul><a class="edit-page" href="https://github.com/JuliaImages/ImageCore.jl/tree/f4d17f9b4b12d72dd359486c3d3991547c411594/docs/src/views.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/></header><h1><a class="nav-anchor" id="Views-1" href="#Views-1">Views</a></h1><h2><a class="nav-anchor" id="View-types-defined-in-ImageCore-1" href="#View-types-defined-in-ImageCore-1">View types defined in ImageCore</a></h2><p>It is quite possible that the default representation of images will satisfy most or all of your needs. However, to enhance flexibility in working with image data, it is possible to leverage several different kinds of &quot;views.&quot; Generically, a view is an <em>interpretation</em> of array data, one that may change the apparent meaning of the array but which shares the same underlying storage: change an element of the view, and you also change the original array. Views can facilitate processing images of immense size without making copies, and writing algorithms in the most convenient format often without having to worry about the potential cost of converting from one format to another.</p><p>To illustrate views, it&#39;s helpful to begin with a very simple image:</p><pre><code class="language-julia">julia&gt; using Colors
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Views · ImageCore</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/styles/default.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Ubuntu+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="assets/documenter.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="../versions.js"></script></head><body><nav class="toc"><h1>ImageCore</h1><form class="search" action="search.html"><select id="version-selector" onChange="window.location.href=this.value"><option value="#" selected="selected" disabled="disabled">Version</option></select><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="index.html">ImageCore.jl</a></li><li class="current"><a class="toctext" href="views.html">Views</a><ul class="internal"><li><a class="toctext" href="#View-types-defined-in-ImageCore-1">View types defined in ImageCore</a></li><li><a class="toctext" href="#A-note-on-the-return-types-from-the-views-1">A note on the return types from the views</a></li></ul></li><li><a class="toctext" href="map.html">Lazy transformation of values</a></li><li><a class="toctext" href="traits.html">Traits</a></li><li><a class="toctext" href="reference.html">Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href="views.html">Views</a></li></ul><a class="edit-page" href="https://github.com/JuliaImages/ImageCore.jl/tree/2b8e45fedc62240a3371d6aada311743ec26bd9f/docs/src/views.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/></header><h1><a class="nav-anchor" id="Views-1" href="#Views-1">Views</a></h1><h2><a class="nav-anchor" id="View-types-defined-in-ImageCore-1" href="#View-types-defined-in-ImageCore-1">View types defined in ImageCore</a></h2><p>It is quite possible that the default representation of images will satisfy most or all of your needs. However, to enhance flexibility in working with image data, it is possible to leverage several different kinds of &quot;views.&quot; Generically, a view is an <em>interpretation</em> of array data, one that may change the apparent meaning of the array but which shares the same underlying storage: change an element of the view, and you also change the original array. Views can facilitate processing images of immense size without making copies, and writing algorithms in the most convenient format often without having to worry about the potential cost of converting from one format to another.</p><p>To illustrate views, it&#39;s helpful to begin with a very simple image:</p><pre><code class="language-julia">julia&gt; using Colors
 
 julia&gt; img = [RGB(1,0,0) RGB(0,1,0);
               RGB(0,0,1) RGB(0,0,0)]
-2×2 Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}:
+2×2 Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}:
  RGB{N0f8}(1.0,0.0,0.0)  RGB{N0f8}(0.0,1.0,0.0)
  RGB{N0f8}(0.0,0.0,1.0)  RGB{N0f8}(0.0,0.0,0.0)</code></pre><p>which displays as</p><p><img src="assets/rgbk.png" alt="rgbk"/></p><p>Most commonly, it&#39;s convenient that all dimensions of this array correspond to pixel indices: you don&#39;t need to worry about some dimensions of the array corresponding to &quot;color channels&quot; and other the spatial location, and you&#39;re guaranteed to get the entire pixel contents when you access that location.</p><p>That said, occassionally there are reasons to want to treat <code>RGB</code> as a 3-component vector.  That&#39;s motivation for introducing our first view:</p><pre><code class="language-julia">julia&gt; v = channelview(img)
-3×2×2 Array{FixedPointNumbers.UFixed{UInt8,8},3}:
+3×2×2 Array{FixedPointNumbers.Normed{UInt8,8},3}:
 [:, :, 1] =
  1.0N0f8  0.0N0f8
  0.0N0f8  0.0N0f8
@@ -39,7 +39,7 @@ julia&gt; img = [RGB(1,0,0) RGB(0,1,0);
  0x00  0x00
 
 julia&gt; v
-3×2×2 Array{FixedPointNumbers.UFixed{UInt8,8},3}:
+3×2×2 Array{FixedPointNumbers.Normed{UInt8,8},3}:
 [:, :, 1] =
  1.0N0f8    0.0N0f8
  0.0N0f8    0.0N0f8
@@ -51,10 +51,10 @@ julia&gt; v
  0.0N0f8  0.0N0f8
 
 julia&gt; img
-2×2 Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}:
- RGB{U8}(1.0,0.0,0.502)  RGB{U8}(0.0,1.0,0.0)
- RGB{U8}(0.0,0.0,1.0)    RGB{U8}(0.0,0.0,0.0)</code></pre><p>The hexidecimal representation of 128 is 0x80; this is approximately halfway to 255, and as a consequence the <code>UFixed8</code> representation is very near 0.5.  You can see the same change is reflected in <code>r</code>, <code>v</code>, and <code>img</code>: there is only one underlying array, <code>img</code>, and the two views simply reference it.</p><p>Maybe you&#39;re used to having the color channel be the last dimension, rather than the first. We can achieve that using <code>permuteddimsview</code>:</p><pre><code class="language-julia">julia&gt; p = permuteddimsview(v, (2,3,1))
-2×2×3 permuteddimsview(Array{FixedPointNumbers.UFixed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.UFixed{UInt8,8}:
+2×2 Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}:
+ RGB{N0f8}(1.0,0.0,0.502)  RGB{N0f8}(0.0,1.0,0.0)
+ RGB{N0f8}(0.0,0.0,1.0)    RGB{N0f8}(0.0,0.0,0.0)</code></pre><p>The hexidecimal representation of 128 is 0x80; this is approximately halfway to 255, and as a consequence the <code>N0f8</code> representation is very near 0.5.  You can see the same change is reflected in <code>r</code>, <code>v</code>, and <code>img</code>: there is only one underlying array, <code>img</code>, and the two views simply reference it.</p><p>Maybe you&#39;re used to having the color channel be the last dimension, rather than the first. We can achieve that using <code>permuteddimsview</code>:</p><pre><code class="language-julia">julia&gt; p = permuteddimsview(v, (2,3,1))
+2×2×3 permuteddimsview(Array{FixedPointNumbers.Normed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.Normed{UInt8,8}:
 [:, :, 1] =
  1.0N0f8  0.0N0f8
  0.0N0f8  0.0N0f8
@@ -71,7 +71,7 @@ julia&gt; p[1,2,:] = 0.25
 0.25
 
 julia&gt; p
-2×2×3 permuteddimsview(Array{FixedPointNumbers.UFixed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.UFixed{UInt8,8}:
+2×2×3 permuteddimsview(Array{FixedPointNumbers.Normed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.Normed{UInt8,8}:
 [:, :, 1] =
  1.0N0f8  0.251N0f8
  0.0N0f8  0.0N0f8
@@ -85,7 +85,7 @@ julia&gt; p
  1.0N0f8    0.0N0f8
 
 julia&gt; v
-3×2×2 Array{FixedPointNumbers.UFixed{UInt8,8},3}:
+3×2×2 Array{FixedPointNumbers.Normed{UInt8,8},3}:
 [:, :, 1] =
  1.0N0f8    0.0N0f8
  0.0N0f8    0.0N0f8
@@ -97,7 +97,7 @@ julia&gt; v
  0.251N0f8  0.0N0f8
 
 julia&gt; img
-2×2 Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}:
+2×2 Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}:
  RGB{N0f8}(1.0,0.0,0.502)  RGB{N0f8}(0.251,0.251,0.251)
  RGB{N0f8}(0.0,0.0,1.0)    RGB{N0f8}(0.0,0.0,0.0)</code></pre><p>Once again, <code>p</code> is a view, and as a consequence changing it leads to changes in all the coupled arrays and views.</p><p>Finally, you can combine multiple arrays into a &quot;virtual&quot; multichannel array. We&#39;ll use the <a href="http://juliaimages.github.io/TestImages.jl/images/lighthouse.png">lighthouse</a> image:</p><pre><code class="language-julia">using ImageCore, TestImages, Colors
 img = testimage(&quot;lighthouse&quot;)
@@ -105,12 +105,12 @@ img = testimage(&quot;lighthouse&quot;)
 cv = channelview(img)
 # Recombine the channels, filling in 0 for the middle (green) channel
 rb = colorview(RGB, cv[1,:,:], zeroarray, cv[3,:,:])</code></pre><p><code>zeroarray</code> is a constant which serves as a placeholder to create a (virtual) all-zeros array of size that matches the other arguments.</p><p><code>rb</code> looks like this:</p><p><img src="assets/redblue.png" alt="redblue"/></p><p>In this case, we could have done the same thing somewhat more simply with <code>cv[2,:,:] = 0</code> and then visualize <code>img</code>. However, more generally you can apply this to independent arrays which may not allow you to set values to 0. In IJulia,</p><p><img src="assets/linspace1.png" alt="linspace1"/></p><p>The error comes from the fact that <code>img1d</code> does not store values separately from the <code>LinSpace</code> objects used to create it, and <code>LinSpace</code> (which uses a compact representation of a range, storing just the endpoints and the number of values) does not allow you to set specific values. However, if you need to set individual values, you can make a <code>copy</code>:</p><p><img src="assets/linspace2.png" alt="linspace2"/></p><p>The fact that no storage is allocated by <code>colorview</code> is very convenient in certain situations, particularly when processing large images.</p><p><code>colorview</code>&#39;s ability to combine multiple grayscale images is based on another view, <code>StackedView</code>, which you can also use directly.</p><h2><a class="nav-anchor" id="A-note-on-the-return-types-from-the-views-1" href="#A-note-on-the-return-types-from-the-views-1">A note on the return types from the views</a></h2><p>The lowercase functions try to return the &quot;simplest&quot; type that will serve as a view. For example, our very first view at the top of this page returned an <code>Array</code>:</p><pre><code class="language-julia">julia&gt; img
-2×2 Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}:
+2×2 Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}:
  RGB{N0f8}(1.0,0.0,0.0)  RGB{N0f8}(0.0,1.0,0.0)
  RGB{N0f8}(0.0,0.0,1.0)  RGB{N0f8}(0.0,0.0,0.0)
 
 julia&gt; cv = channelview(img)
-3×2×2 Array{FixedPointNumbers.UFixed{UInt8,8},3}:
+3×2×2 Array{FixedPointNumbers.Normed{UInt8,8},3}:
 [:, :, 1] =
  1.0N0f8  0.0N0f8
  0.0N0f8  0.0N0f8
@@ -141,7 +141,7 @@ julia&gt; channelview(imgs)
  0.0830178  0.192074
  0.729289   0.0743438
  0.760395   0.830025</code></pre><p>The reason for this difference is the following: an <code>Array</code> always uses contiguous memory to represent its values, and consequently you can only use an <code>Array</code> to represent a view if the &quot;source&quot; object is contiguous in memory. In the latter case, the <code>SubArray</code> created by <code>view</code> does not have contiguous memory, so instead a <code>ChannelView</code> type is returned, which can create a channel view of any type of input.</p><p>If your application requires consistency, you can use <code>ChannelView</code> directly:</p><pre><code class="language-julia">julia&gt; ChannelView(img)
-3×2×2 ChannelView(::Array{ColorTypes.RGB{FixedPointNumbers.UFixed{UInt8,8}},2}) with element type FixedPointNumbers.UFixed{UInt8,8}:
+3×2×2 ChannelView(::Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}) with element type FixedPointNumbers.Normed{UInt8,8}:
 [:, :, 1] =
  1.0N0f8  0.0N0f8
  0.0N0f8  0.0N0f8

@@ -7,8 +7,8 @@
 #    img is a m-by-n Array{RGB{Float32}}
 #    ChannelView(img) is a 3-by-m-by-n AbstractArray{Float32}
 #
-#    buffer is a 3-by-m-by-n Array{U8}
-#    ColorView{RGB}(buffer) is an m-by-n AbstractArray{RGB{U8}}
+#    buffer is a 3-by-m-by-n Array{N0f8}
+#    ColorView{RGB}(buffer) is an m-by-n AbstractArray{RGB{N0f8}}
 
 # "First dimension" applies to colors like RGB; by default, Gray
 # images don't use a whole dimension (of size 1) just to encode
@@ -42,8 +42,8 @@ end
 
 creates a "view" of the Colorant array `A`, splitting out (if
 necessary) the separate color channels of `eltype(A)` into a new first
-dimension. For example, if `A` is a m-by-n RGB{U8} array,
-`ChannelView(A)` will return a 3-by-m-by-n U8 array. Color spaces with
+dimension. For example, if `A` is a m-by-n RGB{N0f8} array,
+`ChannelView(A)` will return a 3-by-m-by-n N0f8 array. Color spaces with
 a single element (i.e., grayscale) do not add a new first dimension of
 `A`.
 
@@ -103,9 +103,9 @@ end
 creates a "view" of the numeric array `A`, interpreting the first
 dimension of `A` as if were the channels of a Colorant `C`. The first
 dimension must have the proper number of elements for the constructor
-of `C`. For example, if `A` is a 3-by-m-by-n U8 array,
+of `C`. For example, if `A` is a 3-by-m-by-n N0f8 array,
 `ColorView{RGB}(A)` will create an m-by-n array with element type
-`RGB{U8}`. Color spaces with a single element (i.e., grayscale) do not
+`RGB{N0f8}`. Color spaces with a single element (i.e., grayscale) do not
 "consume" the first dimension of `A`.
 
 Of relevance for types like RGB and BGR, the elements of `A`

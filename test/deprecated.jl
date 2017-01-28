@@ -9,28 +9,28 @@ using Base.Test
             img = grayim(B)
             @test colorspace(img) == "Gray"
             @test colordim(img) == 0
-            @test img[5,2] === Gray{U8}(9/255)
+            @test img[5,2] === Gray{N0f8}(9/255)
         end
         for a in (0x00:0x7c, collect(0x00:0x7c))
             B = reshape(a, 5, 5, 5)
             img = grayim(B)
             @test colorspace(img) == "Gray"
             @test colordim(img) == 0
-            @test img[5,2,3] === Gray{U8}(59/255)
+            @test img[5,2,3] === Gray{N0f8}(59/255)
         end
         for a in (0x0000:0x0018, collect(0x0000:0x0018))
             B = reshape(a, 5, 5)
             img = grayim(B)
             @test colorspace(img) == "Gray"
             @test colordim(img) == 0
-            @test img[5,2] === Gray{U16}(9/65535)
+            @test img[5,2] === Gray{N0f16}(9/65535)
         end
         for a in (0x0000:0x007c, collect(0x0000:0x007c))
             B = reshape(a, 5, 5, 5)
             img = grayim(B)
             @test colorspace(img) == "Gray"
             @test colordim(img) == 0
-            @test img[5,2,3] === Gray{U16}(59/65535)
+            @test img[5,2,3] === Gray{N0f16}(59/65535)
         end
         # colorim
         for a in (0x00:0x4a, collect(0x00:0x4a))
@@ -38,12 +38,12 @@ using Base.Test
             img = colorim(C)
             @test colorspace(img) == "RGB"
             @test colordim(img) == 0
-            @test img[1,1] === RGB{U8}(0,1/255,2/255)
+            @test img[1,1] === RGB{N0f8}(0,1/255,2/255)
             C = reshape(a, 5, 5, 3)
             img = colorim(C)
             @test colorspace(img) == "RGB"
             @test colordim(img) == 0
-            @test img[1,1] === RGB{U8}(0,25/255,50/255)
+            @test img[1,1] === RGB{N0f8}(0,25/255,50/255)
             @test_throws ErrorException colorim(reshape(a, 5, 3, 5))
         end
         for a in (0x0000:0x004a, collect(0x0000:0x004a))
@@ -51,12 +51,12 @@ using Base.Test
             img = colorim(C)
             @test colorspace(img) == "RGB"
             @test colordim(img) == 0
-            @test img[1,1] === RGB{U16}(0,1/65535,2/65535)
+            @test img[1,1] === RGB{N0f16}(0,1/65535,2/65535)
             C = reshape(a, 5, 5, 3)
             img = colorim(C)
             @test colorspace(img) == "RGB"
             @test colordim(img) == 0
-            @test img[1,1] === RGB{U16}(0,25/65535,50/65535)
+            @test img[1,1] === RGB{N0f16}(0,25/65535,50/65535)
             @test_throws ErrorException colorim(reshape(a, 5, 3, 5))
         end
         for a in (0x00:0x63, collect(0x00:0x63))
@@ -65,12 +65,12 @@ using Base.Test
                 img = colorim(C, S)
                 @test colorspace(img) == S
                 @test colordim(img) == 0
-                @test img[1,1] === T{U8}(0,1/255,2/255,3/255)
+                @test img[1,1] === T{N0f8}(0,1/255,2/255,3/255)
                 C = reshape(a, 5, 5, 4)
                 img = colorim(C, S)
                 @test colorspace(img) == S
                 @test colordim(img) == 0
-                @test img[1,1] === T{U8}(0,25/255,50/255,75/255)
+                @test img[1,1] === T{N0f8}(0,25/255,50/255,75/255)
             end
             @test_throws ErrorException colorim(reshape(a, 4, 5, 5), "RRRR")
         end
@@ -140,23 +140,23 @@ using Base.Test
         @test anew == a
         @test_throws DimensionMismatch reinterpret(RGB{Float32}, af)
         Au8 = rand(0x00:0xff, 3, 5, 4)
-        A8 = reinterpret(UFixed8, Au8)
+        A8 = reinterpret(N0f8, Au8)
         rawrgb8 = reinterpret(RGB, A8)
-        @test eltype(rawrgb8) == RGB{UFixed8}
-        @test reinterpret(UFixed8, rawrgb8) == A8
+        @test eltype(rawrgb8) == RGB{N0f8}
+        @test reinterpret(N0f8, rawrgb8) == A8
         @test reinterpret(UInt8, rawrgb8) == Au8
         rawrgb32 = convert(Array{RGB{Float32}}, rawrgb8)
         @test eltype(rawrgb32) == RGB{Float32}
         @test ufixed8(rawrgb32) == rawrgb8
-        @test reinterpret(UFixed8, rawrgb8) == A8
+        @test reinterpret(N0f8, rawrgb8) == A8
         # imrgb8 = convert(Image, rawrgb8)
         # @test spatialorder(imrgb8) == ImageCore.yx
         # cvt = convert(Image, imrgb8)
         # @test cvt == imrgb8 && typeof(cvt) == typeof(imrgb8)
-        # cvt = convert(Image{RGB{UFixed8}}, imrgb8)
+        # cvt = convert(Image{RGB{N0f8}}, imrgb8)
         # @test cvt == imrgb8 && typeof(cvt) == typeof(imrgb8)
         imrgb8 = rawrgb8
-        im8 = reinterpret(UFixed8, imrgb8)
+        im8 = reinterpret(N0f8, imrgb8)
         @test data(im8) == A8
         @test reinterpret(UInt8, imrgb8) == Au8
         @test reinterpret(RGB, im8) == imrgb8
@@ -164,25 +164,25 @@ using Base.Test
         @test colorspace(ims8) == "Gray"
         # cvt = convert(Image, ims8)
         # @test cvt == ims8 && typeof(cvt) == typeof(ims8)
-        # @test (cvt = convert(Image{UFixed8}, ims8)) == ims8 && typeof(cvt) == typeof(ims8)
+        # @test (cvt = convert(Image{N0f8}, ims8)) == ims8 && typeof(cvt) == typeof(ims8)
         # @test (cvt = separate(ims8)) == ims8 && typeof(cvt) == typeof(ims8)
         # imrgb8_2 = convert(Image{RGB}, ims8)
-        # @test isa(imrgb8_2, Image{RGB{UFixed8}})
-        A = reinterpret(UFixed8, UInt8[1 2; 3 4])
-        # imgray = convert(Image{Gray{UFixed8}}, A)
-        imgray = convert(Array{Gray{U8}}, A)
+        # @test isa(imrgb8_2, Image{RGB{N0f8}})
+        A = reinterpret(N0f8, UInt8[1 2; 3 4])
+        # imgray = convert(Image{Gray{N0f8}}, A)
+        imgray = convert(Array{Gray{N0f8}}, A)
         @test spatialorder(imgray) == ImageCore.yx
-        @test data(imgray) == reinterpret(Gray{UFixed8}, [0x01 0x02; 0x03 0x04])
+        @test data(imgray) == reinterpret(Gray{N0f8}, [0x01 0x02; 0x03 0x04])
         # @test eltype(convert(Image{HSV{Float32}}, imrgb8)) == HSV{Float32}
         # @test eltype(convert(Image{HSV}, float32(imrgb8))) == HSV{Float32}
-        # local img = Image(reinterpret(Gray{UFixed16}, rand(UInt16, 5, 5)))
+        # local img = Image(reinterpret(Gray{N0f16}, rand(UInt16, 5, 5)))
         # imgs = subim(img, :, :)
-        img = reinterpret(Gray{UFixed16}, rand(UInt16, 5, 5))
+        img = reinterpret(Gray{N0f16}, rand(UInt16, 5, 5))
         imgs = view(img, :, :)
-        @test isa(minimum(imgs), Gray{UFixed16})  # change in behavior from Images issue#232
+        @test isa(minimum(imgs), Gray{N0f16})  # change in behavior from Images issue#232
         imgdata = rand(UInt16, 5, 5)
-        # img = Image(reinterpret(Gray{UFixed16}, imgdata))
-        img = reinterpret(Gray{UFixed16}, imgdata)
+        # img = Image(reinterpret(Gray{N0f16}, imgdata))
+        img = reinterpret(Gray{N0f16}, imgdata)
         @test all(raw(img) .== imgdata)
         # @test size(raw(Image(rawrgb8))) == (3,5,4)
         @test all(raw(imgdata) .== imgdata)

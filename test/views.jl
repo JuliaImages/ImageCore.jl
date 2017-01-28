@@ -2,14 +2,14 @@
 using Colors, ImageCore, Base.Test
 
 @testset "rawview" begin
-    a = map(U8, rand(3,5))
-    a[2,2] = U8(0.5)
+    a = map(N0f8, rand(3,5))
+    a[2,2] = N0f8(0.5)
     v = rawview(a)
     @test v[2,2] === a[2,2].i
     v[1,3] = 0xff
-    @test a[1,3] === U8(1)
+    @test a[1,3] === N0f8(1)
     v[1,3] = 0x01
-    @test a[1,3] === U8(1/255)
+    @test a[1,3] === N0f8(1/255)
     s = view(a, 1:2, 1:2)
     v = rawview(s)
     @test v[2,2] === a[2,2].i
@@ -18,22 +18,22 @@ using Colors, ImageCore, Base.Test
     @test rawview(v) === v
 end
 
-@testset "ufixedview" begin
+@testset "normedview" begin
     a = rand(UInt8, 3, 5)
     a[2,2] = 0x80
-    v = ufixedview(a)
-    @test v[2,2] === U8(0.5)
+    v = normedview(a)
+    @test v[2,2] === N0f8(0.5)
     v[1,3] = 1
     @test a[1,3] === 0xff
     v[1,3] = 1/255
     @test a[1,3] === 0x01
     s = view(a, 1:2, 1:2)
-    v = ufixedview(s)
-    @test v[2,2] === U8(0.5)
+    v = normedview(s)
+    @test v[2,2] === N0f8(0.5)
     v[2,2] = 15/255
     @test a[2,2] == 0x0f
-    @test ufixedview(v) === v
-    @test ufixedview(U8, v) === v
+    @test normedview(v) === v
+    @test normedview(N0f8, v) === v
 end
 
 @testset "permuteddimsview" begin
@@ -86,20 +86,20 @@ end
     end
 
     # With mixed grayscale/real arrays
-    a, b = Gray{U8}[0.1 0.2; 0.3 0.4], [0.5 0.6; 0.7 0.8]
+    a, b = Gray{N0f8}[0.1 0.2; 0.3 0.4], [0.5 0.6; 0.7 0.8]
     V = @inferred(StackedView(a, b))
     @test eltype(V) == Float64
-    @test V[1,1,1] === Float64(U8(0.1))
+    @test V[1,1,1] === Float64(N0f8(0.1))
     @test V[2,1,1] === 0.5
-    V = @inferred(StackedView{U8}(a, b))
-    @test eltype(V) == U8
-    @test V[1,1,1] === U8(0.1)
-    @test V[2,1,1] === U8(0.5)
+    V = @inferred(StackedView{N0f8}(a, b))
+    @test eltype(V) == N0f8
+    @test V[1,1,1] === N0f8(0.1)
+    @test V[2,1,1] === N0f8(0.5)
     @test b[1,1] === 0.5
     V = @inferred(StackedView(a, zeroarray, b))
     @test eltype(V) == Float64
-    V = @inferred(StackedView{U8}(a, zeroarray, b))
-    @test eltype(V) == U8
+    V = @inferred(StackedView{N0f8}(a, zeroarray, b))
+    @test eltype(V) == N0f8
 
     # With colorview
     a = [0.1 0.2; 0.3 0.4]
@@ -109,32 +109,32 @@ end
     v = @inferred(colorview(GrayA, a, b))
     @test eltype(v) == GrayA{Float64}
     @test @inferred(v[2,1]) === GrayA(0.3,0.7)
-    v = @inferred(colorview(GrayA{U8}, a, b))
-    @test @inferred(v[2,1]) === GrayA{U8}(0.3,0.7)
+    v = @inferred(colorview(GrayA{N0f8}, a, b))
+    @test @inferred(v[2,1]) === GrayA{N0f8}(0.3,0.7)
     v[1,2] = GrayA(0.25, 0.25)
-    @test @inferred(v[1,2]) === GrayA{U8}(0.25, 0.25)
-    v = @inferred(colorview(GrayA{U8}, a, zeroarray))
-    @test @inferred(v[2,1]) === GrayA{U8}(0.3,0)
+    @test @inferred(v[1,2]) === GrayA{N0f8}(0.25, 0.25)
+    v = @inferred(colorview(GrayA{N0f8}, a, zeroarray))
+    @test @inferred(v[2,1]) === GrayA{N0f8}(0.3,0)
     @test_throws ErrorException (v[1,2] = GrayA(0.25, 0.25))
     # RGB
-    v = @inferred(colorview(RGB{U8}, a, zeroarray, b))
-    @test @inferred(v[2,1]) === RGB{U8}(0.3,0,0.7)
-    v = colorview(RGB{U8}, a, z, b)
-    @test @inferred(v[2,1]) === RGB{U8}(0.3,0,0.7)
+    v = @inferred(colorview(RGB{N0f8}, a, zeroarray, b))
+    @test @inferred(v[2,1]) === RGB{N0f8}(0.3,0,0.7)
+    v = colorview(RGB{N0f8}, a, z, b)
+    @test @inferred(v[2,1]) === RGB{N0f8}(0.3,0,0.7)
     v[2,1] = RGB(0,0.9,0)
-    @test @inferred(v[2,1]) === RGB{U8}(0,0.9,0)
+    @test @inferred(v[2,1]) === RGB{N0f8}(0,0.9,0)
     @test a[2,1] == b[2,1] == 0
-    @test z[2,1] == U8(0.9)
+    @test z[2,1] == N0f8(0.9)
     # RGBA
-    v = @inferred(colorview(RGBA{U8}, a, zeroarray, b, b))
-    @test @inferred(v[2,2]) === RGBA{U8}(0.4,0,0.8,0.8)
-    v = colorview(RGBA{U8}, a, copy(z), b, copy(z))
+    v = @inferred(colorview(RGBA{N0f8}, a, zeroarray, b, b))
+    @test @inferred(v[2,2]) === RGBA{N0f8}(0.4,0,0.8,0.8)
+    v = colorview(RGBA{N0f8}, a, copy(z), b, copy(z))
     v[2,2] = RGBA(0.75,0.8,0.75,0.8)
-    @test @inferred(v[2,2]) === RGBA{U8}(0.75,0.8,0.75,0.8)
-    @test a[2,2] == b[2,2] == U8(0.75)
+    @test @inferred(v[2,2]) === RGBA{N0f8}(0.75,0.8,0.75,0.8)
+    @test a[2,2] == b[2,2] == N0f8(0.75)
 
     @test eltype(zeroarray) == Union{}
-    @test_throws ErrorException colorview(RGB{U8}, zeroarray, zeroarray, zeroarray)
+    @test_throws ErrorException colorview(RGB{N0f8}, zeroarray, zeroarray, zeroarray)
     @test_throws DimensionMismatch StackedView(rand(2,3), rand(2,5))
 
     # Just to boost coverage. These methods are necessary to

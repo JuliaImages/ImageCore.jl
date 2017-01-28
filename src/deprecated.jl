@@ -3,20 +3,20 @@
 # Convenience constructors
 export grayim
 function grayim{T<:Union{Fractional,Bool}}(A::AbstractArray{T})
-    Base.depwarn("grayim is deprecated, please use colorview(Gray, A), possibly in conjunction with ufixedview", :grayim)
+    Base.depwarn("grayim is deprecated, please use colorview(Gray, A), possibly in conjunction with normedview", :grayim)
     colorview(Gray, A)
 end
-grayim(A::Array{UInt8,2})  = grayim(reinterpret(UFixed8, A))
-grayim(A::Array{UInt16,2}) = grayim(reinterpret(UFixed16, A))
-grayim(A::Array{UInt8,3})  = grayim(reinterpret(UFixed8, A))
-grayim(A::Array{UInt16,3}) = grayim(reinterpret(UFixed16, A))
-grayim(A::AbstractArray{UInt8,2})  = grayim(ufixedview(A))
-grayim(A::AbstractArray{UInt8,3})  = grayim(ufixedview(A))
-grayim(A::AbstractArray{UInt16,2}) = grayim(ufixedview(U16, A))
-grayim(A::AbstractArray{UInt16,3}) = grayim(ufixedview(U16, A))
+grayim(A::Array{UInt8,2})  = grayim(reinterpret(N0f8, A))
+grayim(A::Array{UInt16,2}) = grayim(reinterpret(N0f16, A))
+grayim(A::Array{UInt8,3})  = grayim(reinterpret(N0f8, A))
+grayim(A::Array{UInt16,3}) = grayim(reinterpret(N0f16, A))
+grayim(A::AbstractArray{UInt8,2})  = grayim(normedview(A))
+grayim(A::AbstractArray{UInt8,3})  = grayim(normedview(A))
+grayim(A::AbstractArray{UInt16,2}) = grayim(normedview(N0f16, A))
+grayim(A::AbstractArray{UInt16,3}) = grayim(normedview(N0f16, A))
 grayim{C<:Gray}(A::AbstractArray{C}) = A
 function grayim{T<:Union{Int8,Int16,Int32,Int64,Int128}}(A::AbstractArray{T})
-    throw(ArgumentError("grayim does not support arrays of element type $T.\n  If all values are positive, consider using ufixedview([U], mappedarray($(unsigned(T)), A)).\n  Or convert to floating point."))
+    throw(ArgumentError("grayim does not support arrays of element type $T.\n  If all values are positive, consider using normedview([U], mappedarray($(unsigned(T)), A)).\n  Or convert to floating point."))
 end
 
 export colorim
@@ -28,7 +28,7 @@ function colorim{T<:Union{Fractional,Unsigned}}(A::AbstractArray{T,3})
     colorim(A, "RGB")
 end
 function colorim{T<:Fractional}(A::AbstractArray{T,3}, colorspace)
-    Base.depwarn("colorim(A, colorspace) is deprecated, use colorview(C, A) instead, possibly in conjunction with permuteddimsview and/or ufixedview", :colorim)
+    Base.depwarn("colorim(A, colorspace) is deprecated, use colorview(C, A) instead, possibly in conjunction with permuteddimsview and/or normedview", :colorim)
     CT = getcolortype(colorspace, eltype(A))
     if 3 <= size(A, 1) <= 4 && 3 <= size(A, 3) <= 4
         error("Both first and last dimensions are of size 3 or 4; impossible to guess which is for color. Use the Image constructor directly.")
@@ -40,13 +40,13 @@ function colorim{T<:Fractional}(A::AbstractArray{T,3}, colorspace)
         error("Neither the first nor the last dimension is of size 3. This doesn't look like an RGB image.")
     end
 end
-colorim(A::Array{UInt8,3},  colorspace) = colorim(reinterpret(UFixed8,  A), colorspace)
-colorim(A::Array{UInt16,3}, colorspace) = colorim(reinterpret(UFixed16, A), colorspace)
-colorim(A::AbstractArray{UInt8,3},  colorspace) = colorim(ufixedview(A), colorspace)
-colorim(A::AbstractArray{UInt16,3}, colorspace) = colorim(ufixedview(U16, A), colorspace)
+colorim(A::Array{UInt8,3},  colorspace) = colorim(reinterpret(N0f8,  A), colorspace)
+colorim(A::Array{UInt16,3}, colorspace) = colorim(reinterpret(N0f16, A), colorspace)
+colorim(A::AbstractArray{UInt8,3},  colorspace) = colorim(normedview(A), colorspace)
+colorim(A::AbstractArray{UInt16,3}, colorspace) = colorim(normedview(N0f16, A), colorspace)
 colorim{C<:Colorant}(A::AbstractArray{C}) = A
 function colorim{T<:Union{Int8,Int16,Int32,Int64,Int128}}(A::AbstractArray{T})
-    throw(ArgumentError("colorim does not support arrays of element type $T.\n  If all values are positive, consider using ufixedview([U], mappedarray($(unsigned(T)), A)).\n  Or convert to floating point."))
+    throw(ArgumentError("colorim does not support arrays of element type $T.\n  If all values are positive, consider using normedview([U], mappedarray($(unsigned(T)), A)).\n  Or convert to floating point."))
 end
 
 colorspacedict = Dict{String,Any}()
@@ -272,3 +272,13 @@ if squeeze1
     @deprecate separate{C<:Color1,N}(img::AbstractArray{C,N}) channelview(img)
 end
 @deprecate separate(img) img
+
+@deprecate u8 n0f8
+@deprecate u16 n0f16
+import FixedPointNumbers: ufixed8, ufixed10, ufixed12, ufixed14, ufixed16
+ufixed8(A::AbstractArray) = n0f8.(A)
+ufixed10(A::AbstractArray) = n6f10.(A)
+ufixed12(A::AbstractArray) = n4f12.(A)
+ufixed14(A::AbstractArray) = n2f14.(A)
+ufixed16(A::AbstractArray) = n0f16.(A)
+export u8, u16, ufixed8, ufixed10, ufixed12, ufixed14, ufixed16

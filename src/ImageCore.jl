@@ -8,7 +8,6 @@ using Colors: Fractional
 
 using Base: tail, @pure, Indices
 
-import FixedPointNumbers: ufixed8, ufixed10, ufixed12, ufixed14, ufixed16
 import Graphics: width, height
 
 typealias AbstractGray{T} Color{T,1}
@@ -27,18 +26,16 @@ export
     colorview,
     permuteddimsview,
     rawview,
-    ufixedview,
+    normedview,
     # conversions
 #    float16,
     float32,
     float64,
-    u8,
-    ufixed8,
-    ufixed10,
-    ufixed12,
-    ufixed14,
-    ufixed16,
-    u16,
+    n0f8,
+    n6f10,
+    n4f12,
+    n2f14,
+    n0f16,
     # mapping values
     clamp01,
     clamp01nan,
@@ -72,7 +69,7 @@ include("deprecated.jl")
     rawview(img::AbstractArray{FixedPoint})
 
 returns a "view" of `img` where the values are interpreted in terms of
-their raw underlying storage. For example, if `img` is an `Array{U8}`,
+their raw underlying storage. For example, if `img` is an `Array{N0f8}`,
 the view will act like an `Array{UInt8}`.
 """
 rawview{T<:FixedPoint}(a::AbstractArray{T}) = mappedarray((reinterpret, y->T(y,0)), a)
@@ -80,19 +77,19 @@ rawview{T<:FixedPoint}(a::Array{T}) = reinterpret(FixedPointNumbers.rawtype(T), 
 rawview{T<:Real}(a::AbstractArray{T}) = a
 
 """
-    ufixedview([T], img::AbstractArray{Unsigned})
+    normedview([T], img::AbstractArray{Unsigned})
 
 returns a "view" of `img` where the values are interpreted in terms of
-`UFixed` number types. For example, if `img` is an `Array{UInt8}`, the
-view will act like an `Array{UFixed8}`.  Supply `T` if the element
-type of `img` is `UInt16`, to specify whether you want a `UFixed10`,
-`UFixed12`, `UFixed14`, or `UFixed16` result.
+`Normed` number types. For example, if `img` is an `Array{UInt8}`, the
+view will act like an `Array{N0f8}`.  Supply `T` if the element
+type of `img` is `UInt16`, to specify whether you want a `N6f10`,
+`N4f12`, `N2f14`, or `N0f16` result.
 """
-ufixedview{T<:FixedPoint,S<:Unsigned}(::Type{T}, a::AbstractArray{S}) = mappedarray((y->T(y,0),reinterpret), a)
-ufixedview{T<:FixedPoint,S<:Unsigned}(::Type{T}, a::Array{S}) = reinterpret(T, a)
-ufixedview{T<:UFixed}(::Type{T}, a::AbstractArray{T}) = a
-ufixedview(a::AbstractArray{UInt8}) = ufixedview(U8, a)
-ufixedview{T<:UFixed}(a::AbstractArray{T}) = a
+normedview{T<:FixedPoint,S<:Unsigned}(::Type{T}, a::AbstractArray{S}) = mappedarray((y->T(y,0),reinterpret), a)
+normedview{T<:FixedPoint,S<:Unsigned}(::Type{T}, a::Array{S}) = reinterpret(T, a)
+normedview{T<:Normed}(::Type{T}, a::AbstractArray{T}) = a
+normedview(a::AbstractArray{UInt8}) = normedview(N0f8, a)
+normedview{T<:Normed}(a::AbstractArray{T}) = a
 
 """
     permuteddimsview(A, perm)

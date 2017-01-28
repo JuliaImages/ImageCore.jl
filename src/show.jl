@@ -34,10 +34,10 @@ end
 
 Base.summary{T<:Integer,N,AA}(A::MappedArray{T,N,AA,typeof(reinterpret)}) = summary_build(A)
 
-# ufixedview
+# normedview
 typealias AAInteger{T<:Integer,N} AbstractArray{T,N}
 function ShowItLikeYouBuildIt.showarg{T<:FixedPoint,N,AA<:AAInteger,F}(io::IO, A::MappedArray{T,N,AA,F,typeof(reinterpret)})
-    print(io, "ufixedview(")
+    print(io, "normedview(")
     showcoloranttype(io, T)
     print(io, ", ")
     showarg(io, parent(A))
@@ -87,6 +87,5 @@ function showcoloranttype{C<:Colorant}(io, ::Type{C})
     showcoloranttype(io, eltype(C))
     print(io, '}')
 end
-showcoloranttype(io, ::Type{U8}) = print(io, "U8")
-showcoloranttype{T<:FixedPoint}(io, ::Type{T}) = show(io, T)
+showcoloranttype{T<:FixedPoint}(io, ::Type{T}) = FixedPointNumbers.showtype(io, T)
 showcoloranttype{T}(io, ::Type{T}) = show(io, T)

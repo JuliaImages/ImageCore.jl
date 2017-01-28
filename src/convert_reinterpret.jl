@@ -26,7 +26,7 @@ _len{C,T}(::Type{C}, ::Type{T}) = sizeof(C) ÷ sizeof(T)
 ## T->Color
 # We have to distinguish two forms of call:
 #   form 1: reinterpret(RGB, img)
-#   form 2: reinterpret(RGB{UFixed8}, img)
+#   form 2: reinterpret(RGB{N0f8}, img)
 Base.reinterpret{T<:Number,CV<:Colorant}(::Type{CV}, A::Array{T,1}) = _reinterpret(CV, eltype(CV), A)
 Base.reinterpret{T<:Number,CV<:Colorant}(::Type{CV}, A::Array{T})   = _reinterpret(CV, eltype(CV), A)
 
@@ -61,7 +61,7 @@ end
 
 function throw_color_typeerror{CV,T<:Unsigned}(::Type{CV}, ::Type{T}, funcs)
     funcstr = join(funcs, " or ")
-    throw(ArgumentError("$(CV.name.name){$T} is not an allowed type; for an array with element type $T,\n  before calling $funcstr consider calling ufixedview, or specify the UFixed{$T,f} element type"))
+    throw(ArgumentError("$(CV.name.name){$T} is not an allowed type; for an array with element type $T,\n  before calling $funcstr consider calling normedview, or specify the Normed{$T,f} element type"))
 end
 
 function throw_color_typeerror{CV,T<:Integer}(::Type{CV}, ::Type{T}, funcs)
@@ -80,7 +80,7 @@ end
 # The main contribution here is "concretizing" the colorant type: allow
 #    convert(RGB, a)
 # rather than requiring
-#    convert(RGB{U8}, a)
+#    convert(RGB{N0f8}, a)
 # Where possible the raw element type of the source is retained.
 Base.convert{C<:Colorant,n}(::Type{Array{C}},   img::Array{C,n}) = img
 Base.convert{C<:Colorant,n}(::Type{Array{C,n}}, img::Array{C,n}) = img
@@ -116,14 +116,14 @@ function Base.convert{Cdest<:Color1,n,T<:Real}(::Type{Array{Cdest,n}},
 end
 
 # float32, float64, etc. Used for conversions like
-#     Array{RGB{U8}} -> Array{RGB{Float32}},
+#     Array{RGB{N0f8}} -> Array{RGB{Float32}},
 # since
 #    convert(Array{RGB{Float32}}, A)
 # is annoyingly verbose for such a common operation.
 for (fn,T) in (#(:float16, Float16),   # Float16 currently has promotion problems
                (:float32, Float32), (:float64, Float64),
-               (:ufixed8, UFixed8), (:ufixed10, UFixed10),
-               (:ufixed12, UFixed12), (:ufixed14, UFixed14), (:ufixed16, UFixed16))
+               (:n0f8, N0f8), (:n6f10, N6f10),
+               (:n4f12, N4f12), (:n2f14, N2f14), (:n0f16, N0f16))
     @eval begin
         ($fn){C<:Colorant}(::Type{C}) = base_colorant_type(C){$T}
         ($fn){S<:Number  }(::Type{S}) = $T
@@ -140,5 +140,3 @@ converts the raw storage type of `img` to `$Tname`, without changing the color s
 
     end
 end
-const u8 = ufixed8
-const u16 = ufixed16

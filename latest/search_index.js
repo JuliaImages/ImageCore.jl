@@ -153,11 +153,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference.html#ImageCore.StackedView",
+    "page": "Reference",
+    "title": "ImageCore.StackedView",
+    "category": "Type",
+    "text": "StackedView(B, C, ...) -> A\n\nPresent arrays B, C, etc, as if they are separate channels along the first dimension of A. In particular,\n\nB == A[1,:,:...]\nC == A[2,:,:...]\n\nand so on. Combined with colorview, this allows one to combine two or more grayscale images into a single color image.\n\nSee also: colorview.\n\n\n\n"
+},
+
+{
     "location": "reference.html#List-of-view-types-1",
     "page": "Reference",
     "title": "List of view types",
     "category": "section",
-    "text": "With that as an introduction, let's list all the view types supported by this package.  channelview and colorview are opposite transformations, as are rawview and normedview. channelview and colorview typically create objects of type ChannelView and ColorView, respectively, unless they are \"undoing\" a previous view of the opposite type.channelview\nChannelView\ncolorview\nColorView\nrawview\nnormedview\npermuteddimsview"
+    "text": "With that as an introduction, let's list all the view types supported by this package.  channelview and colorview are opposite transformations, as are rawview and normedview. channelview and colorview typically create objects of type ChannelView and ColorView, respectively, unless they are \"undoing\" a previous view of the opposite type.channelview\nChannelView\ncolorview\nColorView\nrawview\nnormedview\npermuteddimsview\nStackedView"
 },
 
 {
@@ -214,6 +222,70 @@ var documenterSearchIndex = {"docs": [
     "title": "List of value-transformations (map functions)",
     "category": "section",
     "text": "clamp01\nclamp01nan\nscaleminmax\nscalesigned\ncolorsigned\ntakemap"
+},
+
+{
+    "location": "reference.html#ImageCore.float32",
+    "page": "Reference",
+    "title": "ImageCore.float32",
+    "category": "Function",
+    "text": "float32.(img)\n\nconverts the raw storage type of img to Float32, without changing the color space.\n\n\n\n"
+},
+
+{
+    "location": "reference.html#ImageCore.float64",
+    "page": "Reference",
+    "title": "ImageCore.float64",
+    "category": "Function",
+    "text": "float64.(img)\n\nconverts the raw storage type of img to Float64, without changing the color space.\n\n\n\n"
+},
+
+{
+    "location": "reference.html#ImageCore.n0f8",
+    "page": "Reference",
+    "title": "ImageCore.n0f8",
+    "category": "Function",
+    "text": "n0f8.(img)\n\nconverts the raw storage type of img to N0f8, without changing the color space.\n\n\n\n"
+},
+
+{
+    "location": "reference.html#ImageCore.n6f10",
+    "page": "Reference",
+    "title": "ImageCore.n6f10",
+    "category": "Function",
+    "text": "n6f10.(img)\n\nconverts the raw storage type of img to N6f10, without changing the color space.\n\n\n\n"
+},
+
+{
+    "location": "reference.html#ImageCore.n4f12",
+    "page": "Reference",
+    "title": "ImageCore.n4f12",
+    "category": "Function",
+    "text": "n4f12.(img)\n\nconverts the raw storage type of img to N4f12, without changing the color space.\n\n\n\n"
+},
+
+{
+    "location": "reference.html#ImageCore.n2f14",
+    "page": "Reference",
+    "title": "ImageCore.n2f14",
+    "category": "Function",
+    "text": "n2f14.(img)\n\nconverts the raw storage type of img to N2f14, without changing the color space.\n\n\n\n"
+},
+
+{
+    "location": "reference.html#ImageCore.n0f16",
+    "page": "Reference",
+    "title": "ImageCore.n0f16",
+    "category": "Function",
+    "text": "n0f16.(img)\n\nconverts the raw storage type of img to N0f16, without changing the color space.\n\n\n\n"
+},
+
+{
+    "location": "reference.html#List-of-storage-type-transformations-1",
+    "page": "Reference",
+    "title": "List of storage-type transformations",
+    "category": "section",
+    "text": "float32\nfloat64\nn0f8\nn6f10\nn4f12\nn2f14\nn0f16"
 },
 
 {

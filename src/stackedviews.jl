@@ -23,7 +23,7 @@ the first dimension of `A`. In particular,
 and so on. Combined with `colorview`, this allows one to combine two
 or more grayscale images into a single color image.
 
-See also: colorview.
+See also: [`colorview`](@ref).
 """
 StackedView
 

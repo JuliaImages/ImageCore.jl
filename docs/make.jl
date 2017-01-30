@@ -10,4 +10,3 @@ deploydocs(repo   = "github.com/JuliaImages/ImageCore.jl.git",
            target = "build",
            deps   = nothing,
            make   = nothing)
-#           deps   = Deps.pip("mkdocs", "python-markdown-math"))

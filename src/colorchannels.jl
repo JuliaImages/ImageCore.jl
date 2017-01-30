@@ -264,7 +264,7 @@ imgC = colorview(RGB, r, zeroarray, b)
 creates an image with `r` in the red chanel, `b` in the blue channel,
 and nothing in the green channel.
 
-See also: StackedView.
+See also: [`StackedView`](@ref).
 """
 function colorview{C<:Colorant}(::Type{C}, gray1, gray2, grays...)
     T = _colorview_type(eltype(C), promote_eleltype_all(gray1, gray2, grays...))

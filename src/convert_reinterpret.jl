@@ -115,6 +115,10 @@ function Base.convert{Cdest<:Color1,n,T<:Real}(::Type{Array{Cdest,n}},
     copy!(Array{ccolor(Cdest, Gray{T})}(size(img)), img)
 end
 
+# for docstrings in the operations below
+shortname{T<:FixedPoint}(::Type{T}) = (io = IOBuffer(); FixedPointNumbers.showtype(io, T); takebuf_string(io))
+shortname{T}(::Type{T}) = string(T)
+
 # float32, float64, etc. Used for conversions like
 #     Array{RGB{N0f8}} -> Array{RGB{Float32}},
 # since
@@ -131,7 +135,7 @@ for (fn,T) in (#(:float16, Float16),   # Float16 currently has promotion problem
         ($fn)(n::Number)   = convert(($fn)(typeof(n)), n)
         @deprecate ($fn){C<:Colorant}(A::AbstractArray{C}) ($fn).(A)
         fname = $(Expr(:quote, fn))
-        Tname = $(Expr(:quote, T))
+        Tname = shortname($T)
 @doc """
     $fname.(img)
 

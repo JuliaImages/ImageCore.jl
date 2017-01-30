@@ -8,7 +8,7 @@ Produce a value `y` that lies between 0 and 1, and equal to `x` when
 numeric values. For colors, this function is applied to each color
 channel separately.
 
-See also: clamp01nan.
+See also: [`clamp01nan`](@ref).
 """
 clamp01(x::Union{N0f8,N0f16}) = x
 clamp01(x::Number) = clamp(x, zero(x), one(x))
@@ -19,7 +19,7 @@ clamp01(c::Colorant) = mapc(clamp01, c)
 
 Similar to `clamp01`, except that any `NaN` values are changed to 0.
 
-See also: clamp01.
+See also: [`clamp01`](@ref).
 """
 clamp01nan(x) = clamp01(x)
 clamp01nan(x::AbstractFloat) = ifelse(isnan(x), zero(x), clamp01(x))
@@ -67,7 +67,7 @@ julia> f(c)
 RGB{Float64}(1.0,0.5019607843137255,0.0)
 ```
 
-See also: `takemap`.
+See also: [`takemap`](@ref).
 """
 scaleminmax{T}(min::T, max::T) = function(x)
     y = clamp(x, min, max)
@@ -110,7 +110,7 @@ Return a function `f` which scales values in the range `[-maxabs,
 maxabs]` (clamping values that lie outside this range) to the range
 `[-1, 1]`.
 
-See also: colorsigned.
+See also: [`colorsigned`](@ref).
 """
 function scalesigned(maxabs::Real)
     maxabs > 0 || throw(ArgumentError("maxabs must be positive, got $maxabs"))
@@ -124,7 +124,7 @@ Return a function `f` which scales values in the range `[min, center]`
 to `[-1,0]` and `[center,max]` to `[0,1]`. Values smaller than
 `min`/`max` get clamped to `min`/`max`, respectively.
 
-See also: colorsigned.
+See also: [`colorsigned`](@ref).
 """
 function scalesigned{T<:Real}(min::T, center::T, max::T)
     min <= center <= max || throw(ArgumentError("values must be ordered, got $min, $center, $max"))
@@ -157,7 +157,7 @@ The default colors are:
 - `colorneg`: green1
 - `colorpos`: magenta
 
-See also: scalesigned.
+See also: [`scalesigned`](@ref).
 """
 colorsigned{C<:Color}(neg::C, center::C, pos::C) = function(x)
     y = clamp(x, -one(x), one(x))

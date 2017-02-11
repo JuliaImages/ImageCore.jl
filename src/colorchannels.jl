@@ -276,11 +276,14 @@ end
 _colorview_type{T}(::Type{Any}, ::Type{T}) = T
 _colorview_type{T1,T2}(::Type{T1}, ::Type{T2}) = T1
 
-Base.@pure promote_eleltype_all(gray, grays...) = _promote_eleltype_all(eltype(eltype(gray)), grays...)
+Base.@pure promote_eleltype_all(gray, grays...) = _promote_eleltype_all(beltype(eltype(gray)), grays...)
 @inline function _promote_eleltype_all{T}(::Type{T}, gray, grays...)
-    _promote_eleltype_all(promote_type(T, eltype(eltype(gray))), grays...)
+    _promote_eleltype_all(promote_type(T, beltype(eltype(gray))), grays...)
 end
 _promote_eleltype_all{T}(::Type{T}) = T
+
+beltype{T}(::Type{T}) = eltype(T)
+beltype(::Type{Union{}}) = Union{}
 
 ## Tuple & indexing utilities
 

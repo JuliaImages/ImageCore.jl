@@ -115,10 +115,10 @@ using Base.Test
     end
 
     # indeterminate type tests
-    a = Array(RGB{AbstractFloat},3)
+    a = Array{RGB{AbstractFloat}}(3)
     @test_throws ErrorException reinterpret(Float64, a)
     Tu = TypeVar(:T)
-    a = Array(RGB{Tu},3)
+    a = Array{RGB{Tu}}(3)
     @test_throws ErrorException reinterpret(Float64, a)
 
     # Invalid conversions

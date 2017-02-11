@@ -49,11 +49,17 @@ function colorim{T<:Union{Int8,Int16,Int32,Int64,Int128}}(A::AbstractArray{T})
     throw(ArgumentError("colorim does not support arrays of element type $T.\n  If all values are positive, consider using normedview([U], mappedarray($(unsigned(T)), A)).\n  Or convert to floating point."))
 end
 
+if isdefined(Core, :UnionAll)
+    isparametric1{CV<:Color}(::Type{CV}) = !Base.isabstract(CV) && length(Base.unwrap_unionall(CV).parameters) == 1
+else
+    isparametric1{CV<:Color}(::Type{CV}) = !(CV.abstract) && length(CV.parameters) == 1
+end
+
 colorspacedict = Dict{String,Any}()
 for ACV in (Color, AbstractRGB)
     for CV in subtypes(ACV)
-        (length(CV.parameters) == 1 && !(CV.abstract)) || continue
-        str = string(CV.name.name)
+        isparametric1(CV) || continue
+        str = colorant_string(CV)
         colorspacedict[str] = CV
     end
 end

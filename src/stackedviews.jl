@@ -128,7 +128,7 @@ end
     # to use tuple tricks (i.e., make a tuple of length(inds)+1)
     _stackedview(T, (length(arrays), inds...), arrays_T)
 end
-_stackedview{T,N}(::Type{T}, ::NTuple{N}, arrays) = StackedView{T,N,typeof(arrays)}(arrays)
+_stackedview{T,N}(::Type{T}, ::Tuple{Vararg{Any,N}}, arrays) = StackedView{T,N,typeof(arrays)}(arrays)
 
 
 @inline firstinds(A::AbstractArray, Bs...) = indices(A)

@@ -1,5 +1,11 @@
 using ImageCore, Colors, FixedPointNumbers, OffsetArrays, Base.Test
 
+if VERSION >= v"0.6.0-dev.2505"
+    tformat(x...) = join(string.(x), ", ")
+else
+    tformat(x...) = join(map(string, x), ",")
+end
+
 @testset "show" begin
     rgb32 = rand(RGB{Float32}, 3, 5)
     a = ChannelView(rgb32)
@@ -13,11 +19,11 @@ using ImageCore, Colors, FixedPointNumbers, OffsetArrays, Base.Test
     @test summary(rgb8) == "3×5 Array{RGB{N0f8},2}"
     rand8 = rand(UInt8, 3, 5)
     d = normedview(permuteddimsview(rand8, (2,1)))
-    @test summary(d) == "5×3 normedview(N0f8, permuteddimsview(::Array{UInt8,2}, (2,1))) with element type FixedPointNumbers.Normed{UInt8,8}"
+    @test summary(d) == "5×3 normedview(N0f8, permuteddimsview(::Array{UInt8,2}, $(tformat((2,1))))) with element type FixedPointNumbers.Normed{UInt8,8}"
     e = permuteddimsview(normedview(rand8), (2,1))
-    @test summary(e) == "5×3 permuteddimsview(::Array{N0f8,2}, (2,1)) with element type FixedPointNumbers.Normed{UInt8,8}"
+    @test summary(e) == "5×3 permuteddimsview(::Array{N0f8,2}, $(tformat((2,1)))) with element type FixedPointNumbers.Normed{UInt8,8}"
     f = permuteddimsview(normedview(N0f16, rand(UInt16, 3, 5)), (2,1))
-    @test summary(f) == "5×3 permuteddimsview(::Array{N0f16,2}, (2,1)) with element type FixedPointNumbers.Normed{UInt16,16}"
+    @test summary(f) == "5×3 permuteddimsview(::Array{N0f16,2}, $(tformat((2,1)))) with element type FixedPointNumbers.Normed{UInt16,16}"
     g = channelview(rgb8)
     @test summary(g) == "3×3×5 Array{N0f8,3}"
     h = OffsetArray(rgb8, -1:1, -2:2)

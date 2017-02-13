@@ -1,15 +1,36 @@
-immutable StackedView{T<:Number,N,A<:Tuple{Vararg{AbstractArray}}} <: AbstractArray{T,N}
-    parents::A
+if VERSION < v"0.6.0-dev.2741"
+    # using the version below breaks inferrence on 0.5, so lets use the old syntax here
+    include_string("""
+    immutable StackedView{T<:Number,N,A<:Tuple{Vararg{AbstractArray}}} <: AbstractArray{T,N}
+        parents::A
 
-    function StackedView(parents::Tuple{Vararg{AbstractArray{T}}})
-        inds = indices(parents[1])
-        length(inds) == N-1 || throw(DimensionMismatch("component arrays must be of dimension $(N-1), got $(length(inds))"))
-        for i = 2:length(parents)
-            indices(parents[i]) == inds || throw(DimensionMismatch("all arrays must have the same indices, got $inds and $(indices(parents[i]))"))
+        function StackedView(parents::Tuple{Vararg{AbstractArray{T}}})
+            inds = indices(parents[1])
+            length(inds) == N-1 || throw(DimensionMismatch("component arrays must be of dimension \$(N-1), got \$(length(inds))"))
+            for i = 2:length(parents)
+                indices(parents[i]) == inds || throw(DimensionMismatch("all arrays must have the same indices, got \$inds and \$(indices(parents[i]))"))
+            end
+            new(parents)
         end
-        new(parents)
     end
+    """)
+else
+    include_string("""
+    struct StackedView{T<:Number,N,A<:Tuple{Vararg{AbstractArray{T}}}} <: AbstractArray{T,N}
+        parents::A
+
+        function (::Type{StackedView{T,N,A}}){T,N,A}(parents::A)
+            inds = indices(parents[1])
+            length(inds) == N-1 || throw(DimensionMismatch("component arrays must be of dimension \$(N-1), got \$(length(inds))"))
+            for i = 2:length(parents)
+                indices(parents[i]) == inds || throw(DimensionMismatch("all arrays must have the same indices, got \$inds and \$(indices(parents[i]))"))
+            end
+            new{T,N,A}(parents)
+        end
+    end
+    """)
 end
+
 
 """
     StackedView(B, C, ...) -> A

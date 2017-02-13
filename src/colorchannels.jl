@@ -29,10 +29,10 @@ typealias NonparametricColors Union{RGB24,ARGB32,Gray24,AGray32}
 immutable ChannelView{T,N,A<:AbstractArray} <: AbstractArray{T,N}
     parent::A
 
-    function ChannelView{C<:Colorant}(parent::AbstractArray{C})
+    function (::Type{ChannelView{T,N,A}}){T,N,A,C<:Colorant}(parent::AbstractArray{C})
         n = length(channelview_indices(parent))
         n == N || throw(DimensionMismatch("for an $N-dimensional ChannelView with color type $C, input dimensionality should be $n instead of $(ndims(parent))"))
-        new(parent)
+        new{T,N,A}(parent)
     end
 end
 
@@ -117,11 +117,11 @@ The opposite transformation is implemented by `ChannelView`.
 immutable ColorView{C<:Colorant,N,A<:AbstractArray} <: AbstractArray{C,N}
     parent::A
 
-    function ColorView{T<:Number}(parent::AbstractArray{T})
+    function (::Type{ColorView{C,N,A}}){C,N,A,T<:Number}(parent::AbstractArray{T})
         n = length(colorview_size(C, parent))
         n == N || throw(DimensionMismatch("for an $N-dimensional ColorView with color type $C, input dimensionality should be $n instead of $(ndims(parent))"))
         checkdim1(C, indices(parent))
-        new(parent)
+        new{C,N,A}(parent)
     end
 end
 

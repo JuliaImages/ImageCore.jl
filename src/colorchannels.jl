@@ -29,10 +29,10 @@ typealias NonparametricColors Union{RGB24,ARGB32,Gray24,AGray32}
 immutable ChannelView{T,N,A<:AbstractArray} <: AbstractArray{T,N}
     parent::A
 
-    function ChannelView{C<:Colorant}(parent::AbstractArray{C})
+    function (::Type{ChannelView{T,N,A}}){T,N,A,C<:Colorant}(parent::AbstractArray{C})
         n = length(channelview_indices(parent))
         n == N || throw(DimensionMismatch("for an $N-dimensional ChannelView with color type $C, input dimensionality should be $n instead of $(ndims(parent))"))
-        new(parent)
+        new{T,N,A}(parent)
     end
 end
 
@@ -117,11 +117,11 @@ The opposite transformation is implemented by `ChannelView`.
 immutable ColorView{C<:Colorant,N,A<:AbstractArray} <: AbstractArray{C,N}
     parent::A
 
-    function ColorView{T<:Number}(parent::AbstractArray{T})
+    function (::Type{ColorView{C,N,A}}){C,N,A,T<:Number}(parent::AbstractArray{T})
         n = length(colorview_size(C, parent))
         n == N || throw(DimensionMismatch("for an $N-dimensional ColorView with color type $C, input dimensionality should be $n instead of $(ndims(parent))"))
         checkdim1(C, indices(parent))
-        new(parent)
+        new{C,N,A}(parent)
     end
 end
 
@@ -276,11 +276,14 @@ end
 _colorview_type{T}(::Type{Any}, ::Type{T}) = T
 _colorview_type{T1,T2}(::Type{T1}, ::Type{T2}) = T1
 
-Base.@pure promote_eleltype_all(gray, grays...) = _promote_eleltype_all(eltype(eltype(gray)), grays...)
+Base.@pure promote_eleltype_all(gray, grays...) = _promote_eleltype_all(beltype(eltype(gray)), grays...)
 @inline function _promote_eleltype_all{T}(::Type{T}, gray, grays...)
-    _promote_eleltype_all(promote_type(T, eltype(eltype(gray))), grays...)
+    _promote_eleltype_all(promote_type(T, beltype(eltype(gray))), grays...)
 end
 _promote_eleltype_all{T}(::Type{T}) = T
+
+beltype{T}(::Type{T}) = eltype(T)
+beltype(::Type{Union{}}) = Union{}
 
 ## Tuple & indexing utilities
 

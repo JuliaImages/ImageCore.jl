@@ -1,5 +1,5 @@
 # some views are in colorchannels.jl
-using Colors, ImageCore, Base.Test
+using Colors, FixedPointNumbers, ImageCore, Base.Test
 
 @testset "rawview" begin
     a = map(N0f8, rand(3,5))

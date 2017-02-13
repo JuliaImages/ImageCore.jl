@@ -4,6 +4,7 @@ module ImageCore
 
 using Colors, FixedPointNumbers, MappedArrays, Graphics, ShowItLikeYouBuildIt
 using OffsetArrays # for show.jl
+using ColorTypes: colorant_string
 using Colors: Fractional
 
 using Base: tail, @pure, Indices

@@ -1,5 +1,6 @@
 julia 0.5
 FixedPointNumbers 0.3.0
+ColorTypes
 Colors
 MappedArrays 0.0.3
 Graphics

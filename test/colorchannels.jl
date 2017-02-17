@@ -1,9 +1,10 @@
 using Colors, ImageCore, OffsetArrays, FixedPointNumbers, Base.Test
+using Compat
 
 immutable ArrayLF{T,N} <: AbstractArray{T,N}
     A::Array{T,N}
 end
-Base.linearindexing{A<:ArrayLF}(::Type{A}) = Base.LinearFast()
+@compat Base.IndexStyle{A<:ArrayLF}(::Type{A}) = IndexLinear()
 Base.size(A::ArrayLF) = size(A.A)
 Base.getindex(A::ArrayLF, i::Int) = A.A[i]
 Base.setindex!(A::ArrayLF, val, i::Int) = A.A[i] = val
@@ -11,7 +12,7 @@ Base.setindex!(A::ArrayLF, val, i::Int) = A.A[i] = val
 immutable ArrayLS{T,N} <: AbstractArray{T,N}
     A::Array{T,N}
 end
-Base.linearindexing{A<:ArrayLS}(::Type{A}) = Base.LinearSlow()
+@compat Base.IndexStyle{A<:ArrayLS}(::Type{A}) = IndexCartesian()
 Base.size(A::ArrayLS) = size(A.A)
 Base.getindex{T,N}(A::ArrayLS{T,N}, i::Vararg{Int,N}) = A.A[i...]
 Base.setindex!{T,N}(A::ArrayLS{T,N}, val, i::Vararg{Int,N}) = A.A[i...] = val
@@ -23,12 +24,12 @@ Base.setindex!{T,N}(A::ArrayLS{T,N}, val, i::Vararg{Int,N}) = A.A[i...] = val
     @test channelview(a) === a
 
     a0 = [Gray(N0f8(0.2)), Gray(N0f8(0.4))]
-    for (a, VT, LI) in ((copy(a0), Array, Base.LinearFast()),
-                       (ArrayLF(copy(a0)), ChannelView, Base.LinearFast()),
-                       (ArrayLS(copy(a0)), ChannelView, Base.LinearSlow()))
+    for (a, VT, LI) in ((copy(a0), Array, IndexLinear()),
+                       (ArrayLF(copy(a0)), ChannelView, IndexLinear()),
+                       (ArrayLS(copy(a0)), ChannelView, IndexCartesian()))
         v = ChannelView(a)
         @test isa(channelview(a), VT)
-        @test Base.linearindexing(v) == LI
+        @test IndexStyle(v) == LI
         @test isa(colorview(Gray, v), typeof(a))
         @test ndims(v) == 2 - ImageCore.squeeze1
         @test size(v) == (ImageCore.squeeze1 ? (2,) : (1, 2))
@@ -223,13 +224,13 @@ end
 @testset "grayscale" begin
     _a0 = [N0f8(0.2), N0f8(0.4)]
     a0 = ImageCore.squeeze1 ? _a0 : reshape(_a0, (1, 2))
-    for (a, VT, LI) in ((copy(a0), Array{Gray{N0f8}}, Base.LinearFast()),
-                        (ArrayLF(copy(a0)), ColorView{Gray{N0f8}}, Base.LinearFast()),
-                        (ArrayLS(copy(a0)), ColorView{Gray{N0f8}}, Base.LinearSlow()))
+    for (a, VT, LI) in ((copy(a0), Array{Gray{N0f8}}, IndexLinear()),
+                        (ArrayLF(copy(a0)), ColorView{Gray{N0f8}}, IndexLinear()),
+                        (ArrayLS(copy(a0)), ColorView{Gray{N0f8}}, IndexCartesian()))
         @test_throws ErrorException ColorView(a)
         v = ColorView{Gray}(a)
         @test isa(colorview(Gray,a), VT)
-        @test Base.linearindexing(v) == LI
+        @test IndexStyle(v) == LI
         @test isa(channelview(v), typeof(a))
         @test ndims(v) == 1
         @test size(v) == (2,)
@@ -261,13 +262,13 @@ end
     # two dimensional images and linear indexing
     _a0 = N0f8[0.2 0.4; 0.6 0.8]
     a0 = ImageCore.squeeze1 ? _a0 : reshape(_a0, (1, 2, 2))
-    for (a, VT, LI) in ((copy(a0), Array{Gray{N0f8}}, Base.LinearFast()),
-                        (ArrayLF(copy(a0)), ColorView{Gray{N0f8}}, Base.LinearFast()),
-                        (ArrayLS(copy(a0)), ColorView{Gray{N0f8}}, Base.LinearSlow()))
+    for (a, VT, LI) in ((copy(a0), Array{Gray{N0f8}}, IndexLinear()),
+                        (ArrayLF(copy(a0)), ColorView{Gray{N0f8}}, IndexLinear()),
+                        (ArrayLS(copy(a0)), ColorView{Gray{N0f8}}, IndexCartesian()))
         @test_throws ErrorException ColorView(a)
         v = ColorView{Gray}(a)
         @test isa(colorview(Gray,a), VT)
-        @test Base.linearindexing(v) == LI
+        @test IndexStyle(v) == LI
         @test isa(channelview(v), typeof(a))
         @test ndims(v) == 2
         @test size(v) == (2,2)

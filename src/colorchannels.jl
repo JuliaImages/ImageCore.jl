@@ -16,13 +16,13 @@
 # switch:
 const squeeze1 = true # when true, don't use a dimension for the color channel of grayscale
 
-typealias Color1{T} Colorant{T,1}
-typealias Color2{T} Colorant{T,2}
-typealias Color3{T} Colorant{T,3}
-typealias Color4{T} Colorant{T,4}
-typealias AColor{N,C,T} AlphaColor{C,T,N}
-typealias ColorA{N,C,T} ColorAlpha{C,T,N}
-typealias NonparametricColors Union{RGB24,ARGB32,Gray24,AGray32}
+@compat Color1{T} = Colorant{T,1}
+@compat Color2{T} = Colorant{T,2}
+@compat Color3{T} = Colorant{T,3}
+@compat Color4{T} = Colorant{T,4}
+@compat AColor{N,C,T} = AlphaColor{C,T,N}
+@compat ColorA{N,C,T} = ColorAlpha{C,T,N}
+const NonparametricColors = Union{RGB24,ARGB32,Gray24,AGray32}
 
 ## ChannelView
 
@@ -59,16 +59,16 @@ function _channelview{C<:Colorant,N}(parent::AbstractArray{C}, inds::Indices{N})
     ChannelView{eltype(C),N,typeof(parent)}(parent)
 end
 
-typealias Color1Array{C<:Color1,N} AbstractArray{C,N}
-typealias ChannelView1{T,N,A<:Color1Array} ChannelView{T,N,A}
+@compat Color1Array{C<:Color1,N} = AbstractArray{C,N}
+@compat ChannelView1{T,N,A<:Color1Array} = ChannelView{T,N,A}
 
 Base.parent(A::ChannelView) = A.parent
 parenttype{T,N,A}(::Type{ChannelView{T,N,A}}) = A
 @inline Base.size(A::ChannelView)    = channelview_size(parent(A))
 @inline Base.indices(A::ChannelView) = channelview_indices(parent(A))
 
-# Can be LinearFast for grayscale (1-channel images), otherwise must be LinearSlow
-@pure Base.linearindexing{T<:ChannelView1}(::Type{T}) = Base.linearindexing(parenttype(T))
+# Can be IndexLinear for grayscale (1-channel images), otherwise must be IndexCartesian
+@compat Base.IndexStyle{T<:ChannelView1}(::Type{T}) = IndexStyle(parenttype(T))
 
 # colortype(A::ChannelView) = eltype(parent(A))
 
@@ -140,8 +140,8 @@ parenttype{T,N,A}(::Type{ColorView{T,N,A}}) = A
 @inline Base.size(A::ColorView) = colorview_size(eltype(A), parent(A))
 @inline Base.indices(A::ColorView) = colorview_indices(eltype(A), parent(A))
 
-@pure Base.linearindexing{C<:Color1,N,A<:AbstractArray}(::Type{ColorView{C,N,A}}) = Base.linearindexing(A)
-@pure Base.linearindexing{V<:ColorView}(::Type{V}) = Base.LinearSlow()
+@compat Base.IndexStyle{C<:Color1,N,A<:AbstractArray}(::Type{ColorView{C,N,A}}) = IndexStyle(A)
+@compat Base.IndexStyle{V<:ColorView}(::Type{V}) = IndexCartesian()
 
 Base.@propagate_inbounds function Base.getindex{C,N}(A::ColorView{C,N}, I::Vararg{Int,N})
     P = parent(A)

@@ -116,7 +116,7 @@ function Base.convert{Cdest<:Color1,n,T<:Real}(::Type{Array{Cdest,n}},
 end
 
 # for docstrings in the operations below
-shortname{T<:FixedPoint}(::Type{T}) = (io = IOBuffer(); FixedPointNumbers.showtype(io, T); takebuf_string(io))
+shortname{T<:FixedPoint}(::Type{T}) = (io = IOBuffer(); FixedPointNumbers.showtype(io, T); String(take!(io)))
 shortname{T}(::Type{T}) = string(T)
 
 # float32, float64, etc. Used for conversions like

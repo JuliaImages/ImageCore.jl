@@ -20,7 +20,7 @@ By default this is computed from `pixelspacing`, but you can set this
 manually using ImagesMeta.
 """
 spacedirections(img::AbstractArray) = _spacedirections(pixelspacing(img))
-function _spacedirections{N}(ps::NTuple{N})
+function _spacedirections{N}(ps::NTuple{N,Any})
     ntuple(i->ntuple(d->d==i ? ps[d] : zero(ps[d]), Val{N}), Val{N})
 end
 

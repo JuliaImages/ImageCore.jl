@@ -25,7 +25,7 @@ end
 Base.summary(A::Base.PermutedDimsArrays.PermutedDimsArray) = summary_build(A)
 
 # rawview
-typealias AAFixed{T<:FixedPoint,N} AbstractArray{T,N}
+@compat AAFixed{T<:FixedPoint,N} = AbstractArray{T,N}
 function ShowItLikeYouBuildIt.showarg{T<:Integer,N,AA<:AAFixed}(io::IO, A::MappedArray{T,N,AA,typeof(reinterpret)})
     print(io, "rawview(")
     showarg(io, parent(A))
@@ -35,7 +35,7 @@ end
 Base.summary{T<:Integer,N,AA}(A::MappedArray{T,N,AA,typeof(reinterpret)}) = summary_build(A)
 
 # normedview
-typealias AAInteger{T<:Integer,N} AbstractArray{T,N}
+@compat AAInteger{T<:Integer,N} = AbstractArray{T,N}
 function ShowItLikeYouBuildIt.showarg{T<:FixedPoint,N,AA<:AAInteger,F}(io::IO, A::MappedArray{T,N,AA,F,typeof(reinterpret)})
     print(io, "normedview(")
     showcoloranttype(io, T)

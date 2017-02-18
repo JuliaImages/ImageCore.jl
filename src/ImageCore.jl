@@ -4,6 +4,7 @@ module ImageCore
 
 using Colors, FixedPointNumbers, MappedArrays, Graphics, ShowItLikeYouBuildIt
 using OffsetArrays # for show.jl
+using Compat
 using ColorTypes: colorant_string
 using Colors: Fractional
 
@@ -11,8 +12,8 @@ using Base: tail, @pure, Indices
 
 import Graphics: width, height
 
-typealias AbstractGray{T} Color{T,1}
-typealias RealLike Union{Real,AbstractGray}
+@compat AbstractGray{T} = Color{T,1}
+const RealLike = Union{Real,AbstractGray}
 
 export
     ## Types

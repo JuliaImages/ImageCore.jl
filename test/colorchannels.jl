@@ -214,6 +214,13 @@ end
         v = channelview(a)
         @test @inferred(indices(v)) === (1:3, -1:1, -2:2)
         @test @inferred(v[1,0,0]) === a[0,0].r
+        a = OffsetArray(rand(Gray{Float32}, 3, 5), -1:1, -2:2)
+        v = channelview(a)
+        @test @inferred(indices(v)) === (-1:1, -2:2)
+        @test @inferred(v[0,0]) === gray(a[0,0])
+        @test @inferred(v[5]) === gray(a[5])
+        v[5] = -1
+        @test v[5] === -1.0f0
     end
 end
 

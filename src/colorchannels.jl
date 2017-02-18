@@ -80,12 +80,34 @@ Base.@propagate_inbounds function Base.getindex{T,N}(A::ChannelView{T,N}, I::Var
     ret
 end
 
+Base.@propagate_inbounds function Base.getindex{T}(A::ChannelView1{T,1}, i::Int) # ambiguity
+    @boundscheck checkbounds(A, i)
+    @inbounds ret = eltype(A)(parent(A)[i])
+    ret
+end
+Base.@propagate_inbounds function Base.getindex(A::ChannelView1, i::Int)
+    @boundscheck checkbounds(A, i)
+    @inbounds ret = eltype(A)(parent(A)[i])
+    ret
+end
+
 Base.@propagate_inbounds function Base.setindex!{T,N}(A::ChannelView{T,N}, val, I::Vararg{Int,N})
     @boundscheck checkbounds(A, I...)
     P = parent(A)
     Ic, Ia = indexsplit(P, I)
     @inbounds c = P[Ia...]
     @inbounds P[Ia...] = setchannel(c, val, Ic)
+    val
+end
+
+Base.@propagate_inbounds function Base.setindex!{T}(A::ChannelView1{T,1}, val, i::Int) # amb
+    @boundscheck checkbounds(A, i)
+    @inbounds parent(A)[i] = val
+    val
+end
+Base.@propagate_inbounds function Base.setindex!(A::ChannelView1, val, i::Int)
+    @boundscheck checkbounds(A, i)
+    @inbounds parent(A)[i] = val
     val
 end
 

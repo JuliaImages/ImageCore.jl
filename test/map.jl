@@ -63,7 +63,7 @@ using Base.Test
                           (scaleminmax(N0f8, 0, 1000.0), N0f8.(target)),
                           (scaleminmax(Gray, 0, 1000), Gray{Float64}.(target)),
                           (scaleminmax(Gray{N0f8}, 0, 1000.0), Gray{N0f8}.(target)))
-             fA = @inferred(map(f, A))
+            fA = @inferred(map(f, A))
             @test fA == tgt
             @test eltype(fA) == eltype(tgt)
         end

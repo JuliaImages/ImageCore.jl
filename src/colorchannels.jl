@@ -51,7 +51,8 @@ Of relevance for types like RGB and BGR, the channels of the returned
 array will be in constructor-argument order, not memory order (see
 `reinterpret` if you want to use memory order).
 
-The opposite transformation is implemented by `ColorView`.
+The opposite transformation is implemented by [`ColorView`](@ref). See
+also [`channelview`](@ref).
 """
 ChannelView(parent::AbstractArray) = _channelview(parent, channelview_indices(parent))
 function _channelview{C<:Colorant,N}(parent::AbstractArray{C}, inds::Indices{N})
@@ -134,7 +135,8 @@ Of relevance for types like RGB and BGR, the elements of `A`
 are interpreted in constructor-argument order, not memory order (see
 `reinterpret` if you want to use memory order).
 
-The opposite transformation is implemented by `ChannelView`.
+The opposite transformation is implemented by
+[`ChannelView`](@ref). See also [`colorview`](@ref).
 """
 immutable ColorView{C<:Colorant,N,A<:AbstractArray} <: AbstractArray{C,N}
     parent::A
@@ -222,7 +224,11 @@ returns a view of `A`, splitting out (if necessary) the color channels
 of `A` into a new first dimension. This is almost identical to
 `ChannelView(A)`, except that if `A` is a `ColorView`, it will simply
 return the parent of `A`, or will use `reinterpret` when appropriate.
-Consequently, the output may not be a `ChannelView` array.
+Consequently, the output may not be a [`ChannelView`](@ref) array.
+
+Of relevance for types like RGB and BGR, the channels of the returned
+array will be in constructor-argument order, not memory order (see
+`reinterpret` if you want to use memory order).
 """
 channelview{T<:Number}(A::AbstractArray{T}) = A
 channelview(A::AbstractArray) = ChannelView(A)
@@ -244,7 +250,11 @@ elements of `A` as if they were channels of Colorant `C`. This is
 almost identical to `ColorView{C}(A)`, except that if `A` is a
 `ChannelView`, it will simply return the parent of `A`, or use
 `reinterpret` when appropriate. Consequently, the output may not be a
-`ColorView` array.
+[`ColorView`](@ref) array.
+
+Of relevance for types like RGB and BGR, the elements of `A` are
+interpreted in constructor-argument order, not memory order (see
+`reinterpret` if you want to use memory order).
 
 # Example
 ```jl

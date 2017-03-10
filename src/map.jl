@@ -69,20 +69,43 @@ RGB{Float64}(1.0,0.5019607843137255,0.0)
 
 See also: [`takemap`](@ref).
 """
-scaleminmax{T}(min::T, max::T) = function(x)
-    y = clamp(x, min, max)
-    (y-min)/(max-min)
+function scaleminmax{T}(min::T, max::T)
+    @inline function(x)
+        xp, minp, maxp = promote(x, min, max)  # improves performance to promote explicitly
+        y = clamp(xp, minp, maxp)
+        (y-minp)/(maxp-minp)
+    end
 end
-scaleminmax{Tout,T}(::Type{Tout}, min::T, max::T) = function(x)
-    y = clamp(x, min, max)
-    Tout((y-min)/(max-min))
+function scaleminmax{Tout,T}(::Type{Tout}, min::T, max::T)
+    @inline function(x)
+        xp, minp, maxp = promote(x, min, max)
+        y = clamp(xp, minp, maxp)
+        smmconvert(Tout, (y-minp)/(maxp-minp))
+    end
 end
-function scaleminmax{C<:Colorant, T<:Real}(::Type{C}, min::T, max::T)
-    freal = scaleminmax(min, max)
-    c -> C(mapc(freal, c))
-end
+@inline smmconvert{Tout}(::Type{Tout}, x) = convert(Tout, x)
+# since we know the result will be between 0 and 1, we can use rem to save a check
+@inline smmconvert{Tout<:Normed}(::Type{Tout}, x) = rem(x, Tout)
+
 scaleminmax(min, max) = scaleminmax(promote(min, max)...)
 scaleminmax{T}(::Type{T}, min, max) = scaleminmax(T, promote(min, max)...)
+
+# TODO: use triangular dispatch when we can count on Julia 0.6+
+function scaleminmax{C<:Colorant, T<:Real}(::Type{C}, min::T, max::T)
+    _scaleminmax(C, eltype(C), min, max)
+end
+function _scaleminmax{C<:Colorant, TC<:Real, T<:Real}(::Type{C}, ::Type{TC}, min::T, max::T)
+    freal = scaleminmax(TC, min, max)
+    @inline function(c)
+        C(mapc(freal, c))
+    end
+end
+function _scaleminmax{C<:Colorant, T<:Real}(::Type{C}, ::Type{Any}, min::T, max::T)
+    freal = scaleminmax(min, max)
+    @inline function(c)
+        C(mapc(freal, c))
+    end
+end
 
 ColorTypes.mapc(f, x::Number) = f(x)
 

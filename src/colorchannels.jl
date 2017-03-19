@@ -191,6 +191,12 @@ Base.@propagate_inbounds function Base.getindex{C<:Color1,N}(A::ColorView{C,N}, 
     @inbounds ret = C(getchannels(P, C, i)[1])
     ret
 end
+Base.@propagate_inbounds function Base.setindex!{C<:Color1}(A::ColorView{C,1}, val::C, i::Int)  # for ambiguity resolution
+    P = parent(A)
+    @boundscheck checkindex(Bool, linearindices(P), i) || Base.throw_boundserror(A, i)
+    setchannels!(P, val, i)
+    val
+end
 Base.@propagate_inbounds function Base.setindex!{C<:Color1,N}(A::ColorView{C,N}, val::C, i::Int)
     P = parent(A)
     @boundscheck checkindex(Bool, linearindices(P), i) || Base.throw_boundserror(A, i)

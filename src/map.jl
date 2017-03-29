@@ -107,8 +107,6 @@ function _scaleminmax{C<:Colorant, T<:Real}(::Type{C}, ::Type{Any}, min::T, max:
     end
 end
 
-ColorTypes.mapc(f, x::Number) = f(x)
-
 function takemap{T<:Real}(::typeof(scaleminmax), A::AbstractArray{T})
     min, max = extrema(A)
     scaleminmax(min, max)

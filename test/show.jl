@@ -30,6 +30,9 @@ end
     @test summary(h) == "-1:1×-2:2 OffsetArray{RGB{N0f8},2}"
     i = channelview(h)
     @test summary(i) == "1:3×-1:1×-2:2 ChannelView(::OffsetArray{RGB{N0f8},2}) with element type FixedPointNumbers.Normed{UInt8,8}"
+    c = ChannelView(rand(RGB{N0f8}, 2))
+    o = OffsetArray(c, -1:1, 0:1)
+    @test summary(o) == "-1:1×0:1 OffsetArray{N0f8,2,ImageCore.ChannelView{FixedPointNumbers.Normed{UInt8,8},2,Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},1}}}"
 end
 
 nothing

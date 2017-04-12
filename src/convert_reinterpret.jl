@@ -1,78 +1,68 @@
 ### reinterpret
-#
-## Color->T
-Base.reinterpret{CV1<:Colorant,CV2<:Colorant}(::Type{CV1}, A::Array{CV2,1}) = _reinterpret_cvarray(CV1, A)
-Base.reinterpret{CV1<:Colorant,CV2<:Colorant}(::Type{CV1}, A::Array{CV2})   = _reinterpret_cvarray(CV1, A)
-Base.reinterpret{T<:Number,CV<:Colorant}(::Type{T}, A::Array{CV,1}) = _reinterpret_cvarray(T, A)
-Base.reinterpret{T<:Number,CV<:Colorant}(::Type{T}, A::Array{CV})   = _reinterpret_cvarray(T, A)
-Base.reinterpret{CV<:NonparametricColors}(::Type{UInt32}, A::Array{CV,1}) = reinterpret(UInt32, A, size(A))
-Base.reinterpret{CV<:NonparametricColors}(::Type{UInt32}, A::Array{CV})   = reinterpret(UInt32, A, size(A))
 
-function _reinterpret_cvarray{CV1<:Colorant,CV2}(::Type{CV1}, A::Array{CV2})
-    reinterpret(CV1, A, size(A))
+@pure samesize{T,S}(::Type{T}, ::Type{S}) = sizeof(T) == sizeof(S)
+
+## Color->Color
+function Base.reinterpret{CV1<:Colorant,CV2<:Colorant}(::Type{CV1}, a::Array{CV2,1})
+    CV = ccolor(CV1, CV2)
+    l = (length(a)*sizeof(CV2))÷sizeof(CV1)
+    l*sizeof(CV1) == length(a)*sizeof(CV2) || throw(ArgumentError("sizes are incommensurate"))
+    reinterpret(CV, a, (l,))
 end
-@inline function _reinterpret_cvarray{T<:Number,CV<:Colorant}(::Type{T}, A::Array{CV})
-    reinterpret(T, A, (_len(CV), size(A)...))
-end
-if squeeze1
-    function _reinterpret_cvarray{T<:Number,CV<:Color1}(::Type{T}, A::Array{CV})
-        reinterpret(T, A, size(A))
+function Base.reinterpret{CV1<:Colorant,CV2<:Colorant}(::Type{CV1}, a::Array{CV2})
+    CV = ccolor(CV1, CV2)
+    if samesize(CV, CV2)
+        return reinterpret(CV, a, size(a))
     end
+    throw(ArgumentError("result shape not specified"))
 end
+
+## Color->T
+function Base.reinterpret{T<:Number,CV<:Colorant}(::Type{T}, a::Array{CV,1})
+    l = (length(a)*sizeof(CV))÷sizeof(T)
+    l*sizeof(T) == length(a)*sizeof(CV) || throw(ArgumentError("sizes are incommensurate"))
+    reinterpret(T, a, (l,))
+end
+function Base.reinterpret{T<:Number,CV<:Colorant}(::Type{T}, a::Array{CV})
+    if samesize(T, CV)
+        return reinterpret(T, a, size(a))
+    end
+    if sizeof(CV) == sizeof(T)*_len(CV)
+        return reinterpret(T, a, (_len(CV), size(a)...))
+    end
+    throw(ArgumentError("result shape not specified"))
+end
+
 _len{C}(::Type{C}) = _len(C, eltype(C))
 _len{C}(::Type{C}, ::Type{Any}) = error("indeterminate type")
 _len{C,T}(::Type{C}, ::Type{T}) = sizeof(C) ÷ sizeof(T)
 
 ## T->Color
 # We have to distinguish two forms of call:
-#   form 1: reinterpret(RGB, img)
-#   form 2: reinterpret(RGB{N0f8}, img)
-Base.reinterpret{T<:Number,CV<:Colorant}(::Type{CV}, A::Array{T,1}) = _reinterpret(CV, eltype(CV), A)
-Base.reinterpret{T<:Number,CV<:Colorant}(::Type{CV}, A::Array{T})   = _reinterpret(CV, eltype(CV), A)
-
-function _reinterpret{T,CV<:Colorant}(::Type{CV}, ::Type{Any}, A::Array{T})
-    # form 1 (turn into a form 2 call by filling in the element type of the array)
-    _reinterpret_array_cv(CV{T}, A)
+#   form 1: reinterpret(RGB{N0f8}, img)
+#   form 2: reinterpret(RGB, img)
+function Base.reinterpret{CV<:Colorant,T<:Number}(::Type{CV}, a::Array{T,1})
+    CVT = ccolor_number(CV, T)
+    l = (length(a)*sizeof(T))÷sizeof(CVT)
+    l*sizeof(CVT) == length(a)*sizeof(T) || throw(ArgumentError("sizes are incommensurate"))
+    reinterpret(CVT, a, (l,))
 end
-function _reinterpret{T<:Integer,CV<:Colorant}(::Type{CV}, ::Type{Any}, A::Array{T})
-    # form 1, with an invalid type...
-    throw_color_typeerror(CV, T, (:ColorView, :reinterpret))
-end
-function _reinterpret{CV<:Colorant}(::Type{CV}, ::Type{Any}, A::Array{Bool})
-    # ...but Bools are OK
-    _reinterpret_array_cv(CV{Bool}, A)
-end
-function _reinterpret{T,CV<:Colorant}(::Type{CV}, TT::Type, A::Array{T})
-    # form 2
-    _reinterpret_array_cv(CV, A)
-end
-
-function _reinterpret_array_cv{T,CV<:Colorant}(::Type{CV}, A::Array{T})
-    reinterpret(CV, A, tail(size(A)))
-end
-function _reinterpret_array_cv{CV<:NonparametricColors}(::Type{CV}, A::Array{UInt32})
-    reinterpret(CV, A, size(A))
-end
-if squeeze1
-    function _reinterpret_array_cv{T,CV<:Color1}(::Type{CV}, A::Array{T})
-        reinterpret(CV, A, size(A))
+function Base.reinterpret{CV<:Colorant,T<:Number}(::Type{CV}, a::Array{T})
+    CVT = ccolor_number(CV, T)
+    if samesize(CVT, T)
+        return reinterpret(CVT, a, size(a))
     end
+    if size(a, 1)*sizeof(T) == sizeof(CVT)
+        return reinterpret(CVT, a, tail(size(a)))
+    end
+    throw(ArgumentError("result shape not specified"))
 end
 
-function throw_color_typeerror{CV,T<:Unsigned}(::Type{CV}, ::Type{T}, funcs)
-    funcstr = join(funcs, " or ")
-    throw(ArgumentError("$(colorant_string(CV)){$T} is not an allowed type; for an array with element type $T,\n  before calling $funcstr consider calling normedview, or specify the Normed{$T,f} element type"))
-end
-
-function throw_color_typeerror{CV,T<:Integer}(::Type{CV}, ::Type{T}, funcs)
-    funcstr = join(funcs, " or ")
-    throw(ArgumentError("$(colorant_string(CV)){$T} is not an allowed type; before calling $funcstr, please specify the concrete\n   element type as a Fixed{$T,f} type"))
-end
-
-# This version is used by the deserializer to convert UInt8 buffers
-# back to their original type. Fixes Images#287.
-# _reinterpret_array_cv{CV<:Colorant}(::Type{CV}, A::Vector{UInt8}) =
-#     reinterpret(CV, A, (div(length(A), sizeof(CV)),))
+# ccolor_number converts form 2 calls to form 1 calls
+ccolor_number{CV<:Colorant,T<:Number}(::Type{CV}, ::Type{T}) =
+    ccolor_number(CV, eltype(CV), T)
+ccolor_number{CV,CVT<:Number,T}(::Type{CV}, ::Type{CVT}, ::Type{T}) = CV # form 1
+ccolor_number{CV<:Colorant,T}(::Type{CV}, ::Type{Any}, ::Type{T}) = CV{T} # form 2
 
 
 ### convert

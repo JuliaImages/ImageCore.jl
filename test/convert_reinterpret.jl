@@ -99,9 +99,9 @@ using Base.Test
     end
     a = [RGB(1,0,0) RGB(0,0,1);
          RGB(0,1,0) RGB(1,1,1)]
-    @test reinterpret(N0f8, a) == cat(3, [1 0; 0 1; 0 0], [0 1; 0 1; 1 1])
+    @test @inferred(reinterpret(N0f8, a)) == cat(3, [1 0; 0 1; 0 0], [0 1; 0 1; 1 1])
     b = convert(Array{BGR{N0f8}}, a)
-    @test reinterpret(N0f8, b) == cat(3, [0 0; 0 1; 1 0], [1 1; 0 1; 0 1])
+    @test @inferred(reinterpret(N0f8, b)) == cat(3, [0 0; 0 1; 1 0], [1 1; 0 1; 0 1])
     # RGB24, ARGB32
     for sz in ((4,), (4,5))
         a = rand(UInt32, sz)
@@ -110,27 +110,40 @@ using Base.Test
             @test isa(b, Array{T,length(sz)})
             @test size(b) == sz
             @test eltype(b) == T
-            @test reinterpret(UInt32, b) == a
+            @test @inferred(reinterpret(UInt32, b)) == a
         end
     end
 
+    # 1d
+    a = RGB{Float64}[RGB(1,1,0)]
+    af = @inferred(reinterpret(Float64, a))
+    anew = @inferred(reinterpret(RGB, vec(af)))
+    @test anew[1] == a[1]
+    @test ndims(anew) == 1
+
+    # #33 and its converse
+    a = reinterpret(BGRA{N0f8}, [0xf0884422])
+    @test isa(a, Vector) && a == [BGRA{N0f8}(0.533,0.267,0.133,0.941)]
+    @test reinterpret(UInt32, a) == [0xf0884422]
+    @test size(reinterpret(BGRA{N0f8}, rand(UInt32, 5, 5))) == (5,5)
+    @test size(reinterpret(UInt32, rand(BGRA{N0f8}, 5, 5))) == (5,5)
+    a = reinterpret(BGRA{N0f8}, [0x22, 0x44, 0x88, 0xf0, 0x01, 0x02, 0x03, 0x04])
+    @test a == [BGRA{N0f8}(0.533,0.267,0.133,0.941), BGRA{N0f8}(0.012, 0.008, 0.004, 0.016)]
+    @test reinterpret(UInt8, a) == [0x22, 0x44, 0x88, 0xf0, 0x01, 0x02, 0x03, 0x04]
+    @test reinterpret(UInt32, a) == UInt32[0xf0884422,0x04030201]
+
     # indeterminate type tests
     a = Array{RGB{AbstractFloat}}(3)
-    @test_throws ErrorException reinterpret(Float64, a)
+    @test_throws ArgumentError reinterpret(Float64, a)
     Tu = TypeVar(:T)
     a = Array{RGB{Tu}}(3)
     @test_throws ErrorException reinterpret(Float64, a)
 
     # Invalid conversions
     a = rand(UInt8, 4,5)
-    ret = @test_throws ArgumentError reinterpret(Gray, a)
-    @test contains(ret.value.msg, "normedview")
-    @test contains(ret.value.msg, "reinterpret")
+    ret = @test_throws TypeError reinterpret(Gray, a)
     a = rand(Int8, 4,5)
-    ret = @test_throws ArgumentError reinterpret(Gray, a)
-    @test contains(ret.value.msg, " Fixed")
-    @test contains(ret.value.msg, "reinterpret")
-
+    ret = @test_throws TypeError reinterpret(Gray, a)
 end
 
 @testset "convert" begin

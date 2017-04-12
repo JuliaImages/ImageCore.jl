@@ -299,8 +299,8 @@ end
                         (ArrayLS(copy(a0)), ColorView))
             @test_throws ErrorException ColorView(a)
             v = ColorView{T}(a)
-            @test isa(colorview(T,a), VT)
-            @test isa(channelview(v), typeof(a))
+            @test isa(@inferred(colorview(T,a)), VT)
+            @test isa(@inferred(channelview(v)), typeof(a))
             @test ndims(v) == 1
             @test size(v) == (2,)
             @test eltype(v) == T{Float64}

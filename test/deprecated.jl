@@ -129,16 +129,12 @@ using Base.Test
         a = RGB{Float64}[RGB(1,1,0)]
         af = reinterpret(Float64, a)
         @test vec(af) == [1.0,1.0,0.0]
-        @test size(af) == (3,1)
-        @test_throws DimensionMismatch reinterpret(Float32, a)
+        @test size(af) == (3,)
+        @test_throws ArgumentError reinterpret(Int128, a)
         anew = reinterpret(RGB, af)
         @test anew == a
-        anew = reinterpret(RGB, vec(af))
-        @test anew[1] == a[1]
-        @test ndims(anew) == 0
         anew = reinterpret(RGB{Float64}, af)
         @test anew == a
-        @test_throws DimensionMismatch reinterpret(RGB{Float32}, af)
         Au8 = rand(0x00:0xff, 3, 5, 4)
         A8 = reinterpret(N0f8, Au8)
         rawrgb8 = reinterpret(RGB, A8)

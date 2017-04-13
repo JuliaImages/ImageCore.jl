@@ -2,7 +2,7 @@ __precompile__()
 
 module ImageCore
 
-using Colors, FixedPointNumbers, MappedArrays, Graphics, ShowItLikeYouBuildIt
+using Colors, FixedPointNumbers, MappedArrays, PaddedViews, Graphics, ShowItLikeYouBuildIt
 using OffsetArrays # for show.jl
 using Compat
 using ColorTypes: colorant_string
@@ -29,6 +29,7 @@ export
     permuteddimsview,
     rawview,
     normedview,
+    paddedviews,
     # conversions
 #    float16,
     float32,

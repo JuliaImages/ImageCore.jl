@@ -159,3 +159,16 @@ firstinds() = error("not all arrays can be zeroarray")
 @inline take_zeros(T, inds, ::ZeroArrayPromise, Bs...) = (ZeroArrayPromise{T}(inds), take_zeros(T, inds, Bs...)...)
 @inline take_zeros(T, inds, A::AbstractArray, Bs...) = (A, take_zeros(T, inds, Bs...)...)
 take_zeros(T, inds) = ()
+
+# Overrides for paddedviews
+function PaddedViews.paddedviews(fillvalue, As::Union{AbstractArray,ZeroArrayPromise}...)
+    inds = PaddedViews.outerinds(As...)
+    map(A->PaddedView(fillvalue, A, inds), As)
+end
+
+(::Type{PaddedViews.PaddedView})(fillvalue, zap::ZeroArrayPromise, indices) = zap
+
+@inline PaddedViews.outerinds(A::ZeroArrayPromise, Bs...) = PaddedViews.outerinds(Bs...)
+@inline PaddedViews.outerinds() = error("must supply at least one array with concrete indices")
+@inline PaddedViews._outerinds(inds, A::ZeroArrayPromise, Bs...) =
+    PaddedViews._outerinds(inds, Bs...)

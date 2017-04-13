@@ -3,6 +3,7 @@ FixedPointNumbers 0.3.0
 ColorTypes 0.4
 Colors
 MappedArrays 0.0.3
+PaddedViews
 Graphics
 ShowItLikeYouBuildIt
 OffsetArrays

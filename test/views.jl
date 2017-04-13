@@ -1,5 +1,5 @@
 # some views are in colorchannels.jl
-using Colors, FixedPointNumbers, ImageCore, Base.Test
+using Colors, FixedPointNumbers, ImageCore, OffsetArrays, Base.Test
 
 @testset "rawview" begin
     a = map(N0f8, rand(3,5))
@@ -136,6 +136,29 @@ end
     @test eltype(zeroarray) == Union{}
     @test_throws ErrorException colorview(RGB{N0f8}, zeroarray, zeroarray, zeroarray)
     @test_throws DimensionMismatch StackedView(rand(2,3), rand(2,5))
+
+    # With padding
+    r = reshape([0.1,0.2], 2, 1)
+    g = [false true]
+    cv = colorview(RGB, paddedviews(0, r, g, zeroarray)...)
+    @test cv[1,1] === RGB(0.1,0,0)
+    @test cv[2,1] === RGB(0.2,0,0)
+    @test cv[1,2] === RGB(0,1.0,0)
+    @test cv[2,2] === RGB(0,0.0,0)
+    @test indices(cv) === (Base.OneTo(2), Base.OneTo(2))
+
+    a = [0.1 0.2; 0.3 0.4]
+    b = OffsetArray([0.1 0.2; 0.3 0.4], 0:1, 2:3)
+    @test_throws DimensionMismatch colorview(RGB, a, b, zeroarray)
+    cv = colorview(RGB, paddedviews(0, a, b, zeroarray)...)
+    @test indices(cv) == (0:2, 1:3)
+    @test red.(cv[indices(a)...]) == a
+    @test green.(cv[indices(b)...]) == parent(b)
+    @test parent(copy(cv)) == [RGB(0,0,0)   RGB(0,0.1,0)   RGB(0,0.2,0);
+                               RGB(0.1,0,0) RGB(0.2,0.3,0) RGB(0,0.4,0);
+                               RGB(0.3,0,0) RGB(0.4,0,0)   RGB(0,0,0)]
+
+    @test_throws ErrorException paddedviews(0, zeroarray, zeroarray)
 
     # Just to boost coverage. These methods are necessary to
     # make inference happy.

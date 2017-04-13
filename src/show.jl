@@ -74,12 +74,23 @@ function _showarg_type{T,N,AA<:Array}(io::IO, A::OffsetArray{T,N,AA})
     showcoloranttype(io, T)
     print(io, ',', ndims(A), '}')
 end
+function _showarg_type{T,N}(io::IO, A::OffsetArray{T,N})
+    print(io, "OffsetArray{")
+    showcoloranttype(io, T)
+    print(io, ',', ndims(A), ',')
+    _showarg_type(io, parent(A))
+    print(io, '}')
+end
 
 function Base.summary{T<:Union{FixedPoint,Colorant}}(A::OffsetArray{T})
     io = IOBuffer()
     print(io, ShowItLikeYouBuildIt.dimstring(indices(A)), ' ')
     _showarg_type(io, A)
     String(io)
+end
+
+function _showarg_type(io::IO, A)
+    print(io, typeof(A))
 end
 
 function showcoloranttype{C<:Colorant}(io, ::Type{C})

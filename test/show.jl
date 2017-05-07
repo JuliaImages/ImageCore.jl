@@ -8,6 +8,8 @@ end
 
 @testset "show" begin
     rgb32 = rand(RGB{Float32}, 3, 5)
+    v = view(rgb32, 2:3, :)
+    @test summary(v) == "2×5 view(::Array{RGB{Float32},2}, 2:3, :) with element type ColorTypes.RGB{Float32}"
     a = ChannelView(rgb32)
     @test summary(a) == "3×3×5 ChannelView(::Array{RGB{Float32},2}) with element type Float32"
     num64 = rand(3,5)

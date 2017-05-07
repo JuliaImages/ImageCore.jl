@@ -46,6 +46,28 @@ end
 
 Base.summary{T<:FixedPoint,N,AA,F}(A::MappedArray{T,N,AA,F,typeof(reinterpret)}) = summary_build(A)
 
+# SubArray of Colorant
+
+_showindices(io, indices) = print(io, indices)
+if VERSION < v"0.6.0-dev.2068" # PR #19730
+    _showindices(io, ::Colon) = print(io, ':')
+else
+    _showindices(io, ::Base.Slice) = print(io, ':')
+end
+function ShowItLikeYouBuildIt.showarg{T<:Colorant,N}(io::IO, A::SubArray{T,N})
+    print(io, "view(")
+    showarg(io, parent(A))
+    print(io, ", ")
+    for (i, indices) in enumerate(A.indexes)
+        _showindices(io, indices)
+        i < length(A.indexes) && print(io, ", ")
+    end
+    print(io, ')')
+end
+
+Base.summary{T<:Colorant,N}(A::SubArray{T,N}) = summary_build(A)
+
+
 ## Specializations of other containers based on a color or fixed-point eltype
 # These may be going too far, but let's see how it works out
 function ShowItLikeYouBuildIt.showarg{T<:Union{FixedPoint,Colorant},N}(io::IO, A::Array{T,N})

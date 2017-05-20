@@ -107,6 +107,8 @@ end
     a = reshape([RGB(1,0,0)])  # 0-dimensional
     v = channelview(a)
     @test indices(v) === (Base.OneTo(3),)
+    v = ChannelView(a)
+    @test indices(v) === (Base.OneTo(3),)
 end
 
 @testset "Gray+Alpha" begin
@@ -336,7 +338,8 @@ end
     a = rand(ARGB{N0f8}, 5, 5)
     vc = channelview(a)
     @test isa(colorview(ARGB, vc), Array{ARGB{N0f8},2})
-    @test_throws ArgumentError colorview(RGBA, vc)
+    cvc = colorview(RGBA, vc)
+    @test all(cvc .== a)
 end
 
 @testset "Gray+Alpha" begin

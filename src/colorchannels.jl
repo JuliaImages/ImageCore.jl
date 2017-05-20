@@ -150,8 +150,12 @@ immutable ColorView{C<:Colorant,N,A<:AbstractArray} <: AbstractArray{C,N}
 end
 
 function (::Type{ColorView{C}}){C<:Colorant,T<:Number}(parent::AbstractArray{T})
+    CT = ccolor_number(C, T)
+    _ColorView(CT, eltype(CT), parent)
+end
+function _ColorView{C<:Colorant,T<:Number}(::Type{C}, ::Type{T}, parent::AbstractArray{T})
     # Creating a ColorView in a type-stable fashion requires use of tuples to compute N+1
-    _colorview(base_colorant_type(C){T}, parent, colorview_size(C, parent))
+    _colorview(C, parent, colorview_size(C, parent))
 end
 function _colorview{C,N}(::Type{C}, parent::AbstractArray, sz::NTuple{N,Int})
     ColorView{C,N,typeof(parent)}(parent)
@@ -160,7 +164,6 @@ end
 ColorView(::AbstractArray) = error("specify the desired colorspace with ColorView{C}(parent)")
 
 Base.parent(A::ColorView) = A.parent
-parenttype{T,N,A}(::Type{ColorView{T,N,A}}) = A
 @inline Base.size(A::ColorView) = colorview_size(eltype(A), parent(A))
 @inline Base.indices(A::ColorView) = colorview_indices(eltype(A), parent(A))
 
@@ -268,21 +271,32 @@ A = rand(3, 10, 10)
 img = colorview(RGB, A)
 ```
 """
-colorview{C<:Colorant}(::Type{C}, A::AbstractArray) = ColorView{C}(A)
-colorview{C<:RGB}(::Type{C}, A::Array) = reinterpret(C, A)
-colorview{C<:AbstractRGB}(::Type{C}, A::Array) = ColorView{C}(A)
-colorview{C<:Color}(::Type{C}, A::Array) = reinterpret(C, A)
-colorview{C<:ColorAlpha}(::Type{C}, A::Array) = _colorviewalpha(base_color_type(C), C, A)
-_colorviewalpha{C<:RGB,CA}(::Type{C}, ::Type{CA}, A::Array) = reinterpret(CA, A)
-_colorviewalpha{C<:AbstractRGB,CA}(::Type{C}, ::Type{CA}, A::Array) = ColorView{CA}(A)
-_colorviewalpha{C<:Color,CA}(::Type{C}, ::Type{CA}, A::Array) = reinterpret(CA, A)
+colorview{C<:Colorant,T<:Number}(::Type{C}, A::AbstractArray{T}) =
+    _ccolorview(ccolor_number(C, T), A)
+_ccolorview{T<:Number,C<:Colorant}(::Type{C}, A::AbstractArray{T}) = ColorView{C}(A)
+_ccolorview{T<:Number,C<:RGB{T}}(::Type{C}, A::Array{T}) = reinterpret(C, A)
+_ccolorview{T<:Number,C<:AbstractRGB}(::Type{C}, A::Array{T}) = ColorView{C}(A)
+_ccolorview{T<:Number,C<:Color{T}}(::Type{C}, A::Array{T}) = reinterpret(C, A)
+_ccolorview{T<:Number,C<:ColorAlpha}(::Type{C}, A::Array{T}) =
+    _colorviewalpha(base_color_type(C), C, eltype(C), A)
+_colorviewalpha{C<:RGB,CA,T}(::Type{C}, ::Type{CA}, ::Type{T}, A::Array{T}) =
+    reinterpret(CA, A)
+_colorviewalpha{C<:AbstractRGB,CA}(::Type{C}, ::Type{CA}, ::Type, A::Array) =
+    ColorView{CA}(A)
+_colorviewalpha{C<:Color,CA,T}(::Type{C}, ::Type{CA}, ::Type{T}, A::Array{T}) =
+    reinterpret(CA, A)
+
+colorview{C1<:Colorant,C2<:Colorant}(::Type{C1}, A::AbstractArray{C2}) =
+    colorview(C1, channelview(A))
 
 function colorview{C<:Colorant}(::Type{C}, A::ChannelView)
     P = parent(A)
-    _colorview(base_colorant_type(C), base_colorant_type(eltype(P)), P)
+    C0 = ccolor_number(C, eltype(A))
+    _colorview_chanview(C0, base_colorant_type(C), base_colorant_type(eltype(P)), P, A)
 end
-_colorview{C<:Colorant}(::Type{C}, ::Type{C}, A::AbstractArray) = A
-_colorview(::Type, ::Type, A::AbstractArray) = throw(ArgumentError("changing colorspaces is not supported"))
+_colorview_chanview{T<:Number,C0<:Colorant{T},C<:Colorant}(::Type{C0}, ::Type{C}, ::Type{C}, P, A::AbstractArray{T}) = P
+_colorview_chanview{C0}(::Type{C0}, ::Type, ::Type, P, A) =
+    _ccolorview(ccolor_number(C0, eltype(A)), A)
 
 """
     colorview(C, gray1, gray2, ...) -> imgC

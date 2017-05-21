@@ -116,10 +116,10 @@ _unsafe_setindex_all!(I, ::Tuple{}, ::Tuple{}) = nothing
 
 
 # When overlaying 2 images, you often might want one color channel to be black
-immutable ZeroArrayPromise{T} end
+struct ZeroArrayPromise{T} end
 const zeroarray = ZeroArrayPromise{Union{}}()
 
-immutable ZeroArray{T,N,R<:AbstractUnitRange} <: AbstractArray{T,N}
+struct ZeroArray{T,N,R<:AbstractUnitRange} <: AbstractArray{T,N}
     inds::NTuple{N,R}
 end
 

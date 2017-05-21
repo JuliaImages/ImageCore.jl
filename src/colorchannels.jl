@@ -26,7 +26,7 @@ const NonparametricColors = Union{RGB24,ARGB32,Gray24,AGray32}
 
 ## ChannelView
 
-immutable ChannelView{T,N,A<:AbstractArray} <: AbstractArray{T,N}
+struct ChannelView{T,N,A<:AbstractArray} <: AbstractArray{T,N}
     parent::A
 
     function (::Type{ChannelView{T,N,A}}){T,N,A,C<:Colorant}(parent::AbstractArray{C})
@@ -138,7 +138,7 @@ are interpreted in constructor-argument order, not memory order (see
 The opposite transformation is implemented by
 [`ChannelView`](@ref). See also [`colorview`](@ref).
 """
-immutable ColorView{C<:Colorant,N,A<:AbstractArray} <: AbstractArray{C,N}
+struct ColorView{C<:Colorant,N,A<:AbstractArray} <: AbstractArray{C,N}
     parent::A
 
     function (::Type{ColorView{C,N,A}}){C,N,A,T<:Number}(parent::AbstractArray{T})

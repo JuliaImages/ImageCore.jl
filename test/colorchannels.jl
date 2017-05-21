@@ -1,7 +1,7 @@
 using Colors, ImageCore, OffsetArrays, FixedPointNumbers, Base.Test
 using Compat
 
-immutable ArrayLF{T,N} <: AbstractArray{T,N}
+struct ArrayLF{T,N} <: AbstractArray{T,N}
     A::Array{T,N}
 end
 @compat Base.IndexStyle{A<:ArrayLF}(::Type{A}) = IndexLinear()
@@ -9,7 +9,7 @@ Base.size(A::ArrayLF) = size(A.A)
 Base.getindex(A::ArrayLF, i::Int) = A.A[i]
 Base.setindex!(A::ArrayLF, val, i::Int) = A.A[i] = val
 
-immutable ArrayLS{T,N} <: AbstractArray{T,N}
+struct ArrayLS{T,N} <: AbstractArray{T,N}
     A::Array{T,N}
 end
 @compat Base.IndexStyle{A<:ArrayLS}(::Type{A}) = IndexCartesian()

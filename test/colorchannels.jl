@@ -1,7 +1,7 @@
 using Colors, ImageCore, OffsetArrays, FixedPointNumbers, Base.Test
 using Compat
 
-immutable ArrayLF{T,N} <: AbstractArray{T,N}
+struct ArrayLF{T,N} <: AbstractArray{T,N}
     A::Array{T,N}
 end
 @compat Base.IndexStyle{A<:ArrayLF}(::Type{A}) = IndexLinear()
@@ -9,7 +9,7 @@ Base.size(A::ArrayLF) = size(A.A)
 Base.getindex(A::ArrayLF, i::Int) = A.A[i]
 Base.setindex!(A::ArrayLF, val, i::Int) = A.A[i] = val
 
-immutable ArrayLS{T,N} <: AbstractArray{T,N}
+struct ArrayLS{T,N} <: AbstractArray{T,N}
     A::Array{T,N}
 end
 @compat Base.IndexStyle{A<:ArrayLS}(::Type{A}) = IndexCartesian()
@@ -106,6 +106,8 @@ end
     end
     a = reshape([RGB(1,0,0)])  # 0-dimensional
     v = channelview(a)
+    @test indices(v) === (Base.OneTo(3),)
+    v = ChannelView(a)
     @test indices(v) === (Base.OneTo(3),)
 end
 
@@ -336,7 +338,8 @@ end
     a = rand(ARGB{N0f8}, 5, 5)
     vc = channelview(a)
     @test isa(colorview(ARGB, vc), Array{ARGB{N0f8},2})
-    @test_throws ArgumentError colorview(RGBA, vc)
+    cvc = colorview(RGBA, vc)
+    @test all(cvc .== a)
 end
 
 @testset "Gray+Alpha" begin

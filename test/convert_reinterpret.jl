@@ -126,11 +126,11 @@ using Base.Test
     @test isa(a, Vector) && a == [BGRA{N0f8}(0.533,0.267,0.133,0.941)]
     @test reinterpret(UInt32, a) == [0xf0884422]
     @test size(reinterpret(BGRA{N0f8}, rand(UInt32, 5, 5))) == (5,5)
-    @test size(reinterpret(UInt32, rand(BGRA{N0f8}, 5, 5))) == (5,5)
+    @test size(colorview(ARGB32, rand(BGRA{N0f8}, 5, 5))) == (5,5)
     a = reinterpret(BGRA{N0f8}, [0x22, 0x44, 0x88, 0xf0, 0x01, 0x02, 0x03, 0x04])
     @test a == [BGRA{N0f8}(0.533,0.267,0.133,0.941), BGRA{N0f8}(0.012, 0.008, 0.004, 0.016)]
     @test reinterpret(UInt8, a) == [0x22, 0x44, 0x88, 0xf0, 0x01, 0x02, 0x03, 0x04]
-    @test reinterpret(UInt32, a) == UInt32[0xf0884422,0x04030201]
+    @test colorview(ARGB32, a) == reinterpret(ARGB32, [0xf0884422,0x04030201])
 
     # indeterminate type tests
     a = Array{RGB{AbstractFloat}}(3)

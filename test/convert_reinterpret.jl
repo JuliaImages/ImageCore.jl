@@ -205,4 +205,10 @@ end
     @test indices(float32.(a)) == (-1:1,)
 end
 
+@testset "ambiguities" begin
+    # issue #40
+    d = Dict(:a=>1, :b=>2.0)
+    @test isa(Dict(k=>v for (k,v) in d), Dict{Symbol,Real})
+end
+
 nothing

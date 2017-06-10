@@ -72,6 +72,8 @@ ccolor_number{CV<:Colorant,T}(::Type{CV}, ::Type{Any}, ::Type{T}) = CV{T} # form
 # rather than requiring
 #    convert(RGB{N0f8}, a)
 # Where possible the raw element type of the source is retained.
+Base.convert{C<:Color1,n}(::Type{Array{C}},   img::Array{C,n}) = img
+Base.convert{C<:Color1,n}(::Type{Array{C,n}}, img::Array{C,n}) = img
 Base.convert{C<:Colorant,n}(::Type{Array{C}},   img::Array{C,n}) = img
 Base.convert{C<:Colorant,n}(::Type{Array{C,n}}, img::Array{C,n}) = img
 

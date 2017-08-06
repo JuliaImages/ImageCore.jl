@@ -1,10 +1,6 @@
 using ImageCore, Colors, FixedPointNumbers, OffsetArrays, Base.Test
 
-if VERSION >= v"0.6.0-dev.2505"
-    tformat(x...) = join(string.(x), ", ")
-else
-    tformat(x...) = join(map(string, x), ",")
-end
+tformat(x...) = join(string.(x), ", ")
 
 @testset "show" begin
     rgb32 = rand(RGB{Float32}, 3, 5)

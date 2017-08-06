@@ -49,11 +49,7 @@ Base.summary{T<:FixedPoint,N,AA,F}(A::MappedArray{T,N,AA,F,typeof(reinterpret)})
 # SubArray of Colorant
 
 _showindices(io, indices) = print(io, indices)
-if VERSION < v"0.6.0-dev.2068" # PR #19730
-    _showindices(io, ::Colon) = print(io, ':')
-else
-    _showindices(io, ::Base.Slice) = print(io, ':')
-end
+_showindices(io, ::Base.Slice) = print(io, ':')
 function ShowItLikeYouBuildIt.showarg{T<:Colorant,N}(io::IO, A::SubArray{T,N})
     print(io, "view(")
     showarg(io, parent(A))

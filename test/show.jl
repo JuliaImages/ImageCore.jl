@@ -1,10 +1,6 @@
 using ImageCore, Colors, FixedPointNumbers, OffsetArrays, Base.Test
 
-if VERSION >= v"0.6.0-dev.2505"
-    tformat(x...) = join(string.(x), ", ")
-else
-    tformat(x...) = join(map(string, x), ",")
-end
+tformat(x...) = join(string.(x), ", ")
 
 @testset "show" begin
     rgb32 = rand(RGB{Float32}, 3, 5)
@@ -35,6 +31,11 @@ end
     c = ChannelView(rand(RGB{N0f8}, 2))
     o = OffsetArray(c, -1:1, 0:1)
     @test summary(o) == "-1:1×0:1 OffsetArray{N0f8,2,ImageCore.ChannelView{FixedPointNumbers.Normed{UInt8,8},2,Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},1}}}"
+    # Issue #45
+    a = collect(tuple())
+    @test summary(a) == "0-element Array{Union{},1}"
+    b = view(a, :)
+    @test summary(b) == "0-element view(::Array{Union{},1}, :) with element type Union{}"
 end
 
 nothing

@@ -2,9 +2,7 @@ module ImageCoreTests
 
 using ImageCore, Base.Test
 
-if VERSION <= v"0.6.0-dev"
-    @test isempty(detect_ambiguities(ImageCore,Base,Core))
-end
+@test isempty(detect_ambiguities(ImageCore, Base, Core))
 
 include("colorchannels.jl")
 include("views.jl")

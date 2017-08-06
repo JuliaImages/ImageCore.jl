@@ -121,4 +121,5 @@ function showcoloranttype{C<:Colorant}(io, ::Type{C})
     print(io, '}')
 end
 showcoloranttype{T<:FixedPoint}(io, ::Type{T}) = FixedPointNumbers.showtype(io, T)
+showcoloranttype(io, ::Type{Union{}}) = show(io, Union{})
 showcoloranttype{T}(io, ::Type{T}) = show(io, T)

@@ -2,7 +2,7 @@
 
 # Convenience constructors
 export grayim
-function grayim{T<:Union{Fractional,Bool}}(A::AbstractArray{T})
+function grayim(A::AbstractArray{T}) where T<:Union{Fractional,Bool}
     Base.depwarn("grayim is deprecated, please use colorview(Gray, A), possibly in conjunction with normedview", :grayim)
     colorview(Gray, A)
 end
@@ -14,20 +14,20 @@ grayim(A::AbstractArray{UInt8,2})  = grayim(normedview(A))
 grayim(A::AbstractArray{UInt8,3})  = grayim(normedview(A))
 grayim(A::AbstractArray{UInt16,2}) = grayim(normedview(N0f16, A))
 grayim(A::AbstractArray{UInt16,3}) = grayim(normedview(N0f16, A))
-grayim{C<:Gray}(A::AbstractArray{C}) = A
-function grayim{T<:Union{Int8,Int16,Int32,Int64,Int128}}(A::AbstractArray{T})
+grayim(A::AbstractArray{C}) where {C<:Gray} = A
+function grayim(A::AbstractArray{T}) where T<:Union{Int8,Int16,Int32,Int64,Int128}
     throw(ArgumentError("grayim does not support arrays of element type $T.\n  If all values are positive, consider using normedview([U], mappedarray($(unsigned(T)), A)).\n  Or convert to floating point."))
 end
 
 export colorim
-function colorim{T<:Union{Fractional,Unsigned}}(A::AbstractArray{T,3})
+function colorim(A::AbstractArray{T,3}) where T<:Union{Fractional,Unsigned}
     if size(A, 1) == 4 || size(A, 3) == 4
         error("The array looks like a 4-channel color image. Please specify the colorspace explicitly (e.g. \"ARGB\" or \"RGBA\".)")
     end
 
     colorim(A, "RGB")
 end
-function colorim{T<:Fractional}(A::AbstractArray{T,3}, colorspace)
+function colorim(A::AbstractArray{T,3}, colorspace) where T<:Fractional
     Base.depwarn("colorim(A, colorspace) is deprecated, use colorview(C, A) instead, possibly in conjunction with permuteddimsview and/or normedview", :colorim)
     CT = getcolortype(colorspace, eltype(A))
     if 3 <= size(A, 1) <= 4 && 3 <= size(A, 3) <= 4
@@ -44,15 +44,15 @@ colorim(A::Array{UInt8,3},  colorspace) = colorim(reinterpret(N0f8,  A), colorsp
 colorim(A::Array{UInt16,3}, colorspace) = colorim(reinterpret(N0f16, A), colorspace)
 colorim(A::AbstractArray{UInt8,3},  colorspace) = colorim(normedview(A), colorspace)
 colorim(A::AbstractArray{UInt16,3}, colorspace) = colorim(normedview(N0f16, A), colorspace)
-colorim{C<:Colorant}(A::AbstractArray{C}) = A
-function colorim{T<:Union{Int8,Int16,Int32,Int64,Int128}}(A::AbstractArray{T})
+colorim(A::AbstractArray{C}) where {C<:Colorant} = A
+function colorim(A::AbstractArray{T}) where T<:Union{Int8,Int16,Int32,Int64,Int128}
     throw(ArgumentError("colorim does not support arrays of element type $T.\n  If all values are positive, consider using normedview([U], mappedarray($(unsigned(T)), A)).\n  Or convert to floating point."))
 end
 
 if isdefined(Core, :UnionAll)
-    isparametric1{CV<:Color}(::Type{CV}) = !Base.isabstract(CV) && length(Base.unwrap_unionall(CV).parameters) == 1
+    isparametric1(::Type{CV}) where {CV<:Color} = !Base.isabstract(CV) && length(Base.unwrap_unionall(CV).parameters) == 1
 else
-    isparametric1{CV<:Color}(::Type{CV}) = !(CV.abstract) && length(CV.parameters) == 1
+    isparametric1(::Type{CV}) where {CV<:Color} = !(CV.abstract) && length(CV.parameters) == 1
 end
 
 colorspacedict = Dict{String,Any}()
@@ -63,7 +63,7 @@ for ACV in (Color, AbstractRGB)
         colorspacedict[str] = CV
     end
 end
-function getcolortype{T}(str::String, ::Type{T})
+function getcolortype(str::String, ::Type{T}) where T
     if haskey(colorspacedict, str)
         CV = colorspacedict[str]
         return CV{T}
@@ -115,7 +115,7 @@ function spatialorder(img::AbstractArray)
     Base.depwarn("spatialorder is deprecated for general AbstractArrays, please switch to ImagesAxes instead", :spatialorder)
     _spatialorder(img)
 end
-_spatialorder{M<:Matrix}(::Type{M}) = yx
+_spatialorder(::Type{M}) where {M<:Matrix} = yx
 _spatialorder(img::AbstractArray) = (sdims(img) == 2) ? _spatialorder(Matrix) : error("cannot guess spatial order for images with ", sdims(img), " spatial dimensions")
 
 @deprecate isdirect(img::AbstractArray) true
@@ -127,10 +127,10 @@ colorspace(img) is deprecated, use eltype(img) instead, possibly in conjunction
 with colorview(img)""", :colorspace)
     _colorspace(img)
 end
-_colorspace{C<:Colorant}(img::AbstractVector{C}) = ColorTypes.colorant_string(C)
-_colorspace{C<:Colorant}(img::AbstractMatrix{C}) = ColorTypes.colorant_string(C)
-_colorspace{C<:Colorant}(img::AbstractArray{C,3}) = ColorTypes.colorant_string(C)
-_colorspace{C<:Colorant}(img::AbstractArray{C}) = ColorTypes.colorant_string(C)
+_colorspace(img::AbstractVector{C}) where {C<:Colorant} = ColorTypes.colorant_string(C)
+_colorspace(img::AbstractMatrix{C}) where {C<:Colorant} = ColorTypes.colorant_string(C)
+_colorspace(img::AbstractArray{C,3}) where {C<:Colorant} = ColorTypes.colorant_string(C)
+_colorspace(img::AbstractArray{C}) where {C<:Colorant} = ColorTypes.colorant_string(C)
 @noinline _colorspace(img::AbstractVector{Bool}) = "Binary"  # noinlines are just for test coverage (julia bug)
 @noinline _colorspace(img::AbstractMatrix{Bool}) = "Binary"
 @noinline _colorspace(img::AbstractArray{Bool}) = "Binary"
@@ -138,7 +138,7 @@ _colorspace{C<:Colorant}(img::AbstractArray{C}) = ColorTypes.colorant_string(C)
 @noinline _colorspace(img::AbstractMatrix{UInt32}) = "RGB24"  # bad, bad
 @noinline _colorspace(img::AbstractVector) = "Gray"
 @noinline _colorspace(img::AbstractMatrix) = "Gray"
-_colorspace{T}(img::AbstractArray{T,3}) = "Gray"
+_colorspace(img::AbstractArray{T,3}) where {T} = "Gray"
 
 
 export colordim
@@ -146,7 +146,7 @@ function colordim(img)
     Base.depwarn("colordim(img) is deprecated, use colorview(img) to represent as a color image", :colordim)
     _colordim(img)
 end
-_colordim{C<:Colorant}(img::AbstractArray{C}) = 0
+_colordim(img::AbstractArray{C}) where {C<:Colorant} = 0
 _colordim(img::AbstractArray) = 0
 
 export timedim
@@ -161,7 +161,7 @@ function limits(img)
     _limits(img)
 end
 _limits(img::AbstractArray{Bool}) = 0,1
-_limits{T}(img::AbstractArray{T}) = zero(T), one(T)
+_limits(img::AbstractArray{T}) where {T} = zero(T), one(T)
 
 export storageorder
 function storageorder(img::AbstractArray)
@@ -177,7 +177,7 @@ end
 
 # number of array elements used for each pixel/voxel
 export ncolorelem
-function ncolorelem{T}(img::AbstractArray{T})
+function ncolorelem(img::AbstractArray{T}) where T
     Base.depwarn("ncolorelem is deprecated; if you want color, please encode as a color array (possibly with `colorview`). This function will always return 1.", :ncolorelem)
     1
 end
@@ -267,7 +267,7 @@ end
 ### Functions ###
 @deprecate raw rawview
 @deprecate raw{C<:Colorant}(A::AbstractArray{C}) rawview(channelview(A))
-function separate{C<:Colorant,N}(img::AbstractArray{C,N})
+function separate(img::AbstractArray{C,N}) where {C<:Colorant,N}
     # To avoid having a complex ntuple expression appearing in the
     # depwarn, specialize the warning on the dimensionality
     perm = (ntuple(n->n+1, Val{N})..., 1)

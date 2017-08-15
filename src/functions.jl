@@ -12,8 +12,8 @@ end
 for f in (:fft, :rfft)
     pf = Symbol("plan_", f)
     @eval begin
-        $f{C<:Colorant}(x::AbstractArray{C}) = throw_ffterror($f, x)
-        $f{C<:Colorant}(x::AbstractArray{C}, dims) = throw_ffterror($f, x, dims)
-        $pf{C<:Colorant}(x::AbstractArray{C}; kws...) = throw_ffterror($pf, x)
+        $f(x::AbstractArray{C}) where {C<:Colorant} = throw_ffterror($f, x)
+        $f(x::AbstractArray{C}, dims) where {C<:Colorant} = throw_ffterror($f, x, dims)
+        $pf(x::AbstractArray{C}; kws...) where {C<:Colorant} = throw_ffterror($pf, x)
     end
 end

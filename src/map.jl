@@ -69,57 +69,57 @@ RGB{Float64}(1.0,0.5019607843137255,0.0)
 
 See also: [`takemap`](@ref).
 """
-function scaleminmax{T}(min::T, max::T)
+function scaleminmax(min::T, max::T) where T
     @inline function(x)
         xp, minp, maxp = promote(x, min, max)  # improves performance to promote explicitly
         y = clamp(xp, minp, maxp)
         (y-minp)/(maxp-minp)
     end
 end
-function scaleminmax{Tout,T}(::Type{Tout}, min::T, max::T)
+function scaleminmax(::Type{Tout}, min::T, max::T) where {Tout,T}
     @inline function(x)
         xp, minp, maxp = promote(x, min, max)
         y = clamp(xp, minp, maxp)
         smmconvert(Tout, (y-minp)/(maxp-minp))
     end
 end
-@inline smmconvert{Tout}(::Type{Tout}, x) = convert(Tout, x)
+@inline smmconvert(::Type{Tout}, x) where {Tout} = convert(Tout, x)
 # since we know the result will be between 0 and 1, we can use rem to save a check
-@inline smmconvert{Tout<:Normed}(::Type{Tout}, x) = rem(x, Tout)
+@inline smmconvert(::Type{Tout}, x) where {Tout<:Normed} = rem(x, Tout)
 
 scaleminmax(min, max) = scaleminmax(promote(min, max)...)
-scaleminmax{T}(::Type{T}, min, max) = scaleminmax(T, promote(min, max)...)
+scaleminmax(::Type{T}, min, max) where {T} = scaleminmax(T, promote(min, max)...)
 
 # TODO: use triangular dispatch when we can count on Julia 0.6+
-function scaleminmax{C<:Colorant, T<:Real}(::Type{C}, min::T, max::T)
+function scaleminmax(::Type{C}, min::T, max::T) where {C<:Colorant, T<:Real}
     _scaleminmax(C, eltype(C), min, max)
 end
-function _scaleminmax{C<:Colorant, TC<:Real, T<:Real}(::Type{C}, ::Type{TC}, min::T, max::T)
+function _scaleminmax(::Type{C}, ::Type{TC}, min::T, max::T) where {C<:Colorant, TC<:Real, T<:Real}
     freal = scaleminmax(TC, min, max)
     @inline function(c)
         C(mapc(freal, c))
     end
 end
-function _scaleminmax{C<:Colorant, T<:Real}(::Type{C}, ::Type{Any}, min::T, max::T)
+function _scaleminmax(::Type{C}, ::Type{Any}, min::T, max::T) where {C<:Colorant, T<:Real}
     freal = scaleminmax(min, max)
     @inline function(c)
         C(mapc(freal, c))
     end
 end
 
-function takemap{T<:Real}(::typeof(scaleminmax), A::AbstractArray{T})
+function takemap(::typeof(scaleminmax), A::AbstractArray{T}) where T<:Real
     min, max = extrema(A)
     scaleminmax(min, max)
 end
-function takemap{C<:Colorant}(::typeof(scaleminmax), A::AbstractArray{C})
+function takemap(::typeof(scaleminmax), A::AbstractArray{C}) where C<:Colorant
     min, max = extrema(channelview(A))
     scaleminmax(C, min, max)
 end
-function takemap{Tout,T<:Real}(::typeof(scaleminmax), ::Type{Tout}, A::AbstractArray{T})
+function takemap(::typeof(scaleminmax), ::Type{Tout}, A::AbstractArray{T}) where {Tout,T<:Real}
     min, max = extrema(A)
     scaleminmax(Tout, min, max)
 end
-function takemap{Cout<:Colorant,C<:Colorant}(::typeof(scaleminmax), ::Type{Cout}, A::AbstractArray{C})
+function takemap(::typeof(scaleminmax), ::Type{Cout}, A::AbstractArray{C}) where {Cout<:Colorant,C<:Colorant}
     min, max = extrema(channelview(A))
     scaleminmax(Cout, min, max)
 end
@@ -147,7 +147,7 @@ to `[-1,0]` and `[center,max]` to `[0,1]`. Values smaller than
 
 See also: [`colorsigned`](@ref).
 """
-function scalesigned{T<:Real}(min::T, center::T, max::T)
+function scalesigned(min::T, center::T, max::T) where T<:Real
     min <= center <= max || throw(ArgumentError("values must be ordered, got $min, $center, $max"))
     sneg, spos = 1/(center-min), 1/(max-center)
     function(x)
@@ -157,7 +157,7 @@ function scalesigned{T<:Real}(min::T, center::T, max::T)
 end
 scalesigned(min::Real, center::Real, max::Real) = scalesigned(promote(min, center, max)...)
 
-function takemap{T<:Real}(::typeof(scalesigned), A::AbstractArray{T})
+function takemap(::typeof(scalesigned), A::AbstractArray{T}) where T<:Real
     mn, mx = extrema(A)
     scalesigned(max(abs(mn), abs(mx)))
 end
@@ -180,14 +180,14 @@ The default colors are:
 
 See also: [`scalesigned`](@ref).
 """
-colorsigned{C<:Color}(neg::C, center::C, pos::C) = function(x)
+colorsigned(neg::C, center::C, pos::C) where {C<:Color} = function(x)
     y = clamp(x, -one(x), one(x))
     yabs = abs(y)
     C(ifelse(y>0, weighted_color_mean(yabs, pos, center),
                   weighted_color_mean(yabs, neg, center)))
 end
 
-function colorsigned{C<:Color}(colorneg::C, colorpos::C)
+function colorsigned(colorneg::C, colorpos::C) where C<:Color
     colorsigned(colorneg, C(colorant"white"), colorpos)
 end
 
@@ -224,4 +224,4 @@ julia> f.(A)
 takemap
 
 takemap(f, A) = f
-takemap{T}(f, ::Type{T}, A) = x->T(f(x))
+takemap(f, ::Type{T}, A) where {T} = x->T(f(x))

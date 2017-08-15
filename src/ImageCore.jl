@@ -12,7 +12,7 @@ using Base: tail, @pure, Indices
 
 import Graphics: width, height
 
-@compat AbstractGray{T} = Color{T,1}
+AbstractGray{T} = Color{T,1}
 const RealLike = Union{Real,AbstractGray}
 
 export
@@ -75,9 +75,9 @@ returns a "view" of `img` where the values are interpreted in terms of
 their raw underlying storage. For example, if `img` is an `Array{N0f8}`,
 the view will act like an `Array{UInt8}`.
 """
-rawview{T<:FixedPoint}(a::AbstractArray{T}) = mappedarray((reinterpret, y->T(y,0)), a)
-rawview{T<:FixedPoint}(a::Array{T}) = reinterpret(FixedPointNumbers.rawtype(T), a)
-rawview{T<:Real}(a::AbstractArray{T}) = a
+rawview(a::AbstractArray{T}) where {T<:FixedPoint} = mappedarray((reinterpret, y->T(y,0)), a)
+rawview(a::Array{T}) where {T<:FixedPoint} = reinterpret(FixedPointNumbers.rawtype(T), a)
+rawview(a::AbstractArray{T}) where {T<:Real} = a
 
 """
     normedview([T], img::AbstractArray{Unsigned})
@@ -88,11 +88,11 @@ view will act like an `Array{N0f8}`.  Supply `T` if the element
 type of `img` is `UInt16`, to specify whether you want a `N6f10`,
 `N4f12`, `N2f14`, or `N0f16` result.
 """
-normedview{T<:FixedPoint,S<:Unsigned}(::Type{T}, a::AbstractArray{S}) = mappedarray((y->T(y,0),reinterpret), a)
-normedview{T<:FixedPoint,S<:Unsigned}(::Type{T}, a::Array{S}) = reinterpret(T, a)
-normedview{T<:Normed}(::Type{T}, a::AbstractArray{T}) = a
+normedview(::Type{T}, a::AbstractArray{S}) where {T<:FixedPoint,S<:Unsigned} = mappedarray((y->T(y,0),reinterpret), a)
+normedview(::Type{T}, a::Array{S}) where {T<:FixedPoint,S<:Unsigned} = reinterpret(T, a)
+normedview(::Type{T}, a::AbstractArray{T}) where {T<:Normed} = a
 normedview(a::AbstractArray{UInt8}) = normedview(N0f8, a)
-normedview{T<:Normed}(a::AbstractArray{T}) = a
+normedview(a::AbstractArray{T}) where {T<:Normed} = a
 
 """
     permuteddimsview(A, perm)
@@ -106,8 +106,8 @@ much faster to create, but generally slower to use.
 permuteddimsview(A, perm) = Base.PermutedDimsArrays.PermutedDimsArray(A, perm)
 
 # Support transpose
-Base.transpose{C<:Colorant}(a::AbstractMatrix{C}) = permutedims(a, (2,1))
-function Base.transpose{C<:Colorant}(a::AbstractVector{C})
+Base.transpose(a::AbstractMatrix{C}) where {C<:Colorant} = permutedims(a, (2,1))
+function Base.transpose(a::AbstractVector{C}) where C<:Colorant
     ind = indices(a, 1)
     out = similar(Array{C}, (oftype(ind, Base.OneTo(1)), ind))
     outr = reshape(out, ind)
@@ -115,7 +115,7 @@ function Base.transpose{C<:Colorant}(a::AbstractVector{C})
     out
 end
 
-Base.ctranspose{C<:Colorant}(a::AbstractMatrix{C}) = transpose(a)
-Base.ctranspose{C<:Colorant}(a::AbstractVector{C}) = transpose(a)
+Base.ctranspose(a::AbstractMatrix{C}) where {C<:Colorant} = transpose(a)
+Base.ctranspose(a::AbstractVector{C}) where {C<:Colorant} = transpose(a)
 
 end ## module

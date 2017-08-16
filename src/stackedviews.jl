@@ -30,7 +30,7 @@ StackedView
 @inline Base.size(V::StackedView) = (length(V.parents), size(V.parents[1])...)
 @inline Base.indices(V::StackedView) = (Base.OneTo(length(V.parents)), indices(V.parents[1])...)
 
-@inline function Base.getindex{T,N}(V::StackedView{T,N}, I::Vararg{Int,N})
+@inline function Base.getindex(V::StackedView{T,N}, I::Vararg{Int,N}) where {T,N}
     i1, itail = I[1], tail(I)
     P = V.parents
     @boundscheck (1 <= i1) & (i1 <= length(P)) & checkbounds(Bool, P[1], itail...) ||
@@ -38,7 +38,7 @@ StackedView
     _unsafe_getindex(i1, itail, P...)
 end
 
-@inline function Base.setindex!{T,N}(V::StackedView{T,N}, val, I::Vararg{Int,N})
+@inline function Base.setindex!(V::StackedView{T,N}, val, I::Vararg{Int,N}) where {T,N}
     i1, itail = I[1], tail(I)
     P = V.parents
     @boundscheck (1 <= i1) & (i1 <= length(P)) & checkbounds(Bool, P[1], itail...) ||
@@ -76,7 +76,7 @@ end
 _unsafe_setindex!(idx, I, val) = error("ran out of arrays; this shouldn't happen")
 
 # For setting all of the channels (e.g., for ColorView), one `val` per parent
-@inline function _unsafe_setindex_all!{N}(I, vals::NTuple{N}, As::NTuple{N,AbstractArray})
+@inline function _unsafe_setindex_all!(I, vals::NTuple{N}, As::NTuple{N,AbstractArray}) where N
     val1, valrest = vals[1], tail(vals)
     A1, Arest = As[1], tail(As)
     @inbounds A1[I...] = val1
@@ -85,9 +85,9 @@ end
 _unsafe_setindex_all!(I, ::Tuple{}, ::Tuple{}) = nothing
 
 # Performance optimizations
-@inline getchannels{C<:Color2}(P::StackedView, ::Type{C}, I) = _unsafe_getindex_all(I, P.parents...)
-@inline getchannels{C<:Color3}(P::StackedView, ::Type{C}, I) = _unsafe_getindex_all(I, P.parents...)
-@inline getchannels{C<:Color4}(P::StackedView, ::Type{C}, I) = _unsafe_getindex_all(I, P.parents...)
+@inline getchannels(P::StackedView, ::Type{C}, I) where {C<:Color2} = _unsafe_getindex_all(I, P.parents...)
+@inline getchannels(P::StackedView, ::Type{C}, I) where {C<:Color3} = _unsafe_getindex_all(I, P.parents...)
+@inline getchannels(P::StackedView, ::Type{C}, I) where {C<:Color4} = _unsafe_getindex_all(I, P.parents...)
 
 @inline setchannels!(P::StackedView, val::Color2, I) = _unsafe_setindex_all!(I, (comp1(val),alpha(val)), P.parents)
 @inline setchannels!(P::StackedView, val::Color3, I) = _unsafe_setindex_all!(I, (comp1(val),comp2(val),comp3(val)), P.parents)
@@ -102,25 +102,25 @@ struct ZeroArray{T,N,R<:AbstractUnitRange} <: AbstractArray{T,N}
     inds::NTuple{N,R}
 end
 
-(::Type{ZeroArrayPromise{T}}){T,N,R<:AbstractUnitRange}(inds::NTuple{N,R}) = ZeroArray{T,N,R}(inds)
-Base.eltype{T}(::Type{ZeroArrayPromise{T}}) = T
+ZeroArrayPromise{T}(inds::NTuple{N,R}) where {T,N,R<:AbstractUnitRange} = ZeroArray{T,N,R}(inds)
+Base.eltype(::Type{ZeroArrayPromise{T}}) where {T} = T
 
 Base.indices(A::ZeroArray) = A.inds
-Base.getindex{T,N}(A::ZeroArray{T,N}, I::Vararg{Int,N}) = zero(T)
+Base.getindex(A::ZeroArray{T,N}, I::Vararg{Int,N}) where {T,N} = zero(T)
 
 
 @inline function StackedView(arrays::Union{AbstractArray,ZeroArrayPromise}...)
     T = promote_eleltype_all(arrays...)
     stackedview(T, arrays...)
 end
-@inline function (::Type{StackedView{T}}){T<:Number}(arrays::Union{AbstractArray,ZeroArrayPromise}...)
+@inline function (::Type{StackedView{T}})(arrays::Union{AbstractArray,ZeroArrayPromise}...) where T<:Number
     stackedview(T, arrays...)
 end
 
 # Now, it seems we should be able to do this with uppercase-typed
 # calls, but there seems to be some inference bug, and using a
 # function with a different name works around it.
-@inline function stackedview{T<:Number}(::Type{T}, arrays::Union{AbstractArray,ZeroArrayPromise}...)
+@inline function stackedview(::Type{T}, arrays::Union{AbstractArray,ZeroArrayPromise}...) where T<:Number
     inds = firstinds(arrays...)
     arrays_take = take_zeros(T, inds, arrays...)
     arrays_T = map(A->of_eltype(zero(T), A), arrays_take)
@@ -128,7 +128,7 @@ end
     # to use tuple tricks (i.e., make a tuple of length(inds)+1)
     _stackedview(T, (length(arrays), inds...), arrays_T)
 end
-_stackedview{T,N}(::Type{T}, ::Tuple{Vararg{Any,N}}, arrays) = StackedView{T,N,typeof(arrays)}(arrays)
+_stackedview(::Type{T}, ::Tuple{Vararg{Any,N}}, arrays) where {T,N} = StackedView{T,N,typeof(arrays)}(arrays)
 
 
 @inline firstinds(A::AbstractArray, Bs...) = indices(A)
@@ -145,7 +145,7 @@ function PaddedViews.paddedviews(fillvalue, As::Union{AbstractArray,ZeroArrayPro
     map(A->PaddedView(fillvalue, A, inds), As)
 end
 
-(::Type{PaddedViews.PaddedView})(fillvalue, zap::ZeroArrayPromise, indices) = zap
+PaddedViews.PaddedView(fillvalue, zap::ZeroArrayPromise, indices) = zap
 
 @inline PaddedViews.outerinds(A::ZeroArrayPromise, Bs...) = PaddedViews.outerinds(Bs...)
 @inline PaddedViews._outerinds(inds, A::ZeroArrayPromise, Bs...) =

@@ -1,15 +1,15 @@
 ### reinterpret
 
-@pure samesize{T,S}(::Type{T}, ::Type{S}) = sizeof(T) == sizeof(S)
+@pure samesize(::Type{T}, ::Type{S}) where {T,S} = sizeof(T) == sizeof(S)
 
 ## Color->Color
-function Base.reinterpret{CV1<:Colorant,CV2<:Colorant}(::Type{CV1}, a::Array{CV2,1})
+function Base.reinterpret(::Type{CV1}, a::Array{CV2,1}) where {CV1<:Colorant,CV2<:Colorant}
     CV = ccolor(CV1, CV2)
     l = (length(a)*sizeof(CV2))÷sizeof(CV1)
     l*sizeof(CV1) == length(a)*sizeof(CV2) || throw(ArgumentError("sizes are incommensurate"))
     reinterpret(CV, a, (l,))
 end
-function Base.reinterpret{CV1<:Colorant,CV2<:Colorant}(::Type{CV1}, a::Array{CV2})
+function Base.reinterpret(::Type{CV1}, a::Array{CV2}) where {CV1<:Colorant,CV2<:Colorant}
     CV = ccolor(CV1, CV2)
     if samesize(CV, CV2)
         return reinterpret(CV, a, size(a))
@@ -18,12 +18,12 @@ function Base.reinterpret{CV1<:Colorant,CV2<:Colorant}(::Type{CV1}, a::Array{CV2
 end
 
 ## Color->T
-function Base.reinterpret{T<:Number,CV<:Colorant}(::Type{T}, a::Array{CV,1})
+function Base.reinterpret(::Type{T}, a::Array{CV,1}) where {T<:Number,CV<:Colorant}
     l = (length(a)*sizeof(CV))÷sizeof(T)
     l*sizeof(T) == length(a)*sizeof(CV) || throw(ArgumentError("sizes are incommensurate"))
     reinterpret(T, a, (l,))
 end
-function Base.reinterpret{T<:Number,CV<:Colorant}(::Type{T}, a::Array{CV})
+function Base.reinterpret(::Type{T}, a::Array{CV}) where {T<:Number,CV<:Colorant}
     if samesize(T, CV)
         return reinterpret(T, a, size(a))
     end
@@ -33,21 +33,21 @@ function Base.reinterpret{T<:Number,CV<:Colorant}(::Type{T}, a::Array{CV})
     throw(ArgumentError("result shape not specified"))
 end
 
-_len{C}(::Type{C}) = _len(C, eltype(C))
-_len{C}(::Type{C}, ::Type{Any}) = error("indeterminate type")
-_len{C,T}(::Type{C}, ::Type{T}) = sizeof(C) ÷ sizeof(T)
+_len(::Type{C}) where {C} = _len(C, eltype(C))
+_len(::Type{C}, ::Type{Any}) where {C} = error("indeterminate type")
+_len(::Type{C}, ::Type{T}) where {C,T} = sizeof(C) ÷ sizeof(T)
 
 ## T->Color
 # We have to distinguish two forms of call:
 #   form 1: reinterpret(RGB{N0f8}, img)
 #   form 2: reinterpret(RGB, img)
-function Base.reinterpret{CV<:Colorant,T<:Number}(::Type{CV}, a::Array{T,1})
+function Base.reinterpret(::Type{CV}, a::Array{T,1}) where {CV<:Colorant,T<:Number}
     CVT = ccolor_number(CV, T)
     l = (length(a)*sizeof(T))÷sizeof(CVT)
     l*sizeof(CVT) == length(a)*sizeof(T) || throw(ArgumentError("sizes are incommensurate"))
     reinterpret(CVT, a, (l,))
 end
-function Base.reinterpret{CV<:Colorant,T<:Number}(::Type{CV}, a::Array{T})
+function Base.reinterpret(::Type{CV}, a::Array{T}) where {CV<:Colorant,T<:Number}
     CVT = ccolor_number(CV, T)
     if samesize(CVT, T)
         return reinterpret(CVT, a, size(a))
@@ -59,10 +59,10 @@ function Base.reinterpret{CV<:Colorant,T<:Number}(::Type{CV}, a::Array{T})
 end
 
 # ccolor_number converts form 2 calls to form 1 calls
-ccolor_number{CV<:Colorant,T<:Number}(::Type{CV}, ::Type{T}) =
+ccolor_number(::Type{CV}, ::Type{T}) where {CV<:Colorant,T<:Number} =
     ccolor_number(CV, eltype(CV), T)
-ccolor_number{CV,CVT<:Number,T}(::Type{CV}, ::Type{CVT}, ::Type{T}) = CV # form 1
-ccolor_number{CV<:Colorant,T}(::Type{CV}, ::Type{Any}, ::Type{T}) = CV{T} # form 2
+ccolor_number(::Type{CV}, ::Type{CVT}, ::Type{T}) where {CV,CVT<:Number,T} = CV # form 1
+ccolor_number(::Type{CV}, ::Type{Any}, ::Type{T}) where {CV<:Colorant,T} = CV{T} # form 2
 
 
 ### convert
@@ -72,44 +72,44 @@ ccolor_number{CV<:Colorant,T}(::Type{CV}, ::Type{Any}, ::Type{T}) = CV{T} # form
 # rather than requiring
 #    convert(RGB{N0f8}, a)
 # Where possible the raw element type of the source is retained.
-Base.convert{C<:Color1,n}(::Type{Array{C}},   img::Array{C,n}) = img
-Base.convert{C<:Color1,n}(::Type{Array{C,n}}, img::Array{C,n}) = img
-Base.convert{C<:Colorant,n}(::Type{Array{C}},   img::Array{C,n}) = img
-Base.convert{C<:Colorant,n}(::Type{Array{C,n}}, img::Array{C,n}) = img
+Base.convert(::Type{Array{C}},   img::Array{C,n}) where {C<:Color1,n} = img
+Base.convert(::Type{Array{C,n}}, img::Array{C,n}) where {C<:Color1,n} = img
+Base.convert(::Type{Array{C}},   img::Array{C,n}) where {C<:Colorant,n} = img
+Base.convert(::Type{Array{C,n}}, img::Array{C,n}) where {C<:Colorant,n} = img
 
-function Base.convert{Cdest<:Colorant,n,Csrc<:Colorant}(::Type{Array{Cdest}},
-                                                        img::AbstractArray{Csrc,n})
+function Base.convert(::Type{Array{Cdest}},
+                      img::AbstractArray{Csrc,n}) where {Cdest<:Colorant,n,Csrc<:Colorant}
     convert(Array{Cdest,n}, img)
 end
 
-function Base.convert{Cdest<:Colorant,n,Csrc<:Colorant}(::Type{Array{Cdest,n}},
-                                                        img::AbstractArray{Csrc,n})
+function Base.convert(::Type{Array{Cdest,n}},
+                      img::AbstractArray{Csrc,n}) where {Cdest<:Colorant,n,Csrc<:Colorant}
     copy!(Array{ccolor(Cdest, Csrc)}(size(img)), img)
 end
 
-function Base.convert{Cdest<:Color1,n}(::Type{Array{Cdest}},
-                                       img::BitArray{n})
+function Base.convert(::Type{Array{Cdest}},
+                      img::BitArray{n}) where {Cdest<:Color1,n}
     convert(Array{Cdest,n}, img)
 end
 
-function Base.convert{Cdest<:Color1,n,T<:Real}(::Type{Array{Cdest}},
-                                               img::AbstractArray{T,n})
+function Base.convert(::Type{Array{Cdest}},
+                      img::AbstractArray{T,n}) where {Cdest<:Color1,n,T<:Real}
     convert(Array{Cdest,n}, img)
 end
 
-function Base.convert{Cdest<:Color1,n}(::Type{Array{Cdest,n}},
-                                       img::BitArray{n})
+function Base.convert(::Type{Array{Cdest,n}},
+                      img::BitArray{n}) where {Cdest<:Color1,n}
     copy!(Array{ccolor(Cdest, Gray{Bool})}(size(img)), img)
 end
 
-function Base.convert{Cdest<:Color1,n,T<:Real}(::Type{Array{Cdest,n}},
-                                               img::AbstractArray{T,n})
+function Base.convert(::Type{Array{Cdest,n}},
+                      img::AbstractArray{T,n}) where {Cdest<:Color1,n,T<:Real}
     copy!(Array{ccolor(Cdest, Gray{T})}(size(img)), img)
 end
 
 # for docstrings in the operations below
-shortname{T<:FixedPoint}(::Type{T}) = (io = IOBuffer(); FixedPointNumbers.showtype(io, T); String(take!(io)))
-shortname{T}(::Type{T}) = string(T)
+shortname(::Type{T}) where {T<:FixedPoint} = (io = IOBuffer(); FixedPointNumbers.showtype(io, T); String(take!(io)))
+shortname(::Type{T}) where {T} = string(T)
 
 # float32, float64, etc. Used for conversions like
 #     Array{RGB{N0f8}} -> Array{RGB{Float32}},
@@ -121,8 +121,8 @@ for (fn,T) in (#(:float16, Float16),   # Float16 currently has promotion problem
                (:n0f8, N0f8), (:n6f10, N6f10),
                (:n4f12, N4f12), (:n2f14, N2f14), (:n0f16, N0f16))
     @eval begin
-        ($fn){C<:Colorant}(::Type{C}) = base_colorant_type(C){$T}
-        ($fn){S<:Number  }(::Type{S}) = $T
+        ($fn)(::Type{C}) where {C<:Colorant} = base_colorant_type(C){$T}
+        ($fn)(::Type{S}) where {S<:Number  } = $T
         ($fn)(c::Colorant) = convert(($fn)(typeof(c)), c)
         ($fn)(n::Number)   = convert(($fn)(typeof(n)), n)
         @deprecate ($fn){C<:Colorant}(A::AbstractArray{C}) ($fn).(A)

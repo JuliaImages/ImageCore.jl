@@ -119,6 +119,25 @@ using Base.Test
             @test f(-0.25) ≈ mapc(N0f8, 0.25g+0.75w)
             @test f( 0.75) ≈ mapc(N0f8, 0.75m+0.25w)
         end
+        g, w, m = RGBA(0.,1.,0.,1.), RGBA(1.,1.,1.,0.), RGBA(1.,0.,1.,1.)
+        f = colorsigned(g, w, m)
+        @test f(-1) == g
+        @test f( 0) == w
+        @test f( 1) == m
+        @test f(-0.5) ≈ RGBA(0.5,1.0,0.5,0.5)
+        @test f(-0.5) ≈ 0.5g+0.5w
+        @test f( 0.5) ≈ 0.5w+0.5m
+        @test f(-0.25) ≈ 0.25g+0.75w
+        @test f( 0.75) ≈ 0.75m+0.25w
+        w = RGBA{Float64}(colorant"white")
+        f = colorsigned(g, m)
+        @test f(-1) == g
+        @test f( 0) == w
+        @test f( 1) == m
+        @test f(-0.5) ≈ 0.5g+0.5w
+        @test f( 0.5) ≈ 0.5w+0.5m
+        @test f(-0.25) ≈ 0.25g+0.75w
+        @test f( 0.75) ≈ 0.75m+0.25w
     end
 end
 

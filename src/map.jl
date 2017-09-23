@@ -180,14 +180,14 @@ The default colors are:
 
 See also: [`scalesigned`](@ref).
 """
-colorsigned(neg::C, center::C, pos::C) where {C<:Color} = function(x)
+colorsigned(neg::C, center::C, pos::C) where {C<:Colorant} = function(x)
     y = clamp(x, -one(x), one(x))
     yabs = abs(y)
     C(ifelse(y>0, weighted_color_mean(yabs, pos, center),
                   weighted_color_mean(yabs, neg, center)))
 end
 
-function colorsigned(colorneg::C, colorpos::C) where C<:Color
+function colorsigned(colorneg::C, colorpos::C) where C<:Colorant
     colorsigned(colorneg, C(colorant"white"), colorpos)
 end
 

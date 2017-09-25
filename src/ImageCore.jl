@@ -66,7 +66,6 @@ include("traits.jl")
 include("map.jl")
 include("functions.jl")
 include("show.jl")
-include("deprecated.jl")
 
 """
     rawview(img::AbstractArray{FixedPoint})

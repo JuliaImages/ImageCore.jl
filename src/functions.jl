@@ -1,4 +1,4 @@
-import Base: fft, rfft, plan_fft, plan_rfft
+import FFTW: fft, rfft, plan_fft, plan_rfft
 
 # It's better not to define fft on Colorant arrays, because keeping
 # track of the color dimension and the fft-dims is prone to omissions
@@ -6,7 +6,8 @@ import Base: fft, rfft, plan_fft, plan_rfft
 # the user, but we try to give helpful suggestions.
 
 function throw_ffterror(f, x, dims=1:ndims(x))
-    error("$f not defined for eltype $(eltype(x)). Use channelview, and likely $(dims+channelview_dims_offset(x)) for the dims in the fft.")
+    newdims = plus(dims, channelview_dims_offset(x))
+    error("$f not defined for eltype $(eltype(x)). Use channelview, and likely $newdims for the dims in the fft.")
 end
 
 for f in (:fft, :rfft)

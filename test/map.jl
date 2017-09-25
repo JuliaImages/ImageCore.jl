@@ -67,7 +67,7 @@ using Base.Test
             @test fA == tgt
             @test eltype(fA) == eltype(tgt)
         end
-        B = A+10
+        B = A.+10
         f = scaleminmax(10, 1010)
         @test f.(B) == target
         A = [0, 1, 100, 1000]

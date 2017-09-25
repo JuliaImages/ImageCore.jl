@@ -6,7 +6,7 @@ along each axis of the image.  Defaults to (1,1,...).  Use
 ImagesAxes for images with anisotropic spacing or to encode the
 spacing using physical units.
 """
-pixelspacing(img::AbstractArray{T,N}) where {T,N} = ntuple(d->1, Val{N})
+pixelspacing(img::AbstractArray{T,N}) where {T,N} = ntuple(d->1, Val(N))
 # Some of these traits need to work recursively into "container" types
 pixelspacing(img::AbstractMappedArray) = pixelspacing(parent(img))
 pixelspacing(img::OffsetArray) = pixelspacing(parent(img))
@@ -35,7 +35,7 @@ spacedirections(img::OffsetArray) = spacedirections(parent(img))
     _getindex_tuple(spacedirections(parent(img)), perm)
 
 function _spacedirections(ps::NTuple{N,Any}) where N
-    ntuple(i->ntuple(d->d==i ? ps[d] : zero(ps[d]), Val{N}), Val{N})
+    ntuple(i->ntuple(d->d==i ? ps[d] : zero(ps[d]), Val(N)), Val(N))
 end
 
 """
@@ -55,7 +55,7 @@ Return a tuple listing the spatial dimensions of `img`.
 
 Note that a better strategy may be to use ImagesAxes and take slices along the time axis.
 """
-@inline coords_spatial(img::AbstractArray{T,N}) where {T,N} = ntuple(identity, Val{N})
+@inline coords_spatial(img::AbstractArray{T,N}) where {T,N} = ntuple(identity, Val(N))
 
 coords_spatial(img::AbstractMappedArray) = coords_spatial(parent(img))
 coords_spatial(img::OffsetArray) = coords_spatial(parent(img))

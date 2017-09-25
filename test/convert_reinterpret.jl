@@ -135,9 +135,14 @@ using Base.Test
     # indeterminate type tests
     a = Array{RGB{AbstractFloat}}(3)
     @test_throws ArgumentError reinterpret(Float64, a)
-    Tu = TypeVar(:T)
-    a = Array{RGB{Tu}}(3)
-    @test_throws ErrorException reinterpret(Float64, a)
+    if VERSION < v"0.7.0-DEV"
+        Tu = TypeVar(:T)
+        a = Array{RGB{Tu}}(3)
+        @test_throws ErrorException reinterpret(Float64, a)
+    else
+        a = Vector{RGB}(3)
+        @test_throws ErrorException reinterpret(Float64, a)
+    end
 
     # Invalid conversions
     a = rand(UInt8, 4,5)

@@ -78,7 +78,12 @@ if VERSION < v"0.7.0-DEV.1790"
     end
     function _showarg_type(io::IO, A::Array)
         print(io, "Array{")
-        ColorTypes.showcoloranttype(io, eltype(A))
+        T = eltype(A)
+        if T<:Colorant
+            ColorTypes.colorant_string_with_eltype(io, T)
+        else
+            ColorTypes.showcoloranttype(io, T)
+        end
         print(io, ',', ndims(A), '}')
     end
 
@@ -95,12 +100,20 @@ if VERSION < v"0.7.0-DEV.1790"
     end
     function _showarg_type(io::IO, A::OffsetArray{T,N,AA}) where {T,N,AA<:Array}
         print(io, "OffsetArray{")
-        ColorTypes.showcoloranttype(io, T)
+        if T<:Colorant
+            ColorTypes.colorant_string_with_eltype(io, T)
+        else
+            ColorTypes.showcoloranttype(io, T)
+        end
         print(io, ',', ndims(A), '}')
     end
     function _showarg_type(io::IO, A::OffsetArray{T,N}) where {T,N}
         print(io, "OffsetArray{")
-        ColorTypes.showcoloranttype(io, T)
+        if T<:Colorant
+            ColorTypes.colorant_string_with_eltype(io, T)
+        else
+            ColorTypes.showcoloranttype(io, T)
+        end
         print(io, ',', ndims(A), ',')
         _showarg_type(io, parent(A))
         print(io, '}')

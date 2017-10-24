@@ -65,6 +65,7 @@ export
     sdims,
     size_spatial,
     spacedirections,
+    spatialorder,
     width,
     widthheight
 

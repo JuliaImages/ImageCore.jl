@@ -12,6 +12,15 @@ using Base: tail, @pure, Indices
 
 import Graphics: width, height
 
+# TODO: just use .+
+# See https://github.com/JuliaLang/julia/pull/22932#issuecomment-330711997
+if VERSION < v"0.7.0-DEV.1759"
+    plus(r::AbstractUnitRange, i::Integer) = r + i
+else
+    plus(r::AbstractUnitRange, i::Integer) = broadcast(+, r, i)
+end
+plus(a::AbstractArray, i::Integer) = a .+ i
+
 AbstractGray{T} = Color{T,1}
 const RealLike = Union{Real,AbstractGray}
 
@@ -66,7 +75,6 @@ include("traits.jl")
 include("map.jl")
 include("functions.jl")
 include("show.jl")
-include("deprecated.jl")
 
 """
     rawview(img::AbstractArray{FixedPoint})

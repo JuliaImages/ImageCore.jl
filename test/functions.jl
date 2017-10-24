@@ -1,4 +1,5 @@
 using ImageCore, Colors, FixedPointNumbers
+using FFTW
 using Base.Test
 
 @testset "functions" begin

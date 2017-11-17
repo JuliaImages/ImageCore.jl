@@ -2,9 +2,8 @@ __precompile__()
 
 module ImageCore
 
-using Colors, FixedPointNumbers, MappedArrays, PaddedViews, Graphics, ShowItLikeYouBuildIt
+using Colors, FixedPointNumbers, MappedArrays, PaddedViews, Graphics
 using OffsetArrays # for show.jl
-using Compat
 using ColorTypes: colorant_string
 using Colors: Fractional
 
@@ -14,20 +13,25 @@ import Graphics: width, height
 
 # TODO: just use .+
 # See https://github.com/JuliaLang/julia/pull/22932#issuecomment-330711997
-if VERSION < v"0.7.0-DEV.1759"
-    plus(r::AbstractUnitRange, i::Integer) = r + i
-else
-    plus(r::AbstractUnitRange, i::Integer) = broadcast(+, r, i)
-end
+plus(r::AbstractUnitRange, i::Integer) = broadcast(+, r, i)
 plus(a::AbstractArray, i::Integer) = a .+ i
 
 AbstractGray{T} = Color{T,1}
 const RealLike = Union{Real,AbstractGray}
+Color1{T} = Colorant{T,1}
+Color2{T} = Colorant{T,2}
+Color3{T} = Colorant{T,3}
+Color4{T} = Colorant{T,4}
+AColor{N,C,T} = AlphaColor{C,T,N}
+ColorA{N,C,T} = ColorAlpha{C,T,N}
+const NonparametricColors = Union{RGB24,ARGB32,Gray24,AGray32}
+Color1Array{C<:Color1,N} = AbstractArray{C,N}
+# Type that arises from reshape(reinterpret(To, A), sz):
+const RRArray{To,From,N,M,P} = Base.ReshapedArray{To,N,Base.ReinterpretArray{To,M,From,P}}
+const RGArray = Union{Base.ReinterpretArray{<:AbstractGray,M,<:Number,P}, Base.ReinterpretArray{<:Number,M,<:AbstractGray,P}} where {M,P}
 
 export
     ## Types
-    ChannelView,
-    ColorView,
     StackedView,
     ## constants
     zeroarray,
@@ -39,6 +43,7 @@ export
     rawview,
     normedview,
     paddedviews,
+    reinterpretc,
     # conversions
 #    float16,
     float32,
@@ -76,6 +81,7 @@ include("traits.jl")
 include("map.jl")
 include("functions.jl")
 include("show.jl")
+include("deprecations.jl")
 
 """
     rawview(img::AbstractArray{FixedPoint})
@@ -117,7 +123,7 @@ permuteddimsview(A, perm) = Base.PermutedDimsArrays.PermutedDimsArray(A, perm)
 # Support transpose
 Base.transpose(a::AbstractMatrix{C}) where {C<:Colorant} = permutedims(a, (2,1))
 function Base.transpose(a::AbstractVector{C}) where C<:Colorant
-    ind = indices(a, 1)
+    ind = axes(a, 1)
     out = similar(Array{C}, (oftype(ind, Base.OneTo(1)), ind))
     outr = reshape(out, ind)
     copy!(outr, a)

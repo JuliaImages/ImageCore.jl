@@ -2,10 +2,10 @@ struct StackedView{T<:Number,N,A<:Tuple{Vararg{AbstractArray{T}}}} <: AbstractAr
     parents::A
 
     function StackedView{T,N,A}(parents::A) where {T<:Number,N,A<:Tuple{Vararg{AbstractArray{T}}}}
-        inds = indices(parents[1])
+        inds = axes(parents[1])
         length(inds) == N-1 || throw(DimensionMismatch("component arrays must be of dimension \$(N-1), got \$(length(inds))"))
         for i = 2:length(parents)
-            indices(parents[i]) == inds || throw(DimensionMismatch("all arrays must have the same indices, got \$inds and \$(indices(parents[i]))"))
+            axes(parents[i]) == inds || throw(DimensionMismatch("all arrays must have the same indices, got \$inds and \$(axes(parents[i]))"))
         end
         new(parents)
     end
@@ -28,7 +28,7 @@ See also: [`colorview`](@ref).
 StackedView
 
 @inline Base.size(V::StackedView) = (length(V.parents), size(V.parents[1])...)
-@inline Base.indices(V::StackedView) = (Base.OneTo(length(V.parents)), indices(V.parents[1])...)
+@inline Base.axes(V::StackedView) = (Base.OneTo(length(V.parents)), axes(V.parents[1])...)
 
 @inline function Base.getindex(V::StackedView{T,N}, I::Vararg{Int,N}) where {T,N}
     i1, itail = I[1], tail(I)
@@ -105,7 +105,7 @@ end
 ZeroArrayPromise{T}(inds::NTuple{N,R}) where {T,N,R<:AbstractUnitRange} = ZeroArray{T,N,R}(inds)
 Base.eltype(::Type{ZeroArrayPromise{T}}) where {T} = T
 
-Base.indices(A::ZeroArray) = A.inds
+Base.axes(A::ZeroArray) = A.inds
 Base.getindex(A::ZeroArray{T,N}, I::Vararg{Int,N}) where {T,N} = zero(T)
 
 
@@ -131,7 +131,7 @@ end
 _stackedview(::Type{T}, ::Tuple{Vararg{Any,N}}, arrays) where {T,N} = StackedView{T,N,typeof(arrays)}(arrays)
 
 
-@inline firstinds(A::AbstractArray, Bs...) = indices(A)
+@inline firstinds(A::AbstractArray, Bs...) = axes(A)
 @inline firstinds(::ZeroArrayPromise, Bs...) = firstinds(Bs...)
 firstinds() = error("not all arrays can be zeroarray")
 

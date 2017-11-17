@@ -1,6 +1,6 @@
 using ImageCore, Colors, FixedPointNumbers
 using FFTW
-using Base.Test
+using Test
 
 @testset "functions" begin
     ag = rand(Gray{Float32}, 4, 5)
@@ -10,14 +10,14 @@ using Base.Test
                       (fft, (ac,)), (fft, (ac, 1:2)), (plan_fft, (ac,)),
                       (rfft, (ac,)), (rfft, (ac, 1:2)), (plan_rfft, (ac,)))
         ret = @test_throws ErrorException f(args...)
-        @test contains(ret.value.msg, "channelview")
-        @test contains(ret.value.msg, eltype(args[1])<:Gray ? "1:2" : "2:3")
+        @test occursin("channelview", ret.value.msg)
+        @test occursin(eltype(args[1])<:Gray ? "1:2" : "2:3", ret.value.msg)
     end
     for (a, dims) in ((ag, 1:2), (ac, 2:3))
         @test ifft(fft(channelview(a), dims), dims) ≈ channelview(a)
         ret = @test_throws ErrorException rfft(a)
-        @test contains(ret.value.msg, "channelview")
-        @test contains(ret.value.msg, "$dims")
+        @test occursin("channelview", ret.value.msg)
+        @test occursin("$dims", ret.value.msg)
         @test irfft(rfft(channelview(a), dims), 4, dims) ≈ channelview(a)
     end
 

@@ -1,269 +1,95 @@
-# Implements two view types for "converting" between arrays-of-colors
-# and arrays-of-numbers (with the "first dimension" corresponding to
-# color channels)
-#  - ChannelView: view a color array as if it were an array of numbers
-#  - ColorView: view an array of numbers as if it were an array of colors
-# Examples:
-#    img is a m-by-n Array{RGB{Float32}}
-#    ChannelView(img) is a 3-by-m-by-n AbstractArray{Float32}
-#
-#    buffer is a 3-by-m-by-n Array{N0f8}
-#    ColorView{RGB}(buffer) is an m-by-n AbstractArray{RGB{N0f8}}
-
-# "First dimension" applies to colors like RGB; by default, Gray
-# images don't use a whole dimension (of size 1) just to encode
-# colors. But it's easy to change that behavior with the flip of a
-# switch:
-const squeeze1 = true # when true, don't use a dimension for the color channel of grayscale
-
-Color1{T} = Colorant{T,1}
-Color2{T} = Colorant{T,2}
-Color3{T} = Colorant{T,3}
-Color4{T} = Colorant{T,4}
-AColor{N,C,T} = AlphaColor{C,T,N}
-ColorA{N,C,T} = ColorAlpha{C,T,N}
-const NonparametricColors = Union{RGB24,ARGB32,Gray24,AGray32}
-
-## ChannelView
-
-struct ChannelView{T,N,A<:AbstractArray} <: AbstractArray{T,N}
-    parent::A
-
-    function ChannelView{T,N,A}(parent::AbstractArray{C}) where {T,N,A,C<:Colorant}
-        n = length(channelview_indices(parent))
-        n == N || throw(DimensionMismatch("for an $N-dimensional ChannelView with color type $C, input dimensionality should be $n instead of $(ndims(parent))"))
-        new{T,N,A}(parent)
-    end
-end
-
+# Create a special type for permutations. The real point here is to be able to
+# unambiguously identify an RRPermArray (see below) so that we may "unwrap" in
+# expressions like `channelview(colorview(C, A))`.
 
 """
-    ChannelView(A)
+ColorChanPerm(perm)
 
-creates a "view" of the Colorant array `A`, splitting out (if
-necessary) the separate color channels of `eltype(A)` into a new first
-dimension. For example, if `A` is a m-by-n RGB{N0f8} array,
-`ChannelView(A)` will return a 3-by-m-by-n N0f8 array. Color spaces with
-a single element (i.e., grayscale) do not add a new first dimension of
-`A`.
-
-Of relevance for types like RGB and BGR, the channels of the returned
-array will be in constructor-argument order, not memory order (see
-`reinterpret` if you want to use memory order).
-
-The opposite transformation is implemented by [`ColorView`](@ref). See
-also [`channelview`](@ref).
+Construct a reordering permutation for the color channel.
+This handles swaps between memory layout and constructor argument order for `AbstractRGB` and
+various `AlphaChannel` and `ChannelAlpha` color types.
 """
-ChannelView(parent::AbstractArray) = _channelview(parent, channelview_indices(parent))
-function _channelview(parent::AbstractArray{C}, inds::Indices{N}) where {C<:Colorant,N}
-    # Creating a ChannelView in a type-stable fashion requires use of tuples to compute N+1
-    ChannelView{eltype(C),N,typeof(parent)}(parent)
+struct ColorChanPerm{N} <: AbstractVector{Int}
+    perm::NTuple{N,Int}
 end
+Base.IndexStyle(::Type{<:ColorChanPerm}) = IndexLinear()
+Base.size(v::ColorChanPerm{N}) where N = (N,)
+Base.getindex(v::ColorChanPerm, i::Int) = v.perm[i]
 
-Color1Array{C<:Color1,N} = AbstractArray{C,N}
-ChannelView1{T,N,A<:Color1Array} = ChannelView{T,N,A}
+dimorder(::Type{<:RGB}) = ColorChanPerm((1, 2, 3))
+dimorder(::Type{<:BGR}) = ColorChanPerm((3, 2, 1))
+dimorder(::Type{<:RGB1}) = ColorChanPerm((1, 1, 2, 3))
+dimorder(::Type{<:RGB4}) = ColorChanPerm((1, 2, 3, 3)) # this causes problems for setindex!, fixed below
+dimorder(::Type{<:BGRA}) = ColorChanPerm((3, 2, 1, 4))
+dimorder(::Type{<:ABGR}) = ColorChanPerm((4, 3, 2, 1))
+dimorder(::Type{<:AlphaColor{<:Color1,T,N}}) where {T,N} = ColorChanPerm((2, 1))
+dimorder(::Type{<:AlphaColor{<:Color3,T,N}}) where {T,N} = ColorChanPerm((4, 1, 2, 3))
 
-Base.parent(A::ChannelView) = A.parent
-parenttype(::Type{ChannelView{T,N,A}}) where {T,N,A} = A
-@inline Base.size(A::ChannelView)    = channelview_size(parent(A))
-@inline Base.indices(A::ChannelView) = channelview_indices(parent(A))
+const ColorChanPermIndexType{NC} = Tuple{<:ColorChanPerm,Vararg{<:Base.Slice,NC}}
+const ColorChanPermSubArray{T,N,P,I<:ColorChanPermIndexType,L} =
+    SubArray{T,N,P,I,L}
+const RRPermArray{To,From,N,M,P<:ColorChanPermSubArray} =
+    RRArray{To,From,N,M,P}
 
-# Can be IndexLinear for grayscale (1-channel images), otherwise must be IndexCartesian
-Base.IndexStyle(::Type{T}) where {T<:ChannelView1} = IndexStyle(parenttype(T))
-
-# colortype(A::ChannelView) = eltype(parent(A))
-
-Base.@propagate_inbounds function Base.getindex(A::ChannelView{T,N}, I::Vararg{Int,N}) where {T,N}
-    @boundscheck checkbounds(A, I...)
-    P = parent(A)
-    Ic, Ia = indexsplit(P, I)
-    @inbounds ret = tuplify(P[Ia...])[Ic]
-    ret
+# This type exists solely to set multiple values in the color channel axis
+struct NVector{T,N} <: AbstractVector{T}
+    v::NTuple{N,T}
 end
+Base.IndexStyle(::Type{<:NVector}) = IndexLinear()
+Base.size(v::NVector{T,N}) where {T,N} = (N,)
+Base.getindex(v::NVector, i::Int) = v.v[i]
+NVector(x::Vararg{T,N}) where {T,N} = NVector{T,N}(x)
 
-Base.@propagate_inbounds function Base.getindex(A::ChannelView1{T,1}, i::Int) where T # ambiguity
-    @boundscheck checkbounds(A, i)
-    @inbounds ret = eltype(A)(parent(A)[i])
-    ret
-end
-Base.@propagate_inbounds function Base.getindex(A::ChannelView1, i::Int)
-    @boundscheck checkbounds(A, i)
-    @inbounds ret = eltype(A)(parent(A)[i])
-    ret
-end
-
-Base.@propagate_inbounds function Base.setindex!(A::ChannelView{T,N}, val, I::Vararg{Int,N}) where {T,N}
-    @boundscheck checkbounds(A, I...)
-    P = parent(A)
-    Ic, Ia = indexsplit(P, I)
-    @inbounds c = P[Ia...]
-    @inbounds P[Ia...] = setchannel(c, val, Ic)
-    val
-end
-
-Base.@propagate_inbounds function Base.setindex!(A::ChannelView1{T,1}, val, i::Int) where T # amb
-    @boundscheck checkbounds(A, i)
-    @inbounds parent(A)[i] = val
-    val
-end
-Base.@propagate_inbounds function Base.setindex!(A::ChannelView1, val, i::Int)
-    @boundscheck checkbounds(A, i)
-    @inbounds parent(A)[i] = val
-    val
-end
-
-function Base.similar(A::ChannelView, ::Type{S}, dims::NTuple{N,Int}) where {S,N}
-    P = parent(A)
-    check_ncolorchan(P, dims)
-    ChannelView(similar(P, base_colorant_type(eltype(P)){S}, chanparentsize(P, dims)))
-end
-
-## ColorView
-
-"""
-    ColorView{C}(A)
-
-creates a "view" of the numeric array `A`, interpreting the first
-dimension of `A` as if were the channels of a Colorant `C`. The first
-dimension must have the proper number of elements for the constructor
-of `C`. For example, if `A` is a 3-by-m-by-n N0f8 array,
-`ColorView{RGB}(A)` will create an m-by-n array with element type
-`RGB{N0f8}`. Color spaces with a single element (i.e., grayscale) do not
-"consume" the first dimension of `A`.
-
-Of relevance for types like RGB and BGR, the elements of `A`
-are interpreted in constructor-argument order, not memory order (see
-`reinterpret` if you want to use memory order).
-
-The opposite transformation is implemented by
-[`ChannelView`](@ref). See also [`colorview`](@ref).
-"""
-struct ColorView{C<:Colorant,N,A<:AbstractArray} <: AbstractArray{C,N}
-    parent::A
-
-    function ColorView{C,N,A}(parent::AbstractArray{T}) where {C,N,A,T<:Number}
-        n = length(colorview_size(C, parent))
-        n == N || throw(DimensionMismatch("for an $N-dimensional ColorView with color type $C, input dimensionality should be $n instead of $(ndims(parent))"))
-        checkdim1(C, indices(parent))
-        new{C,N,A}(parent)
-    end
-end
-
-function ColorView{C}(parent::AbstractArray{T}) where {C<:Colorant,T<:Number}
-    CT = ccolor_number(C, T)
-    _ColorView(CT, eltype(CT), parent)
-end
-function _ColorView(::Type{C}, ::Type{T}, parent::AbstractArray{T}) where {C<:Colorant,T<:Number}
-    # Creating a ColorView in a type-stable fashion requires use of tuples to compute N+1
-    _colorview(C, parent, colorview_size(C, parent))
-end
-function _colorview(::Type{C}, parent::AbstractArray, sz::NTuple{N,Int}) where {C,N}
-    ColorView{C,N,typeof(parent)}(parent)
-end
-
-ColorView(::AbstractArray) = error("specify the desired colorspace with ColorView{C}(parent)")
-
-Base.parent(A::ColorView) = A.parent
-@inline Base.size(A::ColorView) = colorview_size(eltype(A), parent(A))
-@inline Base.indices(A::ColorView) = colorview_indices(eltype(A), parent(A))
-
-Base.IndexStyle(::Type{ColorView{C,N,A}}) where {C<:Color1,N,A<:AbstractArray} = IndexStyle(A)
-Base.IndexStyle(::Type{V}) where {V<:ColorView} = IndexCartesian()
-
-Base.@propagate_inbounds function Base.getindex(A::ColorView{C,N}, I::Vararg{Int,N}) where {C,N}
-    P = parent(A)
-    @boundscheck Base.checkbounds_indices(Bool, parentindices(C, indices(P)), I) || Base.throw_boundserror(A, I)
-    @inbounds ret = C(getchannels(P, C, I)...)
-    ret
-end
-
-Base.@propagate_inbounds function Base.setindex!(A::ColorView{C,N}, val::C, I::Vararg{Int,N}) where {C,N}
-    P = parent(A)
-    @boundscheck Base.checkbounds_indices(Bool, parentindices(C, indices(P)), I) || Base.throw_boundserror(A, I)
-    setchannels!(P, val, I)
-    val
-end
-Base.@propagate_inbounds function Base.setindex!(A::ColorView{C,N}, val, I::Vararg{Int,N}) where {C,N}
-    setindex!(A, convert(C, val), I...)
-end
-
-# A grayscale ColorView can be LinearFast, so support this too
-Base.@propagate_inbounds function Base.getindex(A::ColorView{C,N}, i::Int) where {C<:Color1,N}
-    P = parent(A)
-    @boundscheck checkindex(Bool, linearindices(P), i) || Base.throw_boundserror(A, i)
-    @inbounds ret = C(getchannels(P, C, i)[1])
-    ret
-end
-Base.@propagate_inbounds function Base.setindex!(A::ColorView{C,1}, val::C, i::Int) where C<:Color1  # for ambiguity resolution
-    P = parent(A)
-    @boundscheck checkindex(Bool, linearindices(P), i) || Base.throw_boundserror(A, i)
-    setchannels!(P, val, i)
-    val
-end
-Base.@propagate_inbounds function Base.setindex!(A::ColorView{C,N}, val::C, i::Int) where {C<:Color1,N}
-    P = parent(A)
-    @boundscheck checkindex(Bool, linearindices(P), i) || Base.throw_boundserror(A, i)
-    setchannels!(P, val, i)
-    val
-end
-Base.@propagate_inbounds function Base.setindex!(A::ColorView{C,N}, val, i::Int) where {C<:Color1,N}
-    setindex!(A, convert(C, val), i)
-end
-
-function Base.similar(A::ColorView, ::Type{S}, dims::NTuple{N,Int}) where {S<:Colorant,N}
-    P = parent(A)
-    ColorView{S}(similar(P, celtype(eltype(S), eltype(P)), colparentsize(S, dims)))
-end
-function Base.similar(A::ColorView, ::Type{S}, dims::NTuple{N,Int}) where {S<:Number,N}
-    P = parent(A)
-    similar(P, S, dims)
-end
-function Base.similar(A::ColorView, ::Type{S}, dims::NTuple{N,Int}) where {S<:NonparametricColors,N}
-    P = parent(A)
-    similar(P, S, dims)
-end
-
-## Construct a view that's conceptually equivalent to a ChannelView or ColorView,
-## but which may be simpler (i.e., strip off a wrapper or use reinterpret)
+@inline Base.setindex!(A::RRPermArray{<:RGB4,<:Number,N}, val::AbstractRGB, i::Vararg{Int,N}) where N =
+    setindex!(parent(parent(parent(A))), NVector(red(val), green(val), blue(val)), :, i...)
 
 """
     channelview(A)
 
 returns a view of `A`, splitting out (if necessary) the color channels
-of `A` into a new first dimension. This is almost identical to
-`ChannelView(A)`, except that if `A` is a `ColorView`, it will simply
-return the parent of `A`, or will use `reinterpret` when appropriate.
-Consequently, the output may not be a [`ChannelView`](@ref) array.
+of `A` into a new first dimension.
 
 Of relevance for types like RGB and BGR, the channels of the returned
 array will be in constructor-argument order, not memory order (see
-`reinterpret` if you want to use memory order).
+`reinterpretc` if you want to use memory order).
+
+# Example
+```julia
+img = rand(RGB{N0f8}, 10, 10)
+A = channelview(img)   # a 3×10×10 array
 """
 channelview(A::AbstractArray{T}) where {T<:Number} = A
-channelview(A::AbstractArray) = ChannelView(A)
-channelview(A::ColorView) = parent(A)
-channelview(A::Array{RGB{T}}) where {T} = reinterpret(T, A)
-channelview(A::Array{C}) where {C<:AbstractRGB} = ChannelView(A) # BGR, RGB1, etc don't satisfy conditions
-channelview(A::Array{C}) where {C<:Color} = reinterpret(eltype(C), A)
-channelview(A::Array{C}) where {C<:ColorAlpha} = _channelview(base_color_type(C), A)
-_channelview(::Type{RGB}, A) = reinterpret(eltype(eltype(A)), A)
-_channelview(::Type{C}, A) where {C<:AbstractRGB} = ChannelView(A)
-_channelview(::Type{C}, A) where {C<:Color} = reinterpret(eltype(eltype(A)), A)
-
+channelview(A::RRPermArray{<:Colorant,<:Number}) = parent(parent(parent(A)))
+channelview(A::RRArray{<:Colorant,<:Number}) = parent(parent(A))
+channelview(A::Base.ReinterpretArray{<:AbstractGray,M,<:Number}) where M = parent(A)
+channelview(A::AbstractArray{RGB{T}}) where {T} = reinterpretc(T, A)
+function channelview(A::AbstractArray{C}) where {C<:AbstractRGB}
+    # BGR, RGB1, etc don't satisfy conditions for reinterpret
+    CRGB = RGB{eltype(C)}
+    channelview(mappedarray((x->CRGB(x), x->C(x)), A))
+end
+channelview(A::AbstractArray{C}) where {C<:Color} = reinterpretc(eltype(C), A)
+channelview(A::AbstractArray{C}) where {C<:ColorAlpha} = _channelview(color_type(C), A)
+_channelview(::Type{<:RGB}, A) = reinterpretc(eltype(eltype(A)), A)
+function _channelview(::Type{C}, A) where {C<:AbstractRGB}
+    CRGBA = RGBA{eltype(C)}
+    channelview(mappedarray((x->CRGBA(x), x->eltype(A)(x)), A))
+end
+_channelview(::Type{C}, A) where {C<:Color} = reinterpretc(eltype(C), A)
+function channelview(A::AbstractArray{AC}) where {AC<:AlphaColor}
+    CA = coloralpha(base_color_type(AC)){eltype(AC)}
+    channelview(mappedarray((x->CA(x), x->AC(x)), A))
+end
 
 """
     colorview(C, A)
 
 returns a view of the numeric array `A`, interpreting successive
-elements of `A` as if they were channels of Colorant `C`. This is
-almost identical to `ColorView{C}(A)`, except that if `A` is a
-`ChannelView`, it will simply return the parent of `A`, or use
-`reinterpret` when appropriate. Consequently, the output may not be a
-[`ColorView`](@ref) array.
+elements of `A` as if they were channels of Colorant `C`.
 
 Of relevance for types like RGB and BGR, the elements of `A` are
 interpreted in constructor-argument order, not memory order (see
-`reinterpret` if you want to use memory order).
+`reinterpretc` if you want to use memory order).
 
 # Example
 ```jl
@@ -273,30 +99,35 @@ img = colorview(RGB, A)
 """
 colorview(::Type{C}, A::AbstractArray{T}) where {C<:Colorant,T<:Number} =
     _ccolorview(ccolor_number(C, T), A)
-_ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:Colorant} = ColorView{C}(A)
-_ccolorview(::Type{C}, A::Array{T}) where {T<:Number,C<:RGB{T}} = reinterpret(C, A)
-_ccolorview(::Type{C}, A::Array{T}) where {T<:Number,C<:AbstractRGB} = ColorView{C}(A)
-_ccolorview(::Type{C}, A::Array{T}) where {T<:Number,C<:Color{T}} = reinterpret(C, A)
-_ccolorview(::Type{C}, A::Array{T}) where {T<:Number,C<:ColorAlpha} =
+_ccolorview(::Type{C}, A::RRPermArray{T,C}) where {C<:Colorant,T<:Number} =
+    parent(parent(parent(A)))
+_ccolorview(::Type{C}, A::RRArray{T,C}) where {C<:Colorant,T<:Number} =
+    parent(parent(A))
+_ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:AbstractGray,T<:Number,M} =
+    parent(A)
+_ccolorview(::Type{C}, A::AbstractArray{T}) where {C<:Colorant,T<:Number} =
+    __ccolorview(C, A)  # necessary to avoid ambiguities from dispatch on eltype
+__ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:RGB{T}} = reinterpretc(C, A)
+__ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:AbstractRGB} =
+    reinterpretc(C, view(A, dimorder(C), Base.tail(colons(A))...))
+__ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:Color{T}} = reinterpretc(C, A)
+__ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:ColorAlpha} =
     _colorviewalpha(base_color_type(C), C, eltype(C), A)
-_colorviewalpha(::Type{C}, ::Type{CA}, ::Type{T}, A::Array{T}) where {C<:RGB,CA,T} =
-    reinterpret(CA, A)
-_colorviewalpha(::Type{C}, ::Type{CA}, ::Type, A::Array) where {C<:AbstractRGB,CA} =
-    ColorView{CA}(A)
-_colorviewalpha(::Type{C}, ::Type{CA}, ::Type{T}, A::Array{T}) where {C<:Color,CA,T} =
-    reinterpret(CA, A)
+__ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:AlphaColor} =
+    reinterpretc(C, view(A, dimorder(C), Base.tail(colons(A))...))
+_colorviewalpha(::Type{C}, ::Type{CA}, ::Type{T}, A::AbstractArray{T}) where {C<:RGB,CA,T} =
+    reinterpretc(CA, A)
+_colorviewalpha(::Type{C}, ::Type{CA}, ::Type{T}, A::AbstractArray{T}) where {C<:AbstractRGB,CA,T} =
+    reinterpretc(CA, view(A, dimorder(CA), Base.tail(colons(A))...))
+_colorviewalpha(::Type{C}, ::Type{CA}, ::Type{T}, A::AbstractArray{T}) where {C<:Color,CA,T} =
+    reinterpretc(CA, A)
+
+colorview(::Type{ARGB32}, A::AbstractArray{BGRA{N0f8}}) = reinterpret(ARGB32, A)
 
 colorview(::Type{C1}, A::AbstractArray{C2}) where {C1<:Colorant,C2<:Colorant} =
     colorview(C1, channelview(A))
 
-function colorview(::Type{C}, A::ChannelView) where C<:Colorant
-    P = parent(A)
-    C0 = ccolor_number(C, eltype(A))
-    _colorview_chanview(C0, base_colorant_type(C), base_colorant_type(eltype(P)), P, A)
-end
-_colorview_chanview(::Type{C0}, ::Type{C}, ::Type{C}, P, A::AbstractArray{T}) where {T<:Number,C0<:Colorant{T},C<:Colorant} = P
-_colorview_chanview(::Type{C0}, ::Type, ::Type, P, A) where {C0} =
-    _ccolorview(ccolor_number(C0, eltype(A)), A)
+colons(A::AbstractArray{T,N}) where {T,N} = ntuple(d->Colon(), Val(N))
 
 """
     colorview(C, gray1, gray2, ...) -> imgC
@@ -339,18 +170,16 @@ beltype(::Type{Union{}}) = Union{}
 
 ## Tuple & indexing utilities
 
-_size(A::AbstractArray) = map(length, indices(A))
+_size(A::AbstractArray) = map(length, axes(A))
 
 # color->number
 @inline channelview_size(parent::AbstractArray{C}) where {C<:Colorant} = (length(C), _size(parent)...)
-@inline channelview_indices(parent::AbstractArray{C}) where {C<:Colorant} =
-    _cvi(Base.OneTo(length(C)), indices(parent))
+@inline channelview_axes(parent::AbstractArray{C}) where {C<:Colorant} =
+    _cvi(Base.OneTo(length(C)), axes(parent))
 _cvi(rc, ::Tuple{}) = (rc,)
 _cvi(rc, inds::Tuple{R,Vararg{R}}) where {R<:AbstractUnitRange} = (convert(R, rc), inds...)
-if squeeze1
-    @inline channelview_size(parent::AbstractArray{C}) where {C<:Color1} = _size(parent)
-    @inline channelview_indices(parent::AbstractArray{C}) where {C<:Color1} = indices(parent)
-end
+@inline channelview_size(parent::AbstractArray{C}) where {C<:Color1} = _size(parent)
+@inline channelview_axes(parent::AbstractArray{C}) where {C<:Color1} = axes(parent)
 
 function check_ncolorchan(::AbstractArray{C}, dims) where C<:Colorant
     dims[1] == length(C) || throw(DimensionMismatch("new array has $(dims[1]) color channels, must have $(length(C))"))
@@ -360,39 +189,28 @@ chanparentsize(::AbstractArray{C}, dims) where {C<:Colorant} = tail(dims)
 
 channelview_dims_offset(parent::AbstractArray{C}) where {C<:Colorant} = 1
 
-if squeeze1
-    check_ncolorchan(::AbstractArray{C}, dims) where {C<:Color1} = nothing
-    chanparentsize(::AbstractArray{C}, dims) where {C<:Color1} = dims
-    colparentsize(::Type{C}, dims) where {C<:Color1} = dims
-    channelview_dims_offset(parent::AbstractArray{C}) where {C<:Color1} = 0
-end
+check_ncolorchan(::AbstractArray{C}, dims) where {C<:Color1} = nothing
+chanparentsize(::AbstractArray{C}, dims) where {C<:Color1} = dims
+colparentsize(::Type{C}, dims) where {C<:Color1} = dims
+channelview_dims_offset(parent::AbstractArray{C}) where {C<:Color1} = 0
 
 @inline indexsplit(A::AbstractArray{C}, I) where {C<:Colorant} = I[1], tail(I)
-
-if squeeze1
-    @inline indexsplit(A::AbstractArray{C}, I) where {C<:Color1} = 1, I
-end
+@inline indexsplit(A::AbstractArray{C}, I) where {C<:Color1} = 1, I
 
 # number->color
 @inline colorview_size(::Type{C}, parent::AbstractArray) where {C<:Colorant} = tail(_size(parent))
-@inline colorview_indices(::Type{C}, parent::AbstractArray) where {C<:Colorant} = tail(indices(parent))
-if squeeze1
-    @inline colorview_size(::Type{C}, parent::AbstractArray) where {C<:Color1} = _size(parent)
-    @inline colorview_indices(::Type{C}, parent::AbstractArray) where {C<:Color1} = indices(parent)
-end
+@inline colorview_axes(::Type{C}, parent::AbstractArray) where {C<:Colorant} = tail(axes(parent))
+@inline colorview_size(::Type{C}, parent::AbstractArray) where {C<:Color1} = _size(parent)
+@inline colorview_axes(::Type{C}, parent::AbstractArray) where {C<:Color1} = axes(parent)
 
 function checkdim1(::Type{C}, inds) where C<:Colorant
     inds[1] == (1:length(C)) || throw(DimensionMismatch("dimension 1 must have indices 1:$(length(C)), got $(inds[1])"))
     nothing
 end
-if squeeze1
-    checkdim1(::Type{C}, dims) where {C<:Color1} = nothing
-end
+checkdim1(::Type{C}, dims) where {C<:Color1} = nothing
 
-parentindices(::Type, inds) = tail(inds)
-if squeeze1
-    parentindices(::Type{C}, inds) where {C<:Color1} = inds
-end
+parentaxes(::Type, inds) = tail(inds)
+parentaxes(::Type{C}, inds) where {C<:Color1} = inds
 
 celtype(::Type{Any}, ::Type{T}) where {T} = T
 celtype(::Type{T1}, ::Type{T2}) where {T1,T2} = T1
@@ -411,13 +229,8 @@ Get a tuple of all channels needed to construct a Colorant of type `C`
 from an `P::AbstractArray{<:Number}`.
 """
 getchannels
-if squeeze1
-    @inline getchannels(P, ::Type{C}, I) where {C<:Color1} = (@inbounds ret = (P[I...],); ret)
-    @inline getchannels(P, ::Type{C}, I::Real) where {C<:Color1} = (@inbounds ret = (P[I],); ret)
-else
-    @inline getchannels(P, ::Type{C}, I) where {C<:Color1} = (@inbounds ret = (P[1, I...],); ret)
-    @inline getchannels(P, ::Type{C}, I::Real) where {C<:Color1} = (@inbounds ret = (P[1, I],); ret)
-end
+@inline getchannels(P, ::Type{C}, I) where {C<:Color1} = (@inbounds ret = (P[I...],); ret)
+@inline getchannels(P, ::Type{C}, I::Real) where {C<:Color1} = (@inbounds ret = (P[I],); ret)
 @inline function getchannels(P, ::Type{C}, I) where C<:Color2
     @inbounds ret = (P[1,I...], P[2,I...])
     ret
@@ -468,11 +281,7 @@ For a color `val`, distribute its channels along `P[:, I...]` for
 `P::AbstractArray{<:Number}`.
 """
 setchannels!
-if squeeze1
-    @inline setchannels!(P, val::Color1, I) = (@inbounds P[I...] = comp1(val); val)
-else
-    @inline setchannels!(P, val::Color1, I) = (@inbounds P[1,I...] = comp1(val); val)
-end
+@inline setchannels!(P, val::Color1, I) = (@inbounds P[I...] = comp1(val); val)
 @inline function setchannels!(P, val::Color2, I)
     @inbounds P[1,I...] = comp1(val)
     @inbounds P[2,I...] = alpha(val)

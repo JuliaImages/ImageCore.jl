@@ -1,5 +1,5 @@
 using ImageCore, Colors, ColorVectorSpace
-using Base.Test
+using Test, Statistics
 
 # Different access patterns (getindex)
 function mysum_elt_boundscheck(A)
@@ -52,17 +52,19 @@ end
 # failure, particularly on shared machines like Travis where they may
 # get "distracted" by other tasks
 function test_getindex(f, ar, cv, n)
-    t_ar = Array{Float64}(n)
-    t_cv = Array{Float64}(n)
+    t_ar = Array{Float64}(undef, n)
+    t_cv = Array{Float64}(undef, n)
+    f_ar = Ref(f(ar))
+    f_cv = Ref(f(cv))
     for i = 1:n
-        t_ar[i] = @elapsed f(ar)
-        t_cv[i] = @elapsed f(cv)
+        t_ar[i] = (tstart = time(); f_ar[] = f(ar); time()-tstart)
+        t_ar[i] = (tstart = time(); f_cv[] = f(cv); time()-tstart)
     end
-    median(t_ar), median(t_cv)
+    median(t_ar), median(t_cv), f_ar
 end
 function test_setindex(f, ar, cv, n)
-    t_ar = Array{Float64}(n)
-    t_cv = Array{Float64}(n)
+    t_ar = Array{Float64}(undef, n)
+    t_cv = Array{Float64}(undef, n)
     for i = 1:n
         t_ar[i] = @elapsed f(ar, zero(eltype(ar)))
         t_cv[i] = @elapsed f(cv, zero(eltype(cv)))
@@ -71,10 +73,10 @@ function test_setindex(f, ar, cv, n)
 end
 
 ssz = (1000,1000)
-a = rand(3,ssz...)
-c = reinterpret(RGB{Float64}, a, ssz)
-vchan = ChannelView(c)
-vcol = ColorView{RGB}(a)
+c = rand(RGB{Float64}, ssz...)
+a = copy(reinterpretc(Float64, c))
+vchan = channelview(c)
+vcol = colorview(RGB, a)
 cc_getindex_funcs = (mysum_elt_boundscheck,
                      mysum_index_boundscheck,
                      mysum_elt_inbounds,

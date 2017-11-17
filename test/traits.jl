@@ -1,5 +1,5 @@
 using ImageCore, Colors, FixedPointNumbers, ColorVectorSpace, MappedArrays, OffsetArrays
-using Base.Test
+using Test
 
 @testset "Image traits" begin
     for (B, swap) in ((rand(UInt16(1):UInt16(20), 3, 5), false),

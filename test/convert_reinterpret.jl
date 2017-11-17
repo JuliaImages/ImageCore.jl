@@ -1,5 +1,5 @@
 using ImageCore, Colors, FixedPointNumbers, OffsetArrays
-using Base.Test
+using Test, Random
 
 @testset "reinterpret" begin
     # Gray
@@ -7,40 +7,35 @@ using Base.Test
         a = rand(Gray{N0f8}, sz)
         for T in (Gray{N0f8}, Gray{Float32}, Gray{Float64})
             b = @inferred(convert(Array{T}, a))
-            rb = @inferred(reinterpret(eltype(T), b))
-            if ImageCore.squeeze1
-                @test isa(rb, Array{eltype(T),length(sz)})
-                @test size(rb) == sz
-            else
-                @test isa(rb, Array{eltype(T),length(sz)+1})
-                @test size(rb) == (1,sz...)
-            end
+            rb = @inferred(reinterpretc(eltype(T), b))
+            @test eltype(rb) == eltype(T) && ndims(rb) == length(sz)
+            @test size(rb) == sz
             c = copy(rb)
-            rc = @inferred(reinterpret(T, c))
-            @test isa(rc, Array{T,length(sz)})
+            rc = @inferred(reinterpretc(T, c))
+            @test eltype(rc) == T && ndims(rc) == length(sz)
             @test size(rc) == sz
         end
     end
     for sz in ((4,), (4,5))
         # Bool/Gray{Bool}
         b = rand(Bool, sz)
-        rb = @inferred(reinterpret(Gray{Bool}, b))
-        @test isa(rb, Array{Gray{Bool}, length(sz)})
+        rb = @inferred(reinterpretc(Gray{Bool}, b))
+        @test eltype(rb) == Gray{Bool} && ndims(rb) == length(sz)
         @test size(rb) == sz
         c = copy(rb)
-        rc = @inferred(reinterpret(Bool, c))
-        @test isa(rc, Array{Bool,length(sz)})
+        rc = @inferred(reinterpretc(Bool, c))
+        @test eltype(rc) == Bool && ndims(rc) == length(sz)
         @test size(rc) == sz
     end
     for sz in ((4,), (4,5))
         b = Gray24.(reinterpret(N0f8, rand(UInt8, sz)))
         for T in (UInt32, RGB24)
-            rb = @inferred(reinterpret(T, b))
-            @test isa(rb, Array{T,length(sz)})
+            rb = @inferred(reinterpretc(T, b))
+            @test eltype(rb) == T && ndims(rb) == length(sz)
             @test size(rb) == sz
             c = copy(rb)
-            rc = @inferred(reinterpret(Gray24, c))
-            @test isa(rc, Array{Gray24,length(sz)})
+            rc = @inferred(reinterpretc(Gray24, c))
+            @test eltype(rc) == Gray24 && ndims(rc) == length(sz)
             @test size(rc) == sz
         end
     end
@@ -48,66 +43,66 @@ using Base.Test
     a = rand(AGray{N0f8}, (4,5))
     for T in (AGray{N0f8}, GrayA{Float32}, AGray{Float64})
         b = @inferred(convert(Array{T}, a))
-        rb = @inferred(reinterpret(eltype(T), b))
-        @test isa(rb, Array{eltype(T),3})
+        rb = @inferred(reinterpretc(eltype(T), b))
+        @test eltype(rb) == eltype(T) && ndims(rb) == 3
         @test size(rb) == (2,4,5)
         c = copy(rb)
-        rc = @inferred(reinterpret(T, c))
-        @test isa(rc, Array{T,2})
+        rc = @inferred(reinterpretc(T, c))
+        @test eltype(rc) == T && ndims(rc) == 2
         @test size(rc) == (4,5)
     end
     # Color3
     a = rand(RGB{N0f8}, (4,5))
     for T in (RGB{N0f8}, HSV{Float32}, XYZ{Float64})
         b = @inferred(convert(Array{T}, a))
-        rb = @inferred(reinterpret(eltype(T), b))
-        @test isa(rb, Array{eltype(T),3})
+        rb = @inferred(reinterpretc(eltype(T), b))
+        @test eltype(rb) == eltype(T) && ndims(rb) == 3
         @test size(rb) == (3,4,5)
         c = copy(rb)
-        rc = @inferred(reinterpret(T, c))
-        @test isa(rc, Array{T,2})
+        rc = @inferred(reinterpretc(T, c))
+        @test eltype(rc) == T && ndims(rc) == 2
         @test size(rc) == (4,5)
     end
     for a in (rand(RGB{N0f8}, 4), rand(RGB{N0f8}, (4,5)))
-        b = @inferred(reinterpret(HSV{Float32}, float32.(a)))
-        @test isa(b, Array{HSV{Float32}})
+        b = @inferred(reinterpretc(HSV{Float32}, float32.(a)))
+        @test eltype(b) == HSV{Float32}
         @test ndims(b) == ndims(a)
     end
     # Transparent color
     a = rand(ARGB{N0f8}, (4,5))
     for T in (ARGB{N0f8}, AHSV{Float32}, AXYZ{Float64})
         b = @inferred(convert(Array{T}, a))
-        rb = @inferred(reinterpret(eltype(T), b))
-        @test isa(rb, Array{eltype(T),3})
+        rb = @inferred(reinterpretc(eltype(T), b))
+        @test eltype(rb) == eltype(T) && ndims(rb) == 3
         @test size(rb) == (4,4,5)
         c = copy(rb)
-        rc = @inferred(reinterpret(T, c))
-        @test isa(rc, Array{T,2})
+        rc = @inferred(reinterpretc(T, c))
+        @test eltype(rc) == T && ndims(rc) == 2
         @test size(rc) == (4,5)
     end
     # RGB1/RGB4
     a = rand(RGB{N0f8}, (4,5))
     for T in (RGB1{N0f8},RGB4{Float32})
         b = @inferred(convert(Array{T}, a))
-        rb = @inferred(reinterpret(eltype(T), b))
-        @test isa(rb, Array{eltype(T),3})
+        rb = @inferred(reinterpretc(eltype(T), b))
+        @test eltype(rb) == eltype(T) && ndims(rb) == 3
         @test size(rb) == (4,4,5)
         c = copy(rb)
-        rc = @inferred(reinterpret(T, c))
-        @test isa(rc, Array{T,2})
+        rc = @inferred(reinterpretc(T, c))
+        @test eltype(rc) == T && ndims(rc) == 2
         @test size(rc) == (4,5)
     end
     a = [RGB(1,0,0) RGB(0,0,1);
          RGB(0,1,0) RGB(1,1,1)]
-    @test @inferred(reinterpret(N0f8, a)) == cat(3, [1 0; 0 1; 0 0], [0 1; 0 1; 1 1])
+    @test @inferred(reinterpretc(N0f8, a)) == cat([1 0; 0 1; 0 0], [0 1; 0 1; 1 1]; dims=3)
     b = convert(Array{BGR{N0f8}}, a)
-    @test @inferred(reinterpret(N0f8, b)) == cat(3, [0 0; 0 1; 1 0], [1 1; 0 1; 0 1])
+    @test @inferred(reinterpretc(N0f8, b)) == cat([0 0; 0 1; 1 0], [1 1; 0 1; 0 1]; dims=3)
     # RGB24, ARGB32
     for sz in ((4,), (4,5))
         a = rand(UInt32, sz)
         for T in (RGB24, ARGB32)
-            b = @inferred(reinterpret(T, a))
-            @test isa(b, Array{T,length(sz)})
+            b = @inferred(reinterpretc(T, a))
+            @test eltype(b) == T && ndims(b) == length(sz)
             @test size(b) == sz
             @test eltype(b) == T
             @test @inferred(reinterpret(UInt32, b)) == a
@@ -116,39 +111,33 @@ using Base.Test
 
     # 1d
     a = RGB{Float64}[RGB(1,1,0)]
-    af = @inferred(reinterpret(Float64, a))
-    anew = @inferred(reinterpret(RGB, vec(af)))
+    af = @inferred(reinterpretc(Float64, a))
+    anew = @inferred(reinterpretc(RGB, vec(af)))
     @test anew[1] == a[1]
     @test ndims(anew) == 1
 
     # #33 and its converse
-    a = reinterpret(BGRA{N0f8}, [0xf0884422])
-    @test isa(a, Vector) && a == [BGRA{N0f8}(0.533,0.267,0.133,0.941)]
-    @test reinterpret(UInt32, a) == [0xf0884422]
-    @test size(reinterpret(BGRA{N0f8}, rand(UInt32, 5, 5))) == (5,5)
+    a = reinterpretc(BGRA{N0f8}, [0xf0884422])
+    @test isa(a, AbstractVector) && a == [BGRA{N0f8}(0.533,0.267,0.133,0.941)]
+    @test reinterpretc(UInt32, a) == [0xf0884422]
+    @test size(reinterpretc(BGRA{N0f8}, rand(UInt32, 5, 5))) == (5,5)
     @test size(colorview(ARGB32, rand(BGRA{N0f8}, 5, 5))) == (5,5)
-    a = reinterpret(BGRA{N0f8}, [0x22, 0x44, 0x88, 0xf0, 0x01, 0x02, 0x03, 0x04])
+    a = reinterpretc(BGRA{N0f8}, [0x22, 0x44, 0x88, 0xf0, 0x01, 0x02, 0x03, 0x04])
     @test a == [BGRA{N0f8}(0.533,0.267,0.133,0.941), BGRA{N0f8}(0.012, 0.008, 0.004, 0.016)]
     @test reinterpret(UInt8, a) == [0x22, 0x44, 0x88, 0xf0, 0x01, 0x02, 0x03, 0x04]
-    @test colorview(ARGB32, a) == reinterpret(ARGB32, [0xf0884422,0x04030201])
+    @test colorview(ARGB32, a) == reinterpretc(ARGB32, [0xf0884422,0x04030201])
 
     # indeterminate type tests
-    a = Array{RGB{AbstractFloat}}(3)
-    @test_throws ArgumentError reinterpret(Float64, a)
-    if VERSION < v"0.7.0-DEV"
-        Tu = TypeVar(:T)
-        a = Array{RGB{Tu}}(3)
-        @test_throws ErrorException reinterpret(Float64, a)
-    else
-        a = Vector{RGB}(3)
-        @test_throws ErrorException reinterpret(Float64, a)
-    end
+    a = Array{RGB{AbstractFloat}}(undef, 3)
+    @test_throws ErrorException reinterpretc(Float64, a)
+    a = Vector{RGB}(undef, 3)
+    @test_throws ErrorException reinterpretc(Float64, a)
 
     # Invalid conversions
     a = rand(UInt8, 4,5)
-    ret = @test_throws TypeError reinterpret(Gray, a)
+    ret = @test_throws TypeError reinterpretc(Gray, a)
     a = rand(Int8, 4,5)
-    ret = @test_throws TypeError reinterpret(Gray, a)
+    ret = @test_throws TypeError reinterpretc(Gray, a)
 end
 
 @testset "convert" begin
@@ -178,7 +167,7 @@ end
         @test eltype(s) == Gray{Float32}
         @test s isa OffsetArray{Gray{Float32},2,Array{Gray{Float32},2}}
         @test permutedims(permutedims(s,(2,1)),(2,1)) == s
-        @test indices(s) === indices(imgo)
+        @test axes(s) === axes(imgo)
     end
 
     for img in ( Gray.(A),
@@ -189,7 +178,7 @@ end
         @test eltype(s) == Gray{N0f8}
         @test s isa OffsetArray{Gray{N0f8},2,Array{Gray{N0f8},2}}
         @test permutedims(permutedims(s,(2,1)),(2,1)) == s
-        @test indices(s) === indices(imgo)
+        @test axes(s) === axes(imgo)
     end
 
     for img in ( Gray.(A),
@@ -200,7 +189,7 @@ end
         @test eltype(s) == Gray{N0f16}
         @test s isa OffsetArray{Gray{N0f16},2,Array{Gray{N0f16},2}}
         @test permutedims(permutedims(s,(2,1)),(2,1)) == s
-        @test indices(s) === indices(imgo)
+        @test axes(s) === axes(imgo)
     end
 
     # Color images wrapped by an OffsetArray.
@@ -216,7 +205,7 @@ end
         @test eltype(s) == RGB{N0f8}
         @test s isa OffsetArray{RGB{N0f8},2,Array{RGB{N0f8},2}}
         @test permutedims(permutedims(s,(2,1)),(2,1)) == s
-        @test indices(s) === indices(imgo)
+        @test axes(s) === axes(imgo)
     end
 
     A = rand(RGB{Float32},8,8)
@@ -231,7 +220,7 @@ end
         @test eltype(s) == RGB{Float32}
         @test s isa OffsetArray{RGB{Float32},2,Array{RGB{Float32},2}}
         @test permutedims(permutedims(s,(2,1)),(2,1)) == s
-        @test indices(s) === indices(imgo)
+        @test axes(s) === axes(imgo)
     end
 end
 
@@ -273,7 +262,7 @@ end
 #    @test eltype(float16.(a)) == Float16
     @test eltype(float32.(a)) == Float32
     @test eltype(float64.(a)) == Float64
-    @test indices(float32.(a)) == (-1:1,)
+    @test axes(float32.(a)) == (-1:1,)
 end
 
 @testset "ambiguities" begin

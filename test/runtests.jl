@@ -1,8 +1,11 @@
 module ImageCoreTests
 
-using ImageCore, Base.Test
+using ImageCore, Test
 
-@test isempty(detect_ambiguities(ImageCore, Base, Core))
+# If we've run the tests previously, there might be ambiguities from other packages
+if :StatsBase ∉ map(x->Symbol(string(x)), values(Base.loaded_modules))
+    @test isempty(detect_ambiguities(ImageCore, Base, Core))
+end
 
 include("colorchannels.jl")
 include("views.jl")
@@ -15,7 +18,7 @@ include("show.jl")
 # run these last
 isCI = haskey(ENV, "CI") || get(ENV, "JULIA_PKGEVAL", false)
 if Base.JLOptions().can_inline == 1 && !isCI
-    info("running benchmarks")
+    @info "running benchmarks"
     include("benchmarks.jl")  # these fail if inlining is off
 end
 

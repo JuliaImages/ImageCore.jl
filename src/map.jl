@@ -72,14 +72,14 @@ See also: [`takemap`](@ref).
 function scaleminmax(min::T, max::T) where T
     @inline function(x)
         xp, minp, maxp = promote(x, min, max)  # improves performance to promote explicitly
-        y = clamp(xp, minp, maxp)
+        y = clamp.(xp, minp, maxp)
         (y-minp)/(maxp-minp)
     end
 end
 function scaleminmax(::Type{Tout}, min::T, max::T) where {Tout,T}
     @inline function(x)
         xp, minp, maxp = promote(x, min, max)
-        y = clamp(xp, minp, maxp)
+        y = clamp.(xp, minp, maxp)
         smmconvert(Tout, (y-minp)/(maxp-minp))
     end
 end
@@ -135,7 +135,7 @@ See also: [`colorsigned`](@ref).
 """
 function scalesigned(maxabs::Real)
     maxabs > 0 || throw(ArgumentError("maxabs must be positive, got $maxabs"))
-    x -> clamp(x, -maxabs, maxabs)/maxabs
+    x -> clamp.(x, -maxabs, maxabs)/maxabs
 end
 
 """
@@ -151,7 +151,7 @@ function scalesigned(min::T, center::T, max::T) where T<:Real
     min <= center <= max || throw(ArgumentError("values must be ordered, got $min, $center, $max"))
     sneg, spos = 1/(center-min), 1/(max-center)
     function(x)
-        Δy = clamp(x, min, max) - center
+        Δy = clamp.(x, min, max) - center
         ifelse(Δy < 0, sneg*Δy, spos*Δy)
     end
 end

@@ -29,6 +29,8 @@ Base.setindex!(A::ArrayLS{T,N}, val, i::Vararg{Int,N}) where {T,N} = A.A[i...] =
                        (ArrayLS(copy(a0)), ChannelView, IndexCartesian()))
         v = ChannelView(a)
         @test isa(channelview(a), VT)
+        @test size(channelview(a)) == size(v)
+        @test channelview(a) == v
         @test IndexStyle(v) == LI
         @test isa(colorview(Gray, v), typeof(a))
         @test ndims(v) == 2 - ImageCore.squeeze1
@@ -65,6 +67,8 @@ end
                         (ArrayLS(copy(a0)), ChannelView))
             v = ChannelView(a)
             @test isa(channelview(a), VT)
+            @test size(channelview(a)) == size(v)
+            @test channelview(a) == v
             @test isa(colorview(T, v), typeof(a))
             @test ndims(v) == 2
             @test size(v) == (3,2)
@@ -116,6 +120,8 @@ end
         a = [T(0.1f0,0.2f0), T(0.3f0,0.4f0), T(0.5f0,0.6f0)]
         v = ChannelView(a)
         @test isa(channelview(a), VT)
+        @test size(channelview(a)) == size(v)
+        @test channelview(a) == v
         @test isa(colorview(T, v), Array)
         @test ndims(v) == 2
         @test size(v) == (2,3)
@@ -170,6 +176,8 @@ end
         a = [T(0.1,0.2,0.3,0.4), T(0.5,0.6,0.7,0.8)]
         v = ChannelView(a)
         @test isa(channelview(a), VT)
+        @test size(channelview(a)) == size(v)
+        @test channelview(a) == v
         @test isa(colorview(T, v), Array)
         @test ndims(v) == 2
         @test size(v) == (4,2)

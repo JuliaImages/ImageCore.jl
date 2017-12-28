@@ -242,13 +242,17 @@ array will be in constructor-argument order, not memory order (see
 channelview(A::AbstractArray{T}) where {T<:Number} = A
 channelview(A::AbstractArray) = ChannelView(A)
 channelview(A::ColorView) = parent(A)
-channelview(A::Array{RGB{T}}) where {T} = reinterpret(T, A)
+channelview(A::Array{RGB{T}}) where {T} = _reinterpret_channels(T, A)
 channelview(A::Array{C}) where {C<:AbstractRGB} = ChannelView(A) # BGR, RGB1, etc don't satisfy conditions
-channelview(A::Array{C}) where {C<:Color} = reinterpret(eltype(C), A)
+channelview(A::Array{C}) where {C<:Color} = _reinterpret_channels(eltype(C), A)
 channelview(A::Array{C}) where {C<:ColorAlpha} = _channelview(base_color_type(C), A)
-_channelview(::Type{RGB}, A) = reinterpret(eltype(eltype(A)), A)
+_channelview(::Type{RGB}, A) = _reinterpret_channels(eltype(eltype(A)), A)
 _channelview(::Type{C}, A) where {C<:AbstractRGB} = ChannelView(A)
-_channelview(::Type{C}, A) where {C<:Color} = reinterpret(eltype(eltype(A)), A)
+_channelview(::Type{C}, A) where {C<:Color} = _reinterpret_channels(eltype(eltype(A)), A)
+
+_reinterpret_channels(::Type{T}, A::Array{C}) where {T<:Number, C<:Colorant} =
+    reinterpret(T, A, channelview_size(A))
+
 
 
 """

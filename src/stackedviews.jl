@@ -113,7 +113,7 @@ Base.getindex(A::ZeroArray{T,N}, I::Vararg{Int,N}) where {T,N} = zero(T)
     T = promote_eleltype_all(arrays...)
     stackedview(T, arrays...)
 end
-@inline function (::Type{StackedView{T}})(arrays::Union{AbstractArray,ZeroArrayPromise}...) where T<:Number
+@inline function StackedView{T}(arrays::Union{AbstractArray,ZeroArrayPromise}...) where T<:Number
     stackedview(T, arrays...)
 end
 

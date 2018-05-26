@@ -167,6 +167,67 @@ end
         b = @inferred(convert(Array{Gray{N0f8}}, a))
         @test eltype(b) == Gray{N0f8}
     end
+
+    # Gray images wrapped by an OffsetArray.
+    A = rand(8,8)
+    for img in ( Gray.(A),
+                 Gray.(N0f8.(A)),
+                 Gray.(N0f16.(A)) )
+        imgo = OffsetArray(img, -2, -1)
+        s = @inferred(convert(OffsetArray{Gray{Float32},2,Array{Gray{Float32}}},imgo))
+        @test eltype(s) == Gray{Float32}
+        @test s isa OffsetArray{Gray{Float32},2,Array{Gray{Float32},2}}
+        @test indices(s) === indices(imgo)
+    end
+
+    for img in ( Gray.(A),
+                 Gray.(N0f8.(A)),
+                 Gray.(N0f16.(A)) )
+        imgo = OffsetArray(img, -2, -1)
+        s = @inferred(convert(OffsetArray{Gray{N0f8},2,Array{Gray{N0f8}}},imgo))
+        @test eltype(s) == Gray{N0f8}
+        @test s isa OffsetArray{Gray{N0f8},2,Array{Gray{N0f8},2}}
+        @test indices(s) === indices(imgo)
+    end
+
+    for img in ( Gray.(A),
+                 Gray.(N0f8.(A)),
+                 Gray.(N0f16.(A)) )
+        imgo = OffsetArray(img, -2, -1)
+        s = @inferred(convert(OffsetArray{Gray{N0f16},2,Array{Gray{N0f16}}},imgo))
+        @test eltype(s) == Gray{N0f16}
+        @test s isa OffsetArray{Gray{N0f16},2,Array{Gray{N0f16},2}}
+        @test indices(s) === indices(imgo)
+    end
+
+    # Color images wrapped by an OffsetArray.
+    A = rand(RGB{Float32},8,8)
+    for img in ( A,
+                 n0f8.(A),
+                 n6f10.(A),
+                 n4f12.(A),
+                 n2f14.(A),
+                 n0f16.(A))
+        imgo = OffsetArray(img, -2, -1)
+        s = @inferred(convert(OffsetArray{RGB{N0f8},2,Array{RGB{N0f8}}},imgo))
+        @test eltype(s) == RGB{N0f8}
+        @test s isa OffsetArray{RGB{N0f8},2,Array{RGB{N0f8},2}}
+        @test indices(s) === indices(imgo)
+    end
+
+    A = rand(RGB{Float32},8,8)
+    for img in ( A,
+                 n0f8.(A),
+                 n6f10.(A),
+                 n4f12.(A),
+                 n2f14.(A),
+                 n0f16.(A))
+        imgo = OffsetArray(img, -2, -1)
+        s = @inferred(convert(OffsetArray{RGB{Float32},2,Array{RGB{Float32}}},imgo))
+        @test eltype(s) == RGB{Float32}
+        @test s isa OffsetArray{RGB{Float32},2,Array{RGB{Float32},2}}
+        @test indices(s) === indices(imgo)
+    end
 end
 
 @testset "eltype conversion" begin

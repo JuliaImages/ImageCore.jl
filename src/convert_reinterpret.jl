@@ -112,6 +112,11 @@ function Base.convert(::Type{OffsetArray{Cdest,n,A}},
     copy!(OffsetArray{ccolor(Cdest, Csrc)}(Compat.axes(img)),img)
 end
 
+function Base.convert(::Type{OffsetArray{C,n,A}},
+                      img::AbstractArray{C,n}) where {C<:Colorant,n, A <:AbstractArray}
+    img
+end
+
 # for docstrings in the operations below
 shortname(::Type{T}) where {T<:FixedPoint} = (io = IOBuffer(); FixedPointNumbers.showtype(io, T); String(take!(io)))
 shortname(::Type{T}) where {T} = string(T)

@@ -25,21 +25,16 @@ end
 # end
 function reinterpretc(::Type{T}, a::AbstractArray{CV}) where {T<:Number,CV<:Colorant}
     if samesize(T, CV)
-        return wrapaxes(reinterpret(T, unwrapaxes(a)), a)
+        return reinterpret(T, a)
     end
+    axs = axes(a)
     if sizeof(CV) == sizeof(T)*_len(CV)
-        inds = axes(a)
-        return reshape(reinterpret(T, unwrapaxes(a)), (convert(typeof(inds[1]), Base.OneTo(_len(CV))), inds...))
+        return reshape(reinterpret(T, a), (convert(typeof(axs[1]), Base.OneTo(_len(CV))), axs...))
     end
     throw(ArgumentError("result shape not specified"))
 end
 reinterpretc(::Type{T}, a::AbstractArray{CV,0}) where {T<:Number,CV<:Colorant} =
     reinterpret(T, reshape(a, 1))
-
-unwrapaxes(a) = a
-unwrapaxes(a::OffsetArray) = a.parent
-wrapaxes(a, aref) = a
-wrapaxes(a, aref::OffsetArray) = OffsetArray(a, axes(aref))
 
 _len(::Type{C}) where {C} = _len(C, eltype(C))
 _len(::Type{C}, ::Type{Any}) where {C} = error("indeterminate type")
@@ -60,13 +55,13 @@ function reinterpretc(::Type{CV}, a::AbstractArray{T}) where {CV<:Colorant,T<:Nu
         throw(DimensionMismatch("indices $ind1 are not consistent with color type $C"))
     CVT = ccolor_number(CV, T)
     if samesize(CVT, T)
-        return wrapaxes(reinterpret(CVT, unwrapaxes(a)), a)
+        return reinterpret(CVT, a)
     end
-    inds = axes(a)
-    if inds[1] == Base.OneTo(sizeof(CVT) ÷ sizeof(eltype(CVT)))
-        return reshape(reinterpret(CVT, unwrapaxes(a)), tail(inds))
+    axs = axes(a)
+    if axs[1] == Base.OneTo(sizeof(CVT) ÷ sizeof(eltype(CVT)))
+        return reshape(reinterpret(CVT, a), tail(axs))
     end
-    throwdm(CV, inds[1])
+    throwdm(CV, axs[1])
 end
 
 # ccolor_number converts form 2 calls to form 1 calls

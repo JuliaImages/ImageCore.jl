@@ -66,19 +66,19 @@ channelview(A::AbstractArray{RGB{T}}) where {T} = reinterpretc(T, A)
 function channelview(A::AbstractArray{C}) where {C<:AbstractRGB}
     # BGR, RGB1, etc don't satisfy conditions for reinterpret
     CRGB = RGB{eltype(C)}
-    channelview(mappedarray((x->CRGB(x), x->C(x)), A))
+    channelview(of_eltype(CRGB, A))
 end
 channelview(A::AbstractArray{C}) where {C<:Color} = reinterpretc(eltype(C), A)
 channelview(A::AbstractArray{C}) where {C<:ColorAlpha} = _channelview(color_type(C), A)
 _channelview(::Type{<:RGB}, A) = reinterpretc(eltype(eltype(A)), A)
 function _channelview(::Type{C}, A) where {C<:AbstractRGB}
     CRGBA = RGBA{eltype(C)}
-    channelview(mappedarray((x->CRGBA(x), x->eltype(A)(x)), A))
+    channelview(of_eltype(CRGBA, A))
 end
 _channelview(::Type{C}, A) where {C<:Color} = reinterpretc(eltype(C), A)
 function channelview(A::AbstractArray{AC}) where {AC<:AlphaColor}
     CA = coloralpha(base_color_type(AC)){eltype(AC)}
-    channelview(mappedarray((x->CA(x), x->AC(x)), A))
+    channelview(of_eltype(CA, A))
 end
 
 """
@@ -151,9 +151,9 @@ See also: [`StackedView`](@ref).
 """
 function colorview(::Type{C}, gray1, gray2, grays...) where C<:Colorant
     T = _colorview_type(eltype(C), promote_eleltype_all(gray1, gray2, grays...))
-    sv = StackedView{T}(gray1, gray2, grays...)
     CT = base_colorant_type(C){T}
-    colorview(CT, sv)
+    axs = firstinds(gray1, gray2, grays...)
+    mappedarray(CT, extractchannels, take_zeros(eltype(CT), axs, gray1, gray2, grays...)...)
 end
 
 _colorview_type(::Type{Any}, ::Type{T}) where {T} = T
@@ -167,6 +167,11 @@ _promote_eleltype_all(::Type{T}) where {T} = T
 
 beltype(::Type{T}) where {T} = eltype(T)
 beltype(::Type{Union{}}) = Union{}
+
+extractchannels(c::AbstractGray)    = (gray(c),)
+extractchannels(c::TransparentGray) = (gray(c), alpha(c))
+extractchannels(c::Color3)          = (comp1(c), comp2(c), comp3(c))
+extractchannels(c::Transparent3)    = (comp1(c), comp2(c), comp3(c), alpha(c))
 
 ## Tuple & indexing utilities
 

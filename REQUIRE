@@ -2,7 +2,7 @@ julia 0.6.0
 FixedPointNumbers 0.3.0
 ColorTypes 0.4
 Colors
-MappedArrays 0.0.3
+MappedArrays 0.2
 PaddedViews 0.0.2
 Graphics
 OffsetArrays

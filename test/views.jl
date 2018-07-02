@@ -151,12 +151,16 @@ end
     b = OffsetArray([0.1 0.2; 0.3 0.4], 0:1, 2:3)
     @test_throws DimensionMismatch colorview(RGB, a, b, zeroarray)
     cv = colorview(RGB, paddedviews(0, a, b, zeroarray)...)
-    @test indices(cv) == (0:2, 1:3)
-    @test red.(cv[indices(a)...]) == a
-    @test green.(cv[indices(b)...]) == parent(b)
+    @test axes(cv) == (0:2, 1:3)
+    @test red.(cv[axes(a)...]) == a
+    @test green.(cv[axes(b)...]) == b
     @test parent(copy(cv)) == [RGB(0,0,0)   RGB(0,0.1,0)   RGB(0,0.2,0);
                                RGB(0.1,0,0) RGB(0.2,0.3,0) RGB(0,0.4,0);
                                RGB(0.3,0,0) RGB(0.4,0,0)   RGB(0,0,0)]
+    chanv = channelview(cv)
+    @test @inferred(axes(chanv)) === (Base.Slice(1:3), Base.Slice(0:2), Base.Slice(1:3))
+    @test chanv[1,1,1] == 0.1
+    @test chanv[2,1,2] == 0.3
 
     @test_throws ErrorException paddedviews(0, zeroarray, zeroarray)
 

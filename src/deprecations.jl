@@ -20,3 +20,5 @@ function ColorView{C}(A::AbstractArray) where C<:Colorant
 end
 
 ColorView(parent::AbstractArray) = error("must specify the colortype, use colorview(C, A)")
+
+Base.@deprecate_binding squeeze1 true

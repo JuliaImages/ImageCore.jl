@@ -26,12 +26,12 @@ Base.setindex!(A::ArrayLS{T,N}, val, i::Vararg{Int,N}) where {T,N} = A.A[i...] =
     for (a, LI) in ((copy(a0), IndexLinear()),
                     (ArrayLF(copy(a0)), IndexLinear()),
                     (ArrayLS(copy(a0)), IndexCartesian()))
-        v = channelview(a)
+        v = @inferred(channelview(a))
         @test @inferred(IndexStyle(v)) == LI
         @test ndims(v) == 1
         @test size(v) == (2,)
         @test eltype(v) == N0f8
-        @test colorview(Gray, v) === a
+        @test @inferred(colorview(Gray, v)) === a
         @test parent(parent(v)) === a
         @test v[1] == N0f8(0.2)
         @test v[2] == N0f8(0.4)
@@ -61,16 +61,14 @@ end
         a0 = [T(0.1,0.2,0.3), T(0.4, 0.5, 0.6)]
         for a in (copy(a0),
                   ArrayLS(copy(a0)))
-            v = channelview(a)
+            v = @inferred(channelview(a))
             @test ndims(v) == 2
             @test size(v) == (3,2)
             @test eltype(v) == Float64
             if T in (RGB, HSV, Lab, XYZ)
-                @test colorview(T, v) === a
-                @test parent(parent(v)) === a
+                @test @inferred(colorview(T, v)) == a && colorview(T, v) isa typeof(a)
             else
-                @test colorview(T, v) == a
-                @test parent(parent(v)) == a
+                @test @inferred(colorview(T, v)) == a
             end
             @test v[1] == v[1,1] == 0.1
             @test v[2] == v[2,1] == 0.2
@@ -101,21 +99,20 @@ end
         end
     end
     a = reshape([RGB(1,0,0)])  # 0-dimensional
-    v = channelview(a)
+    v = @inferred(channelview(a))
     @test axes(v) === (Base.OneTo(3),)
-    v = channelview(a)
+    v = @inferred(channelview(a))
     @test axes(v) === (Base.OneTo(3),)
 end
 
 @testset "Gray+Alpha" begin
     for T in (AGray, GrayA)
         a = [T(0.1f0,0.2f0), T(0.3f0,0.4f0), T(0.5f0,0.6f0)]
-        v = channelview(a)
-        @test colorview(T, v) == a
+        v = @inferred(channelview(a))
+        @test @inferred(colorview(T, v)) == a
         @test ndims(v) == 2
         @test size(v) == (2,3)
         @test eltype(v) == Float32
-        @test parent(parent(v)) == a
         @test v[1] == v[1,1] == 0.1f0
         @test v[2] == v[2,1] == 0.2f0
         @test v[3] == v[1,2] == 0.3f0
@@ -160,11 +157,10 @@ end
               LabA,
               XYZA)
         a = [T(0.1,0.2,0.3,0.4), T(0.5,0.6,0.7,0.8)]
-        v = channelview(a)
+        v = @inferred(channelview(a))
         @test ndims(v) == 2
         @test size(v) == (4,2)
         @test eltype(v) == Float64
-        @test parent(parent(v)) == a
         @test v[1] == v[1,1] == 0.1
         @test v[2] == v[2,1] == 0.2
         @test v[3] == v[3,1] == 0.3
@@ -201,11 +197,11 @@ end
 
     @testset "Non-1 indices" begin
         a = OffsetArray(rand(RGB{N0f8}, 3, 5), -1:1, -2:2)
-        v = channelview(a)
+        v = @inferred(channelview(a))
         @test @inferred(axes(v)) === (Base.Slice(1:3), Base.Slice(-1:1), Base.Slice(-2:2))
         @test @inferred(v[1,0,0]) === a[0,0].r
         a = OffsetArray(rand(Gray{Float32}, 3, 5), -1:1, -2:2)
-        v = channelview(a)
+        v = @inferred(channelview(a))
         @test @inferred(axes(v)) === (Base.Slice(-1:1), Base.Slice(-2:2))
         @test @inferred(v[0,0]) === gray(a[0,0])
         @test @inferred(v[5]) === gray(a[5])
@@ -224,12 +220,12 @@ end
                     (ArrayLF(copy(a0)), IndexLinear()),
                     (ArrayLS(copy(a0)), IndexCartesian()))
         @test_throws MethodError colorview(a)
-        v = colorview(Gray, a)
+        v = @inferred(colorview(Gray, a))
         @test @inferred(IndexStyle(v)) == LI
         @test ndims(v) == 1
         @test size(v) == (2,)
         @test eltype(v) == Gray{N0f8}
-        @test channelview(v) === a
+        @test @inferred(channelview(v)) === a
         @test parent(parent(v)) === a
         @test v[1] == Gray(N0f8(0.2))
         @test v[2] == Gray(N0f8(0.4))
@@ -260,12 +256,12 @@ end
                     (ArrayLF(copy(a0)), IndexLinear()),
                     (ArrayLS(copy(a0)), IndexCartesian()))
         @test_throws MethodError colorview(a)
-        v = colorview(Gray, a)
+        v = @inferred(colorview(Gray, a))
         @test @inferred(IndexStyle(v)) == LI
         @test ndims(v) == 2
         @test size(v) == (2,2)
         @test eltype(v) == Gray{N0f8}
-        @test channelview(v) === a
+        @test @inferred(channelview(v)) === a
         @test parent(parent(v)) === a
         @test v[1] == Gray(N0f8(0.2))
         @test v[2] == Gray(N0f8(0.6))
@@ -316,11 +312,11 @@ end
 @testset "Gray+Alpha" begin
     for T in (AGray, GrayA)
         a = [0.1f0 0.2f0; 0.3f0 0.4f0; 0.5f0 0.6f0]'
-        v = colorview(T, a)
+        v = @inferred(colorview(T, a))
         @test ndims(v) == 1
         @test size(v) == (3,)
         @test eltype(v) == T{Float32}
-        @test channelview(v) === a
+        @test @inferred(channelview(v)) === a
         @test v[1] == T(0.1f0, 0.2f0)
         @test v[2] == T(0.3f0, 0.4f0)
         @test v[3] == T(0.5f0, 0.6f0)
@@ -348,9 +344,9 @@ end
 
 @testset "Alpha+RGB, HSV, etc" begin
     a = rand(ARGB{N0f8}, 5, 5)
-    vc = channelview(a)
-    @test eltype(colorview(ARGB, vc)) == ARGB{N0f8}
-    cvc = colorview(RGBA, vc)
+    vc = @inferred(channelview(a))
+    @test eltype(@inferred(colorview(ARGB, vc))) == ARGB{N0f8}
+    cvc = @inferred(colorview(RGBA, vc))
     @test all(cvc .== a)
 
     for T in (ARGB,
@@ -364,9 +360,9 @@ end
               LabA,
               XYZA)
         a = [0.1 0.2 0.3 0.4; 0.5 0.6 0.7 0.8]'
-        v = colorview(T, a)
+        v = @inferred(colorview(T, a))
         @test eltype(v) == T{Float64}
-        @test channelview(v) === a
+        @test @inferred(channelview(v)) === a
         @test ndims(v) == 1
         @test size(v) == (2,)
         @test eltype(v) == T{Float64}
@@ -397,7 +393,7 @@ end
 
     @testset "Non-1 indices" begin
         a = OffsetArray(rand(3, 3, 5), 1:3, -1:1, -2:2)
-        v = colorview(RGB, a)
+        v = @inferred(colorview(RGB, a))
         @test @inferred(axes(v)) === (Base.Slice(-1:1), Base.Slice(-2:2))
         @test @inferred(v[0,0]) === RGB(a[1,0,0], a[2,0,0], a[3,0,0])
         a = OffsetArray(rand(3, 3, 5), 0:2, -1:1, -2:2)

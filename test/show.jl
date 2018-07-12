@@ -12,13 +12,13 @@ using ImageCore, Colors, FixedPointNumbers, OffsetArrays, Test
     v = view(rgb32, 2:3, :)
     @test summary(v) == "2×5 view(::Array{RGB{Float32},2}, 2:3, :) with eltype $(prefixC)RGB{Float32}"
     a = channelview(rgb32)
-    @test summary(a) == "3×3×5 reshape(reinterpret(Float32, ::Array{RGB{Float32},2}), 3, 3, 5) with eltype Float32"
+    @test summary(a) == "3×3×5 reinterpret(Float32, ::Array{RGB{Float32},3})"
     num64 = rand(3,5)
     b = colorview(RGB, num64)
     @test summary(b) == "5-element reshape(reinterpret(RGB{Float64}, ::Array{Float64,2}), 5) with eltype $(prefixC)RGB{Float64}"
     rgb8 = rand(RGB{N0f8}, 3, 5)
     c = rawview(channelview(rgb8))
-    @test summary(c) == "3×3×5 rawview(reshape(reinterpret(N0f8, ::Array{RGB{N0f8},2}), 3, 3, 5)) with eltype UInt8"
+    @test summary(c) == "3×3×5 rawview(reinterpret(N0f8, ::Array{RGB{N0f8},3})) with eltype UInt8"
     @test summary(rgb8) == "3×5 Array{RGB{N0f8},2} with eltype $(prefixC)RGB{$(prefixF)Normed{UInt8,8}}"
     rand8 = rand(UInt8, 3, 5)
     d = normedview(permuteddimsview(rand8, (2,1)))
@@ -28,14 +28,14 @@ using ImageCore, Colors, FixedPointNumbers, OffsetArrays, Test
     f = permuteddimsview(normedview(N0f16, rand(UInt16, 3, 5)), (2,1))
     @test summary(f) == "5×3 PermutedDimsArray(reinterpret(N0f16, ::Array{UInt16,2}), (2, 1)) with eltype $(prefixF)Normed{UInt16,16}"
     g = channelview(rgb8)
-    @test summary(g) == "3×3×5 reshape(reinterpret(N0f8, ::Array{RGB{N0f8},2}), 3, 3, 5) with eltype $(prefixF)Normed{UInt8,8}"
+    @test summary(g) == "3×3×5 reinterpret(N0f8, ::Array{RGB{N0f8},3})"
     h = OffsetArray(rgb8, -1:1, -2:2)
     @test summary(h) == "OffsetArray(::Array{RGB{N0f8},2}, -1:1, -2:2) with eltype $(prefixC)RGB{$(prefixF)Normed{UInt8,8}} with indices -1:1×-2:2"
     i = channelview(h)
-    @test summary(i) == "OffsetArray(reshape(reinterpret(N0f8, ::Array{RGB{N0f8},2}), 3, 3, 5), 1:3, -1:1, -2:2) with eltype $(prefixF)Normed{UInt8,8} with indices 1:3×-1:1×-2:2"
+    @test summary(i) == "reinterpret(N0f8, OffsetArray(::Array{RGB{N0f8},3}, 1:1, -1:1, -2:2)) with indices 1:3×-1:1×-2:2"
     c = channelview(rand(RGB{N0f8}, 2))
     o = OffsetArray(c, -1:1, 0:1)
-    @test summary(o) == "OffsetArray(reshape(reinterpret(N0f8, ::Array{RGB{N0f8},1}), 3, 2), -1:1, 0:1) with eltype $(prefixF)Normed{UInt8,8} with indices -1:1×0:1"
+    @test summary(o) == "OffsetArray(reinterpret(N0f8, ::Array{RGB{N0f8},2}), -1:1, 0:1) with eltype $(prefixF)Normed{UInt8,8} with indices -1:1×0:1"
     # Issue #45
     a = collect(tuple())
     @test summary(a) == "0-element Array{Union{},1}"

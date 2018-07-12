@@ -121,7 +121,7 @@ assert_timedim_last(img::AbstractMappedArray) = assert_timedim_last(parent(img))
 assert_timedim_last(img::OffsetArray) = assert_timedim_last(parent(img))
 assert_timedim_last(img::SubArray) = assert_timedim_last(parent(img))
 
-widthheight(img::AbstractArray) = Base._length(axes(img,2)), Base._length(axes(img,1))
+widthheight(img::AbstractArray) = length(axes(img,2)), length(axes(img,1))
 
 width(img::AbstractArray) = widthheight(img)[1]
 height(img::AbstractArray) = widthheight(img)[2]

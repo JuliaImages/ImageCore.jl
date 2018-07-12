@@ -114,7 +114,7 @@ using Test, Random
     af = @inferred(reinterpretc(Float64, a))
     anew = @inferred(reinterpretc(RGB, vec(af)))
     @test anew[1] == a[1]
-    @test ndims(anew) == 1
+    @test ndims(anew) == 0
 
     # #33 and its converse
     a = reinterpretc(BGRA{N0f8}, [0xf0884422])
@@ -122,7 +122,7 @@ using Test, Random
     @test reinterpretc(UInt32, a) == [0xf0884422]
     @test size(reinterpretc(BGRA{N0f8}, rand(UInt32, 5, 5))) == (5,5)
     @test size(colorview(ARGB32, rand(BGRA{N0f8}, 5, 5))) == (5,5)
-    a = reinterpretc(BGRA{N0f8}, [0x22, 0x44, 0x88, 0xf0, 0x01, 0x02, 0x03, 0x04])
+    a = reinterpretc(BGRA{N0f8}, reshape([0x22, 0x44, 0x88, 0xf0, 0x01, 0x02, 0x03, 0x04], 4, 2))
     @test a == [BGRA{N0f8}(0.533,0.267,0.133,0.941), BGRA{N0f8}(0.012, 0.008, 0.004, 0.016)]
     @test reinterpret(UInt8, a) == [0x22, 0x44, 0x88, 0xf0, 0x01, 0x02, 0x03, 0x04]
     @test colorview(ARGB32, a) == reinterpretc(ARGB32, [0xf0884422,0x04030201])

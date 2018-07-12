@@ -105,22 +105,30 @@ _ccolorview(::Type{C}, A::RRArray{T,C}) where {C<:Colorant,T<:Number} =
     parent(parent(A))
 _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:AbstractGray,T<:Number,M} =
     parent(A)
+_ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:RGB,T<:Number,M} =
+    reshape(parent(A), Base.tail(axes(parent(A))))
+_ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:AbstractRGB,T<:Number,M} =
+    _colorview_reorder(C, A)
+_ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:Color,T<:Number,M} =
+    reshape(parent(A), Base.tail(axes(parent(A))))
 _ccolorview(::Type{C}, A::AbstractArray{T}) where {C<:Colorant,T<:Number} =
     __ccolorview(C, A)  # necessary to avoid ambiguities from dispatch on eltype
 __ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:RGB{T}} = reinterpretc(C, A)
 __ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:AbstractRGB} =
-    reinterpretc(C, view(A, dimorder(C), Base.tail(colons(A))...))
+    _colorview_reorder(C, A)
 __ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:Color{T}} = reinterpretc(C, A)
 __ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:ColorAlpha} =
     _colorviewalpha(base_color_type(C), C, eltype(C), A)
 __ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:AlphaColor} =
-    reinterpretc(C, view(A, dimorder(C), Base.tail(colons(A))...))
+    _colorview_reorder(C, A)
 _colorviewalpha(::Type{C}, ::Type{CA}, ::Type{T}, A::AbstractArray{T}) where {C<:RGB,CA,T} =
     reinterpretc(CA, A)
 _colorviewalpha(::Type{C}, ::Type{CA}, ::Type{T}, A::AbstractArray{T}) where {C<:AbstractRGB,CA,T} =
-    reinterpretc(CA, view(A, dimorder(CA), Base.tail(colons(A))...))
+    _colorview_reorder(CA, A)
 _colorviewalpha(::Type{C}, ::Type{CA}, ::Type{T}, A::AbstractArray{T}) where {C<:Color,CA,T} =
     reinterpretc(CA, A)
+
+_colorview_reorder(::Type{C}, A) where C = reinterpretc(C, view(A, dimorder(C), Base.tail(colons(A))...))
 
 colorview(::Type{ARGB32}, A::AbstractArray{BGRA{N0f8}}) = reinterpret(ARGB32, A)
 

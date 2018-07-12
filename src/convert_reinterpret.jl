@@ -18,18 +18,13 @@ function reinterpretc(::Type{CV1}, a::AbstractArray{CV2}) where {CV1<:Colorant,C
 end
 
 ## Color->T
-# function reinterpretc(::Type{T}, a::Array{CV,1}) where {T<:Number,CV<:Colorant}
-#     l = (length(a)*sizeof(CV))÷sizeof(T)
-#     l*sizeof(T) == length(a)*sizeof(CV) || throw(ArgumentError("sizes are incommensurate"))
-#     reshape(reinterpret(T, a), (l,))
-# end
 function reinterpretc(::Type{T}, a::AbstractArray{CV}) where {T<:Number,CV<:Colorant}
     if samesize(T, CV)
         return reinterpret(T, a)
     end
     axs = axes(a)
     if sizeof(CV) == sizeof(T)*_len(CV)
-        return reshape(reinterpret(T, a), (convert(typeof(axs[1]), Base.OneTo(_len(CV))), axs...))
+        return reinterpret(T, reshape(a, Base.OneTo(1), axs...))
     end
     throw(ArgumentError("result shape not specified"))
 end
@@ -44,12 +39,6 @@ _len(::Type{C}, ::Type{T}) where {C,T} = sizeof(C) ÷ sizeof(T)
 # We have to distinguish two forms of call:
 #   form 1: reinterpretc(RGB{N0f8}, img)
 #   form 2: reinterpretc(RGB, img)
-function reinterpretc(::Type{CV}, a::AbstractArray{T,1}) where {CV<:Colorant,T<:Number}
-    CVT = ccolor_number(CV, T)
-    l = (length(a)*sizeof(T))÷sizeof(CVT)
-    l*sizeof(CVT) == length(a)*sizeof(T) || throw(ArgumentError("sizes are incommensurate"))
-    reshape(reinterpret(CVT, a), (l,))
-end
 function reinterpretc(::Type{CV}, a::AbstractArray{T}) where {CV<:Colorant,T<:Number}
     @noinline throwdm(::Type{C}, ind1) where C =
         throw(DimensionMismatch("indices $ind1 are not consistent with color type $C"))

@@ -11,7 +11,7 @@ pixelspacing(img::AbstractArray{T,N}) where {T,N} = ntuple(d->1, Val(N))
 pixelspacing(img::AbstractMappedArray) = pixelspacing(parent(img))
 pixelspacing(img::OffsetArray) = pixelspacing(parent(img))
 @inline pixelspacing(img::SubArray) =
-    _subarray_filter(pixelspacing(parent(img)), img.indexes...)
+    _subarray_filter(pixelspacing(parent(img)), img.indices...)
 @inline pixelspacing(img::Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm}) where {T,N,perm} =
     _getindex_tuple(pixelspacing(parent(img)), perm)
 
@@ -30,7 +30,7 @@ spacedirections(img::AbstractArray) = _spacedirections(pixelspacing(img))
 spacedirections(img::AbstractMappedArray) = spacedirections(parent(img))
 spacedirections(img::OffsetArray) = spacedirections(parent(img))
 @inline spacedirections(img::SubArray) =
-    _subarray_filter(spacedirections(parent(img)), img.indexes...)
+    _subarray_filter(spacedirections(parent(img)), img.indices...)
 @inline spacedirections(img::Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm}) where {T,N,perm} =
     _getindex_tuple(spacedirections(parent(img)), perm)
 
@@ -60,7 +60,7 @@ Note that a better strategy may be to use ImagesAxes and take slices along the t
 coords_spatial(img::AbstractMappedArray) = coords_spatial(parent(img))
 coords_spatial(img::OffsetArray) = coords_spatial(parent(img))
 @inline coords_spatial(img::SubArray) =
-    _subarray_offset(0, coords_spatial(parent(img)), img.indexes...)
+    _subarray_offset(0, coords_spatial(parent(img)), img.indices...)
 @inline coords_spatial(img::Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm,iperm}) where {T,N,perm,iperm} =
     _getindex_tuple(coords_spatial(parent(img)), iperm)
 
@@ -89,7 +89,7 @@ size_spatial(img) = size(img)
 size_spatial(img::AbstractMappedArray) = size_spatial(parent(img))
 size_spatial(img::OffsetArray) = size_spatial(parent(img))
 @inline size_spatial(img::SubArray) =
-    _subarray_filter(size_spatial(parent(img)), img.indexes...)
+    _subarray_filter(size_spatial(parent(img)), img.indices...)
 @inline size_spatial(img::Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm}) where {T,N,perm} =
     _getindex_tuple(size_spatial(parent(img)), perm)
 
@@ -100,10 +100,10 @@ Return a tuple with the indices of the spatial dimensions of the
 image. Defaults to the same as `indices`, but using ImagesAxes you can
 mark some axes as being non-spatial.
 """
-indices_spatial(img) = indices(img)
+indices_spatial(img) = axes(img)
 indices_spatial(img::AbstractMappedArray) = indices_spatial(parent(img))
 @inline indices_spatial(img::SubArray) =
-    _subarray_filter(indices_spatial(parent(img)), img.indexes...)
+    _subarray_filter(indices_spatial(parent(img)), img.indices...)
 @inline indices_spatial(img::Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm}) where {T,N,perm} =
     _getindex_tuple(indices_spatial(parent(img)), perm)
 
@@ -121,7 +121,7 @@ assert_timedim_last(img::AbstractMappedArray) = assert_timedim_last(parent(img))
 assert_timedim_last(img::OffsetArray) = assert_timedim_last(parent(img))
 assert_timedim_last(img::SubArray) = assert_timedim_last(parent(img))
 
-widthheight(img::AbstractArray) = length(indices(img,2)), length(indices(img,1))
+widthheight(img::AbstractArray) = length(axes(img,2)), length(axes(img,1))
 
 width(img::AbstractArray) = widthheight(img)[1]
 height(img::AbstractArray) = widthheight(img)[2]

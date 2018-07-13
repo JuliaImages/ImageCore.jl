@@ -1,5 +1,5 @@
 # some views are in colorchannels.jl
-using Colors, FixedPointNumbers, ImageCore, OffsetArrays, Base.Test
+using Colors, FixedPointNumbers, ImageCore, OffsetArrays, Test
 
 @testset "rawview" begin
     a = map(N0f8, rand(3,5))
@@ -53,7 +53,7 @@ end
         V = @inferred(StackedView(A, B))
         @test eltype(V) == T
         @test size(V) == (2, 2, 2)
-        @test indices(V) === (Base.OneTo(2), Base.OneTo(2), Base.OneTo(2))
+        @test axes(V) === (Base.OneTo(2), Base.OneTo(2), Base.OneTo(2))
         @test @inferred(V[1,1,1]) === T(1)
         @test @inferred(V[2,1,1]) === T(-1)
         @test V[1,:,:] == A
@@ -75,7 +75,7 @@ end
         V = @inferred(StackedView(A, zeroarray, B))
         @test eltype(V) == T
         @test size(V) == (3, 2, 2)
-        @test indices(V) === (Base.OneTo(3), Base.OneTo(2), Base.OneTo(2))
+        @test axes(V) === (Base.OneTo(3), Base.OneTo(2), Base.OneTo(2))
         @test V[1,:,:] == A
         @test all(V[2,:,:] .== 0)
         @test V[3,:,:] == B
@@ -145,18 +145,22 @@ end
     @test cv[2,1] === RGB(0.2,0,0)
     @test cv[1,2] === RGB(0,1.0,0)
     @test cv[2,2] === RGB(0,0.0,0)
-    @test indices(cv) === (Base.OneTo(2), Base.OneTo(2))
+    @test axes(cv) === (Base.OneTo(2), Base.OneTo(2))
 
     a = [0.1 0.2; 0.3 0.4]
     b = OffsetArray([0.1 0.2; 0.3 0.4], 0:1, 2:3)
     @test_throws DimensionMismatch colorview(RGB, a, b, zeroarray)
     cv = colorview(RGB, paddedviews(0, a, b, zeroarray)...)
-    @test indices(cv) == (0:2, 1:3)
-    @test red.(cv[indices(a)...]) == a
-    @test green.(cv[indices(b)...]) == parent(b)
+    @test axes(cv) == (0:2, 1:3)
+    @test red.(cv[axes(a)...]) == a
+    @test green.(cv[axes(b)...]) == b
     @test parent(copy(cv)) == [RGB(0,0,0)   RGB(0,0.1,0)   RGB(0,0.2,0);
                                RGB(0.1,0,0) RGB(0.2,0.3,0) RGB(0,0.4,0);
                                RGB(0.3,0,0) RGB(0.4,0,0)   RGB(0,0,0)]
+    chanv = channelview(cv)
+    @test @inferred(axes(chanv)) === (Base.Slice(1:3), Base.Slice(0:2), Base.Slice(1:3))
+    @test chanv[1,1,1] == 0.1
+    @test chanv[2,1,2] == 0.3
 
     @test_throws ErrorException paddedviews(0, zeroarray, zeroarray)
 

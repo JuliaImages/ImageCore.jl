@@ -1,5 +1,5 @@
 using ImageCore, FixedPointNumbers, Colors, ColorVectorSpace
-using Base.Test
+using Test
 
 @testset "map" begin
     @testset "clamp01" begin
@@ -82,7 +82,7 @@ using Base.Test
         A = [Gray(-0.1),Gray(0.1)]
         f = scaleminmax(Gray, -0.1, 0.1)
         @test f.(A) == [Gray(0.0),Gray(1.0)]
-        A = reinterpret(RGB, [0.0 128.0; 255.0 0.0; 0.0 0.0])
+        A = reinterpretc(RGB, [0.0 128.0; 255.0 0.0; 0.0 0.0])
         f = scaleminmax(RGB, 0, 255)
         @test f.(A) == [RGB(0,1.0,0), RGB(128/255,0,0)]
         f = scaleminmax(RGB{N0f8}, 0, 255)

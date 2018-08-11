@@ -1,19 +1,25 @@
-# Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
 os:
-  - linux
-  - osx
+    - osx
+    - linux
 julia:
-  - nightly
+    - 0.7
+    - 1.0
+    - nightly
 notifications:
-  email: false
-# uncomment the following lines to override the default test script
-#script:
-#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - julia -e 'Pkg.clone(pwd()); Pkg.build("ImageCore"); Pkg.test("ImageCore"; coverage=true)'
+    email: false
+script:
+    - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+    - julia -e 'import Pkg; Pkg.clone(pwd()); Pkg.build("ImageCore"); Pkg.test("ImageCore"; coverage=true)';
+# FIXME: enable deploy for merges into master
+# jobs:
+#   include:
+#     - stage: deploy
+#       julia: 0.7
+#       os: linux
+#       script:
+#         - julia -e 'import Pkg; Pkg.clone(pwd()); Pkg.build("ImageCore")'
+#         - julia -e 'import Pkg; Pkg.add("Documenter")'
+#         - julia -e 'import ImageCore; include("docs/make.jl")'
 after_success:
-  # push coverage results to Codecov
-  - julia -e 'cd(Pkg.dir("ImageCore")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-  # update the documentation
-  - julia -e 'Pkg.add("Documenter")'
-  - julia -e 'cd(Pkg.dir("ImageCore")); ENV["DOCUMENTER_DEBUG"] = "true"; include(joinpath("docs", "make.jl"))'
+    - julia -e 'using Pkg; cd(Pkg.dir("ImageCore")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'

@@ -10,16 +10,18 @@ notifications:
     email: false
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-    - julia -e 'import Pkg; Pkg.clone(pwd()); Pkg.build("ImageCore"); Pkg.test("ImageCore"; coverage=true)';
-# FIXME: enable deploy for merges into master
-# jobs:
-#   include:
-#     - stage: deploy
-#       julia: 0.7
-#       os: linux
-#       script:
-#         - julia -e 'import Pkg; Pkg.clone(pwd()); Pkg.build("ImageCore")'
-#         - julia -e 'import Pkg; Pkg.add("Documenter")'
-#         - julia -e 'import ImageCore; include("docs/make.jl")'
+    - julia --check-bounds=yes --color=yes -e 'import Pkg; Pkg.clone(pwd()); Pkg.build("ImageCore"); Pkg.test("ImageCore"; coverage=true)';
+
+# control of actual deployment is in the Documenter make script
+jobs:
+  include:
+    - stage: deploy
+      julia: 0.7
+      os: linux
+      script:
+        - julia -e 'import Pkg; Pkg.clone(pwd()); Pkg.build("ImageCore")'
+        - julia -e 'import Pkg; Pkg.add("Documenter")'
+        - julia -e 'import ImageCore; ENV["DOCUMENTER_DEBUG"] = "true"; include(joinpath("docs","make.jl"))'
+
 after_success:
-    - julia -e 'using Pkg; cd(Pkg.dir("ImageCore")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+    - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'

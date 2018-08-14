@@ -129,7 +129,4 @@ function Base.transpose(a::AbstractVector{C}) where C<:Colorant
     out
 end
 
-Base.ctranspose(a::AbstractMatrix{C}) where {C<:Colorant} = transpose(a)
-Base.ctranspose(a::AbstractVector{C}) where {C<:Colorant} = transpose(a)
-
 end ## module

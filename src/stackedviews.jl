@@ -106,6 +106,7 @@ ZeroArrayPromise{T}(inds::NTuple{N,R}) where {T,N,R<:AbstractUnitRange} = ZeroAr
 Base.eltype(::Type{ZeroArrayPromise{T}}) where {T} = T
 
 Base.axes(A::ZeroArray) = A.inds
+Base.size(A::ZeroArray) = length.(A.inds)
 Base.getindex(A::ZeroArray{T,N}, I::Vararg{Int,N}) where {T,N} = zero(T)
 
 

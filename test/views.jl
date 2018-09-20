@@ -170,4 +170,23 @@ end
     @test_throws ErrorException ImageCore._unsafe_setindex!(1, (1,1), 0)
 end
 
+@testset "Multi-component colorview" begin
+    r, g, b = rand(Gray{N0f16},5,5), rand(Gray{N0f16},5,5), rand(Gray{N0f16},5,5)
+    A = colorview(RGB, r, g, b)
+    @test A[1,1] == RGB(r[1,1], g[1,1], b[1,1])
+    o = ones(2, 2)
+    A = colorview(RGB, o, o, zeroarray)
+    @test A[1,1] == RGB(1,1,0)
+    @test size(A) == (2,2)
+    @test axes(A) == (Base.OneTo(2),Base.OneTo(2))
+    A = colorview(RGB, o, zeroarray, o)
+    @test A[1,1] == RGB(1,0,1)
+    @test size(A) == (2,2)
+    @test axes(A) == (Base.OneTo(2),Base.OneTo(2))
+    A = colorview(RGB, zeroarray, o, o)
+    @test A[1,1] == RGB(0,1,1)
+    @test size(A) == (2,2)
+    @test axes(A) == (Base.OneTo(2),Base.OneTo(2))
+end
+
 nothing

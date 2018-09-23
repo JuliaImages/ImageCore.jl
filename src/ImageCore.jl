@@ -6,6 +6,7 @@ using Colors, FixedPointNumbers, MappedArrays, PaddedViews, Graphics
 using OffsetArrays # for show.jl
 using ColorTypes: colorant_string
 using Colors: Fractional
+using MappedArrays: AbstractMultiMappedArray
 
 using Base: tail, @pure, Indices
 

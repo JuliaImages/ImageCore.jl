@@ -9,6 +9,10 @@ spacing using physical units.
 pixelspacing(img::AbstractArray{T,N}) where {T,N} = ntuple(d->1, Val(N))
 # Some of these traits need to work recursively into "container" types
 pixelspacing(img::AbstractMappedArray) = pixelspacing(parent(img))
+function pixelspacing(img::AbstractMultiMappedArray)
+    ps = traititer(pixelspacing, parent(img)...)
+    checksame(ps)
+end
 pixelspacing(img::OffsetArray) = pixelspacing(parent(img))
 @inline pixelspacing(img::SubArray) =
     _subarray_filter(pixelspacing(parent(img)), img.indices...)
@@ -28,6 +32,10 @@ manually using ImagesMeta.
 """
 spacedirections(img::AbstractArray) = _spacedirections(pixelspacing(img))
 spacedirections(img::AbstractMappedArray) = spacedirections(parent(img))
+function spacedirections(img::AbstractMultiMappedArray)
+    ps = traititer(spacedirections, parent(img)...)
+    checksame(ps)
+end
 spacedirections(img::OffsetArray) = spacedirections(parent(img))
 @inline spacedirections(img::SubArray) =
     _subarray_filter(spacedirections(parent(img)), img.indices...)
@@ -58,6 +66,10 @@ Note that a better strategy may be to use ImagesAxes and take slices along the t
 @inline coords_spatial(img::AbstractArray{T,N}) where {T,N} = ntuple(identity, Val(N))
 
 coords_spatial(img::AbstractMappedArray) = coords_spatial(parent(img))
+function coords_spatial(img::AbstractMultiMappedArray)
+    ps = traititer(coords_spatial, parent(img)...)
+    checksame(ps)
+end
 coords_spatial(img::OffsetArray) = coords_spatial(parent(img))
 @inline coords_spatial(img::SubArray) =
     _subarray_offset(0, coords_spatial(parent(img)), img.indices...)
@@ -74,6 +86,10 @@ Return the number of time-points in the image array. Defaults to
 """
 nimages(img::AbstractArray) = 1
 nimages(img::AbstractMappedArray) = nimages(parent(img))
+function nimages(img::AbstractMultiMappedArray)
+    ps = traititer(nimages, parent(img)...)
+    checksame(ps)
+end
 nimages(img::OffsetArray) = nimages(parent(img))
 nimages(img::SubArray) = nimages(parent(img))
 nimages(img::Base.PermutedDimsArrays.PermutedDimsArray) = nimages(parent(img))
@@ -87,6 +103,10 @@ mark some axes as being non-spatial.
 """
 size_spatial(img) = size(img)
 size_spatial(img::AbstractMappedArray) = size_spatial(parent(img))
+function size_spatial(img::AbstractMultiMappedArray)
+    ps = traititer(size_spatial, parent(img)...)
+    checksame(ps)
+end
 size_spatial(img::OffsetArray) = size_spatial(parent(img))
 @inline size_spatial(img::SubArray) =
     _subarray_filter(size_spatial(parent(img)), img.indices...)
@@ -102,6 +122,10 @@ mark some axes as being non-spatial.
 """
 indices_spatial(img) = axes(img)
 indices_spatial(img::AbstractMappedArray) = indices_spatial(parent(img))
+function indices_spatial(img::AbstractMultiMappedArray)
+    ps = traititer(indices_spatial, parent(img)...)
+    checksame(ps)
+end
 @inline indices_spatial(img::SubArray) =
     _subarray_filter(indices_spatial(parent(img)), img.indices...)
 @inline indices_spatial(img::Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm}) where {T,N,perm} =
@@ -118,6 +142,10 @@ dimension.
 """
 assert_timedim_last(img::AbstractArray) = nothing
 assert_timedim_last(img::AbstractMappedArray) = assert_timedim_last(parent(img))
+function assert_timedim_last(img::AbstractMultiMappedArray)
+    traititer(assert_timedim_last, parent(img)...)
+    return nothing
+end
 assert_timedim_last(img::OffsetArray) = assert_timedim_last(parent(img))
 assert_timedim_last(img::SubArray) = assert_timedim_last(parent(img))
 
@@ -130,11 +158,25 @@ height(img::AbstractArray) = widthheight(img)[2]
 # Traits whose only meaningful definitions occur in ImageAxes, but for
 # which we want nesting behavior
 spatialorder(img::AbstractMappedArray) = spatialorder(parent(img))
+function spatialorder(img::AbstractMultiMappedArray)
+    ps = traititer(spatialorder, parent(img)...)
+    checksame(ps)
+end
 spatialorder(img::OffsetArray) = spatialorder(parent(img))
 @inline spatialorder(img::Base.PermutedDimsArrays.PermutedDimsArray{T,N,perm}) where {T,N,perm} =
     _getindex_tuple(spatialorder(parent(img)), perm)
 
 # Utilities
+
+@inline traititer(f, A, rest...) = (f(A), traititer(f, rest...)...)
+@inline traititer(f, A::ZeroArray, rest...) = traititer(f, rest...)
+traititer(f) = ()
+
+function checksame(t::Tuple)
+    val1 = t[1]
+    @assert all(p -> p == val1, t)
+    return val1
+end
 
 @inline _subarray_filter(x, i::Real, inds...) =
     _subarray_filter(tail(x), inds...)

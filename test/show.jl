@@ -1,5 +1,11 @@
 using ImageCore, Colors, FixedPointNumbers, OffsetArrays, Test
 
+if VERSION >= v"1.2.0-DEV.229"
+    sumsz(img) = Base.dims2string(size(img)) * ' '
+else
+    sumsz(img) = ""
+end
+
 @testset "show" begin
     thismodule = string(@__MODULE__)
     if thismodule != "Main"
@@ -30,12 +36,12 @@ using ImageCore, Colors, FixedPointNumbers, OffsetArrays, Test
     g = channelview(rgb8)
     @test summary(g) == "3×3×5 reinterpret(N0f8, ::Array{RGB{N0f8},3})"
     h = OffsetArray(rgb8, -1:1, -2:2)
-    @test summary(h) == "OffsetArray(::Array{RGB{N0f8},2}, -1:1, -2:2) with eltype $(prefixC)RGB{$(prefixF)Normed{UInt8,8}} with indices -1:1×-2:2"
+    @test summary(h) == "$(sumsz(h))OffsetArray(::Array{RGB{N0f8},2}, -1:1, -2:2) with eltype $(prefixC)RGB{$(prefixF)Normed{UInt8,8}} with indices -1:1×-2:2"
     i = channelview(h)
-    @test summary(i) == "reinterpret(N0f8, OffsetArray(::Array{RGB{N0f8},3}, 1:1, -1:1, -2:2)) with indices 1:3×-1:1×-2:2"
+    @test summary(i) == "$(sumsz(i))reinterpret(N0f8, OffsetArray(::Array{RGB{N0f8},3}, 1:1, -1:1, -2:2)) with indices 1:3×-1:1×-2:2"
     c = channelview(rand(RGB{N0f8}, 2))
     o = OffsetArray(c, -1:1, 0:1)
-    @test summary(o) == "OffsetArray(reinterpret(N0f8, ::Array{RGB{N0f8},2}), -1:1, 0:1) with eltype $(prefixF)Normed{UInt8,8} with indices -1:1×0:1"
+    @test summary(o) == "$(sumsz(o))OffsetArray(reinterpret(N0f8, ::Array{RGB{N0f8},2}), -1:1, 0:1) with eltype $(prefixF)Normed{UInt8,8} with indices -1:1×0:1"
     # Issue #45
     a = collect(tuple())
     @test summary(a) == "0-element Array{Union{},1}"

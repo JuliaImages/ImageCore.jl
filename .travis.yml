@@ -21,7 +21,7 @@ jobs:
       julia: 1.0
       os: linux
       script:
-        - julia -e 'import Pkg; Pkg.clone(pwd()); Pkg.build("ImageCore")'
+        # - julia -e 'import Pkg; Pkg.clone(pwd()); Pkg.build("ImageCore")'
         - julia -e 'import Pkg; Pkg.add("Documenter")'
         - julia -e 'import ImageCore; ENV["DOCUMENTER_DEBUG"] = "true"; include(joinpath("docs","make.jl"))'
 

@@ -72,7 +72,10 @@ export
     spacedirections,
     spatialorder,
     width,
-    widthheight
+    widthheight,
+    image_type,
+    GrayImage,
+    RGBImage
 
 include("colorchannels.jl")
 include("stackedviews.jl")

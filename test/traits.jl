@@ -31,6 +31,11 @@ using Test
         @test width(B) == 5
         @test height(B) == 3
     end
+
+    @testset "Image types" begin
+        @test isa(image_type(typeof(rand(Gray{Float32}, 3,5))), GrayImage)
+        @test isa(image_type(typeof(rand(RGB{Float16}, 3,5))), RGBImage)
+    end
 end
 
 nothing

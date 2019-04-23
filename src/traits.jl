@@ -193,3 +193,38 @@ _subarray_offset(off, x::Tuple{}) = ()
 @inline _getindex_tuple(t::Tuple, inds::Tuple) =
     (t[inds[1]], _getindex_tuple(t, tail(inds))...)
 _getindex_tuple(t::Tuple, ::Tuple{}) = ()
+
+# ImageType trait
+abstract type AbstractImage end
+
+struct GenericImage <: AbstractImage end
+image_type(::Type{<:AbstractArray}) = GenericImage()
+
+struct GrayImage <: AbstractImage end
+image_type(::Type{<:AbstractArray{Gray{T}}}) where {T<:Number} = GrayImage()
+image_type(::Type{<:Base.ReinterpretArray{T, 2, Gray{T}, <:AbstractArray{Gray{T},2} }}) where {T<:Number} = GrayImage() # capture channelview
+image_type(::Type{<:MappedArray{RT, 2, <:Base.ReinterpretArray{T, 2, Gray{T}, <:AbstractArray{Gray{T},2}} }}) where {RT<:Number, T<:Number} = GrayImage() # capture rawview
+  
+struct RGBImage <: AbstractImage end
+image_type(::Type{<:AbstractArray{RGB{T}}}) where {T<:Number} = RGBImage()
+image_type(::Type{<:Base.ReinterpretArray{T, 3, RGB{T}, <:AbstractArray{RGB{T},3}}}) where {T<:Number} = RGBImage() # capture channelview
+image_type(::Type{<:MappedArray{RT, 3, <:Base.ReinterpretArray{T, 3, RGB{T}, <:AbstractArray{RGB{T},3}} }}) where {RT<:Number, T<:Number} = RGBImage() # capture rawview
+
+"""
+    image_type(::Type)::AbstractImage
+
+`image_type` returns the type of an image
+
+# Examples
+
+```julia-doc
+img = testimage("cameraman")
+image_type(typeof(img)) == GrayImageType()
+```
+
+```julia-doc
+img = testimage("lena_color_256")
+image_type(typeof(img)) == RGBImageType()
+```
+"""
+image_type

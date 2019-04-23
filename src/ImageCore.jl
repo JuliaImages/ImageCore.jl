@@ -74,6 +74,7 @@ export
     width,
     widthheight,
     image_type,
+    AbstractImage,
     GrayImage,
     RGBImage
 

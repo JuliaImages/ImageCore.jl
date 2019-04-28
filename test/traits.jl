@@ -1,6 +1,6 @@
 using ImageCore, Colors, FixedPointNumbers, ColorVectorSpace, MappedArrays, OffsetArrays
 using Test
-using ImageCore: NumberLike, RealLike, FloatLike, FractionalLike, IntegerLike,
+using ImageCore: NumberLike, RealLike, FloatLike, FractionalLike, 
       GrayLike, GrayImage, Gray2dImage
 
 @testset "Image traits" begin
@@ -41,7 +41,6 @@ end
         @test RealLike <: NumberLike
         @test FloatLike <: NumberLike
         @test FractionalLike <: NumberLike
-        @test IntegerLike <: NumberLike
 
         @test Number <: NumberLike
         @test Real <: NumberLike
@@ -60,7 +59,6 @@ end
     @testset "RealLike" begin
         @test FloatLike <: RealLike
         @test FractionalLike <: RealLike
-        @test IntegerLike <: RealLike
 
         @test Real <: RealLike
         @test AbstractFloat <: RealLike
@@ -106,18 +104,6 @@ end
         @test Gray{<:AbstractFloat} <: FloatLike
 
         @test !isa(oneunit(Gray), FloatLike)
-    end
-
-    @testset "IntegerLike" begin
-        @test Integer <: IntegerLike
-        @test FixedPoint <: IntegerLike
-        @test Bool <: IntegerLike
-
-        @test !(Gray <: IntegerLike)
-        @test Gray{<:Bool} <: IntegerLike
-        @test Gray{<:FixedPoint} <: IntegerLike
-
-        @test isa(oneunit(Gray), IntegerLike)
     end
 
     @testset "GrayImage" begin

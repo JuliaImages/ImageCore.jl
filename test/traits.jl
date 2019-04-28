@@ -1,7 +1,7 @@
 using ImageCore, Colors, FixedPointNumbers, ColorVectorSpace, MappedArrays, OffsetArrays
 using Test
 using ImageCore: NumberLike, RealLike, FloatLike, FractionalLike, 
-      GrayLike, GrayImage, Gray2dImage
+      GrayLike, GenericGrayImage, Gray2dImage
 
 @testset "Image traits" begin
     for (B, swap) in ((rand(UInt16(1):UInt16(20), 3, 5), false),
@@ -107,7 +107,7 @@ end
     end
 
     @testset "GrayImage" begin
-        @test Gray2dImage{Float32} == GrayImage{2, Float32}
+        @test Gray2dImage{Float32} == GenericGrayImage{2, Float32}
 
         sz = (3,3)
         @test isa(rand(Bool, sz), Gray2dImage)

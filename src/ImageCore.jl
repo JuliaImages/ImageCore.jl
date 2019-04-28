@@ -35,8 +35,8 @@ const RealLike{T<:Real} = NumberLike{T}
 const FloatLike{T<:AbstractFloat} = RealLike{T}
 const FractionalLike{T<:Union{FixedPoint, AbstractFloat}} = RealLike{T}
 const GrayLike{T<:Union{Bool, FixedPoint, AbstractFloat}} = RealLike{T}
-const GrayImage{N, BT, T<:GrayLike{BT}} = AbstractArray{<:GrayLike{T}, N}
-const Gray2dImage{BT, T<:GrayLike{BT}} = GrayImage{2, BT, T}
+const GenericGrayImage{N, BT, T<:GrayLike{BT}} = AbstractArray{<:GrayLike{T}, N}
+const Gray2dImage{BT, T<:GrayLike{BT}} = GenericGrayImage{2, BT, T}
 
 export
     ## Types

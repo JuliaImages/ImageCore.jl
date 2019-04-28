@@ -21,7 +21,6 @@ plus(r::AbstractUnitRange, i::Integer) = broadcast(+, r, i)
 plus(a::AbstractArray, i::Integer) = a .+ i
 
 using ColorTypes: AbstractGray, TransparentGray, Color3, Transparent3
-const RealLike = Union{Real,AbstractGray}
 Color1{T} = Colorant{T,1}
 Color2{T} = Colorant{T,2}
 Color4{T} = Colorant{T,4}
@@ -32,6 +31,15 @@ Color1Array{C<:Color1,N} = AbstractArray{C,N}
 # Type that arises from reshape(reinterpret(To, A), sz):
 const RRArray{To,From,N,M,P} = Base.ReshapedArray{To,N,Base.ReinterpretArray{To,M,From,P}}
 const RGArray = Union{Base.ReinterpretArray{<:AbstractGray,M,<:Number,P}, Base.ReinterpretArray{<:Number,M,<:AbstractGray,P}} where {M,P}
+
+# delibrately not export these constants to enable extensibility for downstream packages
+const NumberLike{T<:Number} = Union{T,AbstractGray{T}}
+const RealLike{T<:Real} = NumberLike{T}
+const FloatLike{T<:AbstractFloat} = RealLike{T}
+const FractionalLike{T<:Union{FixedPoint, AbstractFloat}} = RealLike{T}
+const GrayLike{T<:Union{Bool, FixedPoint, AbstractFloat}} = RealLike{T}
+const GenericGrayImage{N, T<:GrayLike} = AbstractArray{<:GrayLike{T}, N}
+const Gray2dImage{T<:GrayLike} = GenericGrayImage{2, T}
 
 export
     ## Types

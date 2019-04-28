@@ -134,9 +134,14 @@ end
         @test isa(rand(Gray{Float32}, sz), Gray2dImage)
 
         foo(img::Gray2dImage) = "Generic"
-        foo(img::Gray2dImage{FixedPoint}) = "FixedPoint"
-        @test foo(rand(Gray, sz)) == "Generic"
+        foo(img::Gray2dImage{<:AbstractFloat}) = "AbstractFloat"
+        foo(img::Gray2dImage{<:FixedPoint}) = "FixedPoint"
+        @test foo(rand(Bool, sz)) == "Generic"
+        @test foo(rand(Gray{Bool}, sz)) == "Generic"
+        @test foo(rand(Gray{Float32}, sz)) == "AbstractFloat"
+        @test foo(rand(Float32, sz)) == "AbstractFloat"
         @test foo(rand(Gray{N0f8}, sz)) == "FixedPoint"
+        @test foo(rand(N0f8, sz)) == "FixedPoint"
     end
 end
 

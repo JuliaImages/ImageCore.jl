@@ -2,7 +2,10 @@ VERSION < v"0.7.0-beta2.199" && __precompile__()
 
 module ImageCore
 
-using Colors, FixedPointNumbers, MappedArrays, PaddedViews, Graphics
+using Reexport
+@reexport using Colors
+@reexport using FixedPointNumbers
+using MappedArrays, PaddedViews, Graphics
 using OffsetArrays # for show.jl
 using ColorTypes: colorant_string
 using Colors: Fractional

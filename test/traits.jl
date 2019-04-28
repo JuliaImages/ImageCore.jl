@@ -1,7 +1,7 @@
 using ImageCore, Colors, FixedPointNumbers, ColorVectorSpace, MappedArrays, OffsetArrays
 using Test
 using ImageCore: NumberLike, RealLike, FloatLike, FractionalLike, IntegerLike,
-      GrayLike, GrayImageLike
+      GrayLike, GrayImage, Gray2dImage
 
 @testset "Image traits" begin
     for (B, swap) in ((rand(UInt16(1):UInt16(20), 3, 5), false),
@@ -120,16 +120,23 @@ end
         @test isa(oneunit(Gray), IntegerLike)
     end
 
-    @testset "GrayImageLike" begin
-        sz = (3,3)
-        @test isa(rand(Bool, sz), GrayImageLike)
-        @test isa(rand(N0f8, sz), GrayImageLike)
-        @test isa(rand(Float32, sz), GrayImageLike)
+    @testset "GrayImage" begin
+        @test Gray2dImage{Float32} == GrayImage{2, Float32}
 
-        @test isa(rand(Gray, sz), GrayImageLike)
-        @test isa(rand(Gray{Bool}, sz), GrayImageLike)
-        @test isa(rand(Gray{N0f8}, sz), GrayImageLike)
-        @test isa(rand(Gray{Float32}, sz), GrayImageLike)
+        sz = (3,3)
+        @test isa(rand(Bool, sz), Gray2dImage)
+        @test isa(rand(N0f8, sz), Gray2dImage)
+        @test isa(rand(Float32, sz), Gray2dImage)
+
+        @test isa(rand(Gray, sz), Gray2dImage)
+        @test isa(rand(Gray{Bool}, sz), Gray2dImage)
+        @test isa(rand(Gray{N0f8}, sz), Gray2dImage)
+        @test isa(rand(Gray{Float32}, sz), Gray2dImage)
+
+        foo(img::Gray2dImage) = "Generic"
+        foo(img::Gray2dImage{FixedPoint}) = "FixedPoint"
+        @test foo(rand(Gray, sz)) == "Generic"
+        @test foo(rand(Gray{N0f8}, sz)) == "FixedPoint"
     end
 end
 

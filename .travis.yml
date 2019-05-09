@@ -6,8 +6,26 @@ julia:
     - 1.0
     - 1.1
     - nightly
+
+env:
+  - USE_MASTER=true
+  - USE_MASTER=""
+
 notifications:
-    email: false
+  email: false
+matrix:
+  exclude:
+    - julia: 1.0
+      env: USE_MASTER=true
+    - julia: 1.1
+      env: USE_MASTER=true
+    - julia: nightly
+      env: USE_MASTER=""
+  allow_failures:
+  - julia: nightly
+
+before_script:
+  - if [ ! -z "$USE_MASTER" ]; then curl $SCRIPT_URL -o install_master.jl; julia install_master.jl;  fi
 
 # use default julia script for test
 # script:
@@ -20,6 +38,7 @@ jobs:
     - stage: deploy
       julia: 1.0
       os: linux
+      env: USE_MASTER=""
       script:
         # - julia -e 'import Pkg; Pkg.clone(pwd()); Pkg.build("ImageCore")'
         - julia -e 'import Pkg; Pkg.add("Documenter")'

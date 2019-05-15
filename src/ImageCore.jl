@@ -37,7 +37,6 @@ const Pixel{T<:Number} = Union{T, Colorant{T}}
 const NumberLike{T<:Number} = Union{T, AbstractGray{T}}
 const GenericImage{T<:Number, N} = AbstractArray{<:Pixel{T}, N}
 const GenericGrayImage{T<:Number, N} = AbstractArray{<:NumberLike{T}, N}
-const Gray2dImage{T<:Number} = GenericGrayImage{T, 2}
 
 export
     ## Types

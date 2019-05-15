@@ -1,6 +1,6 @@
 using ImageCore, Colors, FixedPointNumbers, ColorVectorSpace, MappedArrays, OffsetArrays
 using Test
-using ImageCore: Pixel, NumberLike, GenericImage, GenericGrayImage, Gray2dImage
+using ImageCore: Pixel, NumberLike, GenericImage, GenericGrayImage
 
 @testset "Image traits" begin
     for (B, swap) in ((rand(UInt16(1):UInt16(20), 3, 5), false),
@@ -64,64 +64,65 @@ end
     @testset "GenericImage" begin
         @test GenericGrayImage <: GenericImage
 
-        sz = (3,3)
-        @test isa(rand(Bool, sz), GenericImage)
-        @test isa(rand(N0f8, sz), GenericImage)
-        @test isa(rand(Float32, sz), GenericImage)
-
-        @test isa(rand(Gray, sz), GenericImage)
-        @test isa(rand(Gray{Bool}, sz), GenericImage)
-        @test isa(rand(Gray{N0f8}, sz), GenericImage)
-        @test isa(rand(Gray{Float32}, sz), GenericImage)
-
-        @test isa(rand(GrayA, sz), GenericImage)
-        @test isa(rand(GrayA{N0f8}, sz), GenericImage)
-        @test isa(rand(GrayA{Float32}, sz), GenericImage)
-
-        @test isa(rand(RGB, sz), GenericImage)
-        @test isa(rand(RGB{N0f8}, sz), GenericImage)
-        @test isa(rand(RGB{Float32}, sz), GenericImage)
-
-        @test isa(rand(RGBA, sz), GenericImage)
-        @test isa(rand(RGBA{N0f8}, sz), GenericImage)
-        @test isa(rand(RGBA{Float32}, sz), GenericImage)
-
-        @test isa(rand(Lab, sz), GenericImage)
-        @test isa(rand(Lab{Float32}, sz), GenericImage)
-
         foo(img::GenericImage) = "Generic"
         foo(img::GenericImage{<:AbstractFloat}) = "AbstractFloat"
         foo(img::GenericImage{<:FixedPoint}) = "FixedPoint"
-        @test foo(rand(Bool, sz)) == "Generic"
-        @test foo(rand(Gray{Bool}, sz)) == "Generic"
-        @test foo(rand(Gray{Float32}, sz)) == "AbstractFloat"
-        @test foo(rand(Float32, sz)) == "AbstractFloat"
-        @test foo(rand(Gray{N0f8}, sz)) == "FixedPoint"
-        @test foo(rand(N0f8, sz)) == "FixedPoint"
+        for sz in [(3, 3), (3, 3, 3)]
+            @test isa(rand(Bool, sz), GenericImage)
+            @test isa(rand(N0f8, sz), GenericImage)
+            @test isa(rand(Float32, sz), GenericImage)
+
+            @test isa(rand(Gray, sz), GenericImage)
+            @test isa(rand(Gray{Bool}, sz), GenericImage)
+            @test isa(rand(Gray{N0f8}, sz), GenericImage)
+            @test isa(rand(Gray{Float32}, sz), GenericImage)
+
+            @test isa(rand(GrayA, sz), GenericImage)
+            @test isa(rand(GrayA{N0f8}, sz), GenericImage)
+            @test isa(rand(GrayA{Float32}, sz), GenericImage)
+
+            @test isa(rand(RGB, sz), GenericImage)
+            @test isa(rand(RGB{N0f8}, sz), GenericImage)
+            @test isa(rand(RGB{Float32}, sz), GenericImage)
+
+            @test isa(rand(RGBA, sz), GenericImage)
+            @test isa(rand(RGBA{N0f8}, sz), GenericImage)
+            @test isa(rand(RGBA{Float32}, sz), GenericImage)
+
+            @test isa(rand(Lab, sz), GenericImage)
+            @test isa(rand(Lab{Float32}, sz), GenericImage)
+
+            @test foo(rand(Bool, sz)) == "Generic"
+            @test foo(rand(Gray{Bool}, sz)) == "Generic"
+            @test foo(rand(Gray{Float32}, sz)) == "AbstractFloat"
+            @test foo(rand(Float32, sz)) == "AbstractFloat"
+            @test foo(rand(Gray{N0f8}, sz)) == "FixedPoint"
+            @test foo(rand(N0f8, sz)) == "FixedPoint"
+        end
     end
 
     @testset "GrayImage" begin
-        @test Gray2dImage{Float32} == GenericGrayImage{Float32, 2}
+        foo(img::GenericGrayImage) = "Generic"
+        foo(img::GenericGrayImage{<:AbstractFloat}) = "AbstractFloat"
+        foo(img::GenericGrayImage{<:FixedPoint}) = "FixedPoint"
 
-        sz = (3,3)
-        @test isa(rand(Bool, sz), Gray2dImage)
-        @test isa(rand(N0f8, sz), Gray2dImage)
-        @test isa(rand(Float32, sz), Gray2dImage)
+        for sz in [(3, 3), (3, 3, 3)]
+            @test isa(rand(Bool, sz), GenericGrayImage)
+            @test isa(rand(N0f8, sz), GenericGrayImage)
+            @test isa(rand(Float32, sz), GenericGrayImage)
 
-        @test isa(rand(Gray, sz), Gray2dImage)
-        @test isa(rand(Gray{Bool}, sz), Gray2dImage)
-        @test isa(rand(Gray{N0f8}, sz), Gray2dImage)
-        @test isa(rand(Gray{Float32}, sz), Gray2dImage)
+            @test isa(rand(Gray, sz), GenericGrayImage)
+            @test isa(rand(Gray{Bool}, sz), GenericGrayImage)
+            @test isa(rand(Gray{N0f8}, sz), GenericGrayImage)
+            @test isa(rand(Gray{Float32}, sz), GenericGrayImage)
 
-        foo(img::Gray2dImage) = "Generic"
-        foo(img::Gray2dImage{<:AbstractFloat}) = "AbstractFloat"
-        foo(img::Gray2dImage{<:FixedPoint}) = "FixedPoint"
-        @test foo(rand(Bool, sz)) == "Generic"
-        @test foo(rand(Gray{Bool}, sz)) == "Generic"
-        @test foo(rand(Gray{Float32}, sz)) == "AbstractFloat"
-        @test foo(rand(Float32, sz)) == "AbstractFloat"
-        @test foo(rand(Gray{N0f8}, sz)) == "FixedPoint"
-        @test foo(rand(N0f8, sz)) == "FixedPoint"
+            @test foo(rand(Bool, sz)) == "Generic"
+            @test foo(rand(Gray{Bool}, sz)) == "Generic"
+            @test foo(rand(Gray{Float32}, sz)) == "AbstractFloat"
+            @test foo(rand(Float32, sz)) == "AbstractFloat"
+            @test foo(rand(Gray{N0f8}, sz)) == "FixedPoint"
+            @test foo(rand(N0f8, sz)) == "FixedPoint"
+        end
     end
 end
 

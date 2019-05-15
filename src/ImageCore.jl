@@ -33,8 +33,8 @@ const RRArray{To,From,N,M,P} = Base.ReshapedArray{To,N,Base.ReinterpretArray{To,
 const RGArray = Union{Base.ReinterpretArray{<:AbstractGray,M,<:Number,P}, Base.ReinterpretArray{<:Number,M,<:AbstractGray,P}} where {M,P}
 
 # delibrately not export these constants to enable extensibility for downstream packages
-const Pixel{T<:Number} = Union{T, Colorant{T}}
-const NumberLike{T<:Number} = Union{T, AbstractGray{T}}
+const NumberLike = Union{<:Number,<:AbstractGray}
+const Pixel = Union{<:Number,<:Colorant}
 const GenericImage{T<:Number, N} = AbstractArray{<:Pixel{T}, N}
 const GenericGrayImage{T<:Number, N} = AbstractArray{<:NumberLike{T}, N}
 

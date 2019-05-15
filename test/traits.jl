@@ -63,10 +63,6 @@ end
 
     @testset "GenericImage" begin
         @test GenericGrayImage <: GenericImage
-
-        foo(img::GenericImage) = "Generic"
-        foo(img::GenericImage{<:AbstractFloat}) = "AbstractFloat"
-        foo(img::GenericImage{<:FixedPoint}) = "FixedPoint"
         for sz in [(3, 3), (3, 3, 3)]
             @test isa(rand(Bool, sz), GenericImage)
             @test isa(rand(N0f8, sz), GenericImage)
@@ -91,21 +87,10 @@ end
 
             @test isa(rand(Lab, sz), GenericImage)
             @test isa(rand(Lab{Float32}, sz), GenericImage)
-
-            @test foo(rand(Bool, sz)) == "Generic"
-            @test foo(rand(Gray{Bool}, sz)) == "Generic"
-            @test foo(rand(Gray{Float32}, sz)) == "AbstractFloat"
-            @test foo(rand(Float32, sz)) == "AbstractFloat"
-            @test foo(rand(Gray{N0f8}, sz)) == "FixedPoint"
-            @test foo(rand(N0f8, sz)) == "FixedPoint"
         end
     end
 
     @testset "GrayImage" begin
-        foo(img::GenericGrayImage) = "Generic"
-        foo(img::GenericGrayImage{<:AbstractFloat}) = "AbstractFloat"
-        foo(img::GenericGrayImage{<:FixedPoint}) = "FixedPoint"
-
         for sz in [(3, 3), (3, 3, 3)]
             @test isa(rand(Bool, sz), GenericGrayImage)
             @test isa(rand(N0f8, sz), GenericGrayImage)
@@ -115,13 +100,60 @@ end
             @test isa(rand(Gray{Bool}, sz), GenericGrayImage)
             @test isa(rand(Gray{N0f8}, sz), GenericGrayImage)
             @test isa(rand(Gray{Float32}, sz), GenericGrayImage)
+        end
+    end
 
-            @test foo(rand(Bool, sz)) == "Generic"
-            @test foo(rand(Gray{Bool}, sz)) == "Generic"
-            @test foo(rand(Gray{Float32}, sz)) == "AbstractFloat"
-            @test foo(rand(Float32, sz)) == "AbstractFloat"
-            @test foo(rand(Gray{N0f8}, sz)) == "FixedPoint"
-            @test foo(rand(N0f8, sz)) == "FixedPoint"
+    @testset "dispatch" begin
+        begin
+            whatis(::GenericImage) = "GenericImage"
+            whatis(::GenericGrayImage) = "GenericGrayImage"
+            whatis(::GenericImage{<:AbstractRGB}) = "GenericRGBImage"
+
+            whatis(::GenericImage{<:Pixel, 2}) = "Generic2dImage"
+            whatis(::GenericGrayImage{<:NumberLike, 2}) = "Gray2dImage"
+            whatis(::GenericImage{<:AbstractRGB, 2}) = "RGB2dImage"
+
+            @test whatis(rand(Lab, 2, 2, 2)) == "GenericImage"
+
+            @test whatis(rand(Lab, 2, 2)) == "Generic2dImage"
+
+            @test whatis(rand(2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(N0f8, 2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(Bool, 2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(Float32, 2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(Int64, 2, 2, 2)) == "GenericGrayImage"
+
+            @test whatis(rand(Gray, 2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(Gray{N0f8}, 2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(Gray{Bool}, 2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(Gray{Float32}, 2, 2, 2)) == "GenericGrayImage"
+
+            @test whatis(rand(2, 2)) == "Gray2dImage"
+            @test whatis(rand(N0f8, 2, 2)) == "Gray2dImage"
+            @test whatis(rand(Bool, 2, 2)) == "Gray2dImage"
+            @test whatis(rand(Float32, 2, 2)) == "Gray2dImage"
+            @test whatis(rand(Int64, 2, 2)) == "Gray2dImage"
+
+            @test whatis(rand(Gray, 2, 2)) == "Gray2dImage"
+            @test whatis(rand(Gray{N0f8}, 2, 2)) == "Gray2dImage"
+            @test whatis(rand(Gray{Bool}, 2, 2)) == "Gray2dImage"
+            @test whatis(rand(Gray{Float32}, 2, 2)) == "Gray2dImage"
+
+            @test whatis(rand(RGB, 2, 2, 2)) == "GenericRGBImage"
+            @test whatis(rand(RGB{N0f8}, 2, 2, 2)) == "GenericRGBImage"
+            @test whatis(rand(RGB{Float32}, 2, 2, 2)) == "GenericRGBImage"
+
+            @test whatis(rand(BGR, 2, 2, 2)) == "GenericRGBImage"
+            @test whatis(rand(BGR{N0f8}, 2, 2, 2)) == "GenericRGBImage"
+            @test whatis(rand(BGR{Float32}, 2, 2, 2)) == "GenericRGBImage"
+
+            @test whatis(rand(RGB, 2, 2)) == "RGB2dImage"
+            @test whatis(rand(RGB{N0f8}, 2, 2)) == "RGB2dImage"
+            @test whatis(rand(RGB{Float32}, 2, 2)) == "RGB2dImage"
+
+            @test whatis(rand(BGR, 2, 2)) == "RGB2dImage"
+            @test whatis(rand(BGR{N0f8}, 2, 2)) == "RGB2dImage"
+            @test whatis(rand(BGR{Float32}, 2, 2)) == "RGB2dImage"
         end
     end
 end

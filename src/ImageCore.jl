@@ -35,8 +35,8 @@ const RGArray = Union{Base.ReinterpretArray{<:AbstractGray,M,<:Number,P}, Base.R
 # delibrately not export these constants to enable extensibility for downstream packages
 const NumberLike = Union{<:Number,<:AbstractGray}
 const Pixel = Union{<:Number,<:Colorant}
-const GenericImage{T<:Number, N} = AbstractArray{<:Pixel{T}, N}
-const GenericGrayImage{T<:Number, N} = AbstractArray{<:NumberLike{T}, N}
+const GenericGrayImage{T<:NumberLike,N} = AbstractArray{T,N}
+const GenericImage{T<:Pixel,N} = AbstractArray{T,N}
 
 export
     ## Types

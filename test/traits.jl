@@ -1,7 +1,6 @@
 using ImageCore, Colors, FixedPointNumbers, ColorVectorSpace, MappedArrays, OffsetArrays
 using Test
-using ImageCore: NumberLike, RealLike, FloatLike, FractionalLike, 
-      GrayLike, GenericGrayImage, Gray2dImage
+using ImageCore: Pixel, NumberLike, GenericImage, GenericGrayImage
 
 @testset "Image traits" begin
     for (B, swap) in ((rand(UInt16(1):UInt16(20), 3, 5), false),
@@ -35,13 +34,19 @@ using ImageCore: NumberLike, RealLike, FloatLike, FractionalLike,
     end
 end
 
+# delibrately written in a redundant way
 @testset "*Like traits" begin
-    # delibrately written in a redundant way
-    @testset "NumberLike" begin
-        @test RealLike <: NumberLike
-        @test FloatLike <: NumberLike
-        @test FractionalLike <: NumberLike
+    @testset "Pixel" begin
+        @test NumberLike <: Pixel
+        @test Number <: Pixel
+        @test Gray <: Pixel
+        @test RGB <: Pixel
 
+        @test isa(oneunit(Gray), Pixel)
+        @test isa(RGB(1.0, 0.0, 0.0), Pixel)
+    end
+
+    @testset "NumberLike" begin
         @test Number <: NumberLike
         @test Real <: NumberLike
         @test AbstractFloat <: NumberLike
@@ -56,78 +61,100 @@ end
         @test isa(oneunit(Gray), NumberLike)
     end
 
-    @testset "RealLike" begin
-        @test FloatLike <: RealLike
-        @test FractionalLike <: RealLike
+    @testset "GenericImage" begin
+        @test GenericGrayImage <: GenericImage
+        for sz in [(3, 3), (3, 3, 3)]
+            @test isa(rand(Bool, sz), GenericImage)
+            @test isa(rand(N0f8, sz), GenericImage)
+            @test isa(rand(Float32, sz), GenericImage)
 
-        @test Real <: RealLike
-        @test AbstractFloat <: RealLike
-        @test FixedPoint <: RealLike
-        @test Integer <: RealLike
-        @test Bool <: RealLike
+            @test isa(rand(Gray, sz), GenericImage)
+            @test isa(rand(Gray{Bool}, sz), GenericImage)
+            @test isa(rand(Gray{N0f8}, sz), GenericImage)
+            @test isa(rand(Gray{Float32}, sz), GenericImage)
 
-        @test Gray{<:AbstractFloat} <: RealLike
-        @test Gray{<:Bool} <: RealLike
-        @test Gray{<:FixedPoint} <: RealLike
+            @test isa(rand(GrayA, sz), GenericImage)
+            @test isa(rand(GrayA{N0f8}, sz), GenericImage)
+            @test isa(rand(GrayA{Float32}, sz), GenericImage)
 
-        @test isa(oneunit(Gray), RealLike)
-    end
+            @test isa(rand(RGB, sz), GenericImage)
+            @test isa(rand(RGB{N0f8}, sz), GenericImage)
+            @test isa(rand(RGB{Float32}, sz), GenericImage)
 
-    @testset "FractionalLike" begin
-        @test AbstractFloat <: FractionalLike
-        @test FixedPoint <: FractionalLike
+            @test isa(rand(RGBA, sz), GenericImage)
+            @test isa(rand(RGBA{N0f8}, sz), GenericImage)
+            @test isa(rand(RGBA{Float32}, sz), GenericImage)
 
-        @test !(Gray <: FractionalLike)
-        @test Gray{<:AbstractFloat} <: FractionalLike
-        @test Gray{<:FixedPoint} <: FractionalLike
-
-        @test isa(oneunit(Gray), FractionalLike)
-    end
-
-    @testset "GrayLike" begin
-        @test AbstractFloat <: GrayLike
-        @test FixedPoint <: GrayLike
-        @test Bool <: GrayLike
-
-        @test Gray <: GrayLike
-        @test Gray{<:AbstractFloat} <: GrayLike
-        @test Gray{<:FixedPoint} <: GrayLike
-        @test Gray{Bool} <: GrayLike
-
-        @test isa(oneunit(Gray), GrayLike)
-    end
-
-    @testset "FloatLike" begin
-        @test AbstractFloat <: FloatLike
-
-        @test !(Gray <: FloatLike)
-        @test Gray{<:AbstractFloat} <: FloatLike
-
-        @test !isa(oneunit(Gray), FloatLike)
+            @test isa(rand(Lab, sz), GenericImage)
+            @test isa(rand(Lab{Float32}, sz), GenericImage)
+        end
     end
 
     @testset "GrayImage" begin
-        @test Gray2dImage{Float32} == GenericGrayImage{2, Float32}
+        for sz in [(3, 3), (3, 3, 3)]
+            @test isa(rand(Bool, sz), GenericGrayImage)
+            @test isa(rand(N0f8, sz), GenericGrayImage)
+            @test isa(rand(Float32, sz), GenericGrayImage)
 
-        sz = (3,3)
-        @test isa(rand(Bool, sz), Gray2dImage)
-        @test isa(rand(N0f8, sz), Gray2dImage)
-        @test isa(rand(Float32, sz), Gray2dImage)
+            @test isa(rand(Gray, sz), GenericGrayImage)
+            @test isa(rand(Gray{Bool}, sz), GenericGrayImage)
+            @test isa(rand(Gray{N0f8}, sz), GenericGrayImage)
+            @test isa(rand(Gray{Float32}, sz), GenericGrayImage)
+        end
+    end
 
-        @test isa(rand(Gray, sz), Gray2dImage)
-        @test isa(rand(Gray{Bool}, sz), Gray2dImage)
-        @test isa(rand(Gray{N0f8}, sz), Gray2dImage)
-        @test isa(rand(Gray{Float32}, sz), Gray2dImage)
+    @testset "dispatch" begin
+        begin
+            whatis(::GenericImage) = "GenericImage"
+            whatis(::GenericGrayImage) = "GenericGrayImage"
+            whatis(::GenericImage{<:AbstractRGB}) = "GenericRGBImage"
 
-        foo(img::Gray2dImage) = "Generic"
-        foo(img::Gray2dImage{<:AbstractFloat}) = "AbstractFloat"
-        foo(img::Gray2dImage{<:FixedPoint}) = "FixedPoint"
-        @test foo(rand(Bool, sz)) == "Generic"
-        @test foo(rand(Gray{Bool}, sz)) == "Generic"
-        @test foo(rand(Gray{Float32}, sz)) == "AbstractFloat"
-        @test foo(rand(Float32, sz)) == "AbstractFloat"
-        @test foo(rand(Gray{N0f8}, sz)) == "FixedPoint"
-        @test foo(rand(N0f8, sz)) == "FixedPoint"
+            whatis(::GenericImage{<:Pixel, 2}) = "Generic2dImage"
+            whatis(::GenericGrayImage{<:NumberLike, 2}) = "Gray2dImage"
+            whatis(::GenericImage{<:AbstractRGB, 2}) = "RGB2dImage"
+
+            @test whatis(rand(Lab, 2, 2, 2)) == "GenericImage"
+
+            @test whatis(rand(Lab, 2, 2)) == "Generic2dImage"
+
+            @test whatis(rand(2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(N0f8, 2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(Bool, 2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(Float32, 2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(Int64, 2, 2, 2)) == "GenericGrayImage"
+
+            @test whatis(rand(Gray, 2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(Gray{N0f8}, 2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(Gray{Bool}, 2, 2, 2)) == "GenericGrayImage"
+            @test whatis(rand(Gray{Float32}, 2, 2, 2)) == "GenericGrayImage"
+
+            @test whatis(rand(2, 2)) == "Gray2dImage"
+            @test whatis(rand(N0f8, 2, 2)) == "Gray2dImage"
+            @test whatis(rand(Bool, 2, 2)) == "Gray2dImage"
+            @test whatis(rand(Float32, 2, 2)) == "Gray2dImage"
+            @test whatis(rand(Int64, 2, 2)) == "Gray2dImage"
+
+            @test whatis(rand(Gray, 2, 2)) == "Gray2dImage"
+            @test whatis(rand(Gray{N0f8}, 2, 2)) == "Gray2dImage"
+            @test whatis(rand(Gray{Bool}, 2, 2)) == "Gray2dImage"
+            @test whatis(rand(Gray{Float32}, 2, 2)) == "Gray2dImage"
+
+            @test whatis(rand(RGB, 2, 2, 2)) == "GenericRGBImage"
+            @test whatis(rand(RGB{N0f8}, 2, 2, 2)) == "GenericRGBImage"
+            @test whatis(rand(RGB{Float32}, 2, 2, 2)) == "GenericRGBImage"
+
+            @test whatis(rand(BGR, 2, 2, 2)) == "GenericRGBImage"
+            @test whatis(rand(BGR{N0f8}, 2, 2, 2)) == "GenericRGBImage"
+            @test whatis(rand(BGR{Float32}, 2, 2, 2)) == "GenericRGBImage"
+
+            @test whatis(rand(RGB, 2, 2)) == "RGB2dImage"
+            @test whatis(rand(RGB{N0f8}, 2, 2)) == "RGB2dImage"
+            @test whatis(rand(RGB{Float32}, 2, 2)) == "RGB2dImage"
+
+            @test whatis(rand(BGR, 2, 2)) == "RGB2dImage"
+            @test whatis(rand(BGR{N0f8}, 2, 2)) == "RGB2dImage"
+            @test whatis(rand(BGR{Float32}, 2, 2)) == "RGB2dImage"
+        end
     end
 end
 

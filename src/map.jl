@@ -8,22 +8,50 @@ Produce a value `y` that lies between 0 and 1, and equal to `x` when
 numeric values. For colors, this function is applied to each color
 channel separately.
 
-See also: [`clamp01nan`](@ref).
+See also: [`clamp01!`](@ref), [`clamp01nan`](@ref).
 """
 clamp01(x::Union{N0f8,N0f16}) = x
 clamp01(x::Number) = clamp(x, zero(x), one(x))
 clamp01(c::Colorant) = mapc(clamp01, c)
 
 """
+    clamp01!(array::AbstractArray)
+
+Restrict values in array to [0, 1], in-place. See also [`clamp01`](@ref).
+"""
+function clamp01!(img::AbstractArray)
+    # slgihtly faster than map!(clamp01, img, img)
+    @inbounds for i in eachindex(img)
+        img[i] = clamp01(img[i])
+    end
+    img
+end
+
+"""
     clamp01nan(x) -> y
 
 Similar to `clamp01`, except that any `NaN` values are changed to 0.
 
-See also: [`clamp01`](@ref).
+See also: [`clamp01nan!`](@ref), [`clamp01`](@ref).
 """
 clamp01nan(x) = clamp01(x)
 clamp01nan(x::AbstractFloat) = ifelse(isnan(x), zero(x), clamp01(x))
 clamp01nan(c::Colorant) = mapc(clamp01nan, c)
+
+"""
+    clamp01nan!(array::AbstractArray)
+
+Similar to `clamp01!`, except that any `NaN` values are changed to 0.
+
+See also: [`clamp01!`](@ref), [`clamp01nan`](@ref)
+"""
+function clamp01nan!(img::GenericImage)
+    # slgihtly faster than map!(clamp01nan, img, img)
+    @inbounds for i in eachindex(img)
+        img[i] = clamp01nan(img[i])
+    end
+    img
+end
 
 """
     scaleminmax(min, max) -> f

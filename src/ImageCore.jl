@@ -63,7 +63,9 @@ export
     n0f16,
     # mapping values
     clamp01,
+    clamp01!,
     clamp01nan,
+    clamp01nan!,
     colorsigned,
     scaleminmax,
     scalesigned,

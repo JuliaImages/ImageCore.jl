@@ -24,7 +24,9 @@ StackedView
 
 ```@docs
 clamp01
+clamp01!
 clamp01nan
+clamp01nan!
 scaleminmax
 scalesigned
 colorsigned

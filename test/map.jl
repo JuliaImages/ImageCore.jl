@@ -25,6 +25,11 @@ using Test
         fA = f.(A)
         @test eltype(fA) == N0f8
         @test fA == [N0f8(0), N0f8(0.4), N0f8(1)]
+
+        A = [-1.2,0.4,800.3]
+        clamp01!(A)
+        @test eltype(A) == Float64
+        @test A == [0, 0.4, 1]
     end
 
     @testset "clamp01nan" begin
@@ -52,6 +57,11 @@ using Test
         fA = f.(A)
         @test eltype(fA) == N0f8
         @test fA == [N0f8(0), N0f8(0.4), N0f8(0), N0f8(0), N0f8(1), N0f8(1)]
+
+        A = [-1.2,0.4,-Inf,NaN,Inf,800.3]
+        clamp01nan!(A)
+        @test eltype(A) == Float64
+        @test A == [0, 0.4, 0, 0, 1, 1]
     end
 
     @testset "scaleminmax" begin

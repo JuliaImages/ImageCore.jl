@@ -158,14 +158,35 @@ end
     end
 end
 
+struct RowVector{T,P} <: AbstractVector{T}
+    v::Vector{T}
+    p::P
+end
+
+ImageCore.HasDimNames(::Type{<:RowVector}) = HasDimNames{true}()
+
+ImageCore.HasProperties(::Type{<:RowVector}) = HasProperties{true}()
+
+Base.names(::RowVector) = (:row,)
+Base.axes(rv::RowVector) = axes(rv.v)
+
+
 @testset "Trait Interface" begin
-    # Write your own tests here.
     img = reshape(1:24, 2,3,4)
     @test @inferred(namedaxes(img)) == NamedTuple{default_names(img)}(axes(img))
-
     @test @inferred(HasDimNames(img)) == HasDimNames{false}()
-
     @test @inferred(HasProperties(img)) == HasProperties{false}()
+
+    rv = RowVector([1:10...], Dict{String,Any}())
+    @test @inferred(HasDimNames(rv)) == HasDimNames{true}()
+    @test @inferred(HasProperties(rv)) == HasProperties{true}()
+    @test @inferred(namedaxes(rv)) == NamedTuple{(:row,)}((Base.OneTo(10),))
+
+    # default names
+    @test @inferred(default_names(rand(1))) == (:row,)
+    @test @inferred(default_names(rand(1,1))) == (:row, :col)
+    @test @inferred(default_names(rand(1,1,1))) == (:row, :col, :page)
+    @test @inferred(default_names(rand(1,1,1,1))) == (:row, :col, :page, :dim_4)
 end
 
 nothing

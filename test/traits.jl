@@ -1,6 +1,6 @@
 using ImageCore, Colors, FixedPointNumbers, ColorVectorSpace, MappedArrays, OffsetArrays
 using Test
-using ImageCore: Pixel, NumberLike, GenericImage, GenericGrayImage
+using ImageCore: Pixel, NumberLike, GenericImage, GenericGrayImage, default_names
 
 @testset "Image traits" begin
     for (B, swap) in ((rand(UInt16(1):UInt16(20), 3, 5), false),
@@ -156,6 +156,16 @@ end
             @test whatis(rand(BGR{Float32}, 2, 2)) == "RGB2dImage"
         end
     end
+end
+
+@testset "Trait Interface" begin
+    # Write your own tests here.
+    img = reshape(1:24, 2,3,4)
+    @test @inferred(namedaxes(img)) == NamedTuple{default_names(img)}(axes(img))
+
+    @test @inferred(HasDimNames(img)) == HasDimNames{false}()
+
+    @test @inferred(HasProperties(img)) == HasProperties{false}()
 end
 
 nothing

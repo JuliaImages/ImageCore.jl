@@ -31,11 +31,12 @@ is the corresponding dimensions's axis. If `HasDimNames` is not defined for `x`
 default names are returned. `x` should have an `axes` method.
 
 ```jldoctest
-julia> using ImagesAPI
+julia> using ImagesCore
 
-julia> img = reshape(1:24, 2,3,4)
+julia> img = reshape(1:24, 2,3,4);
 
 julia> namedaxes(img)
+(dim_1 = Base.OneTo(2), dim_2 = Base.OneTo(3), dim_3 = Base.OneTo(4))
 ```
 """
 namedaxes(img::T) where T = namedaxes(HasDimNames(T), img)
@@ -43,27 +44,12 @@ namedaxes(img::T) where T = namedaxes(HasDimNames(T), img)
 namedaxes(::HasDimNames{true}, x::T) where T = NamedTuple{names(x)}(axes(x))
 
 function namedaxes(::HasDimNames{false}, img::AbstractArray{T,N}) where {T,N}
-    NamedTuple{default_names(img)}(axes(img))
+    NamedTuple{default_names(Val(N))}(axes(img))
 end
 
-# returns NTuple{N,Symbol} of default names
-function default_names(img::AbstractArray{T,N}) where {T,N}
-    ntuple(i -> default_name(i), N)::NTuple{N,Symbol}
+@generated function default_names(img::Val{N}) where {N}
+    :($(ntuple(i -> Symbol(:dim_, i), N)))
 end
-
-@inline function default_name(i::Int)
-    if i == 1
-        return :row
-    elseif i == 2
-        return :col
-    elseif i == 3
-        return :page
-    else
-        return Symbol(:dim_, i)
-    end
-end
-
-
 
 """
     pixelspacing(img) -> (sx, sy, ...)

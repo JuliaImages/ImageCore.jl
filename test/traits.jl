@@ -173,7 +173,7 @@ Base.axes(rv::RowVector) = axes(rv.v)
 
 @testset "Trait Interface" begin
     img = reshape(1:24, 2,3,4)
-    @test @inferred(namedaxes(img)) == NamedTuple{default_names(img)}(axes(img))
+    @test @inferred(namedaxes(img)) == NamedTuple{(:dim_1, :dim_2, :dim_3)}(axes(img))
     @test @inferred(HasDimNames(img)) == HasDimNames{false}()
     @test @inferred(HasProperties(img)) == HasProperties{false}()
 
@@ -183,10 +183,7 @@ Base.axes(rv::RowVector) = axes(rv.v)
     @test @inferred(namedaxes(rv)) == NamedTuple{(:row,)}((Base.OneTo(10),))
 
     # default names
-    @test @inferred(default_names(rand(1))) == (:row,)
-    @test @inferred(default_names(rand(1,1))) == (:row, :col)
-    @test @inferred(default_names(rand(1,1,1))) == (:row, :col, :page)
-    @test @inferred(default_names(rand(1,1,1,1))) == (:row, :col, :page, :dim_4)
+    @test @inferred(default_names(Val(3))) == (:dim_1, :dim_2, :dim_3)
 end
 
 nothing

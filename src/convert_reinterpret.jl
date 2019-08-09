@@ -141,3 +141,15 @@ converts the raw storage type of `img` to `$Tname`, without changing the color s
 
     end
 end
+
+"""
+    float(x::Colorant)
+    float(T::Type{<:Colorant})
+
+convert the storage type of pixel `x` to a floating point data type while
+preserving the `Colorant` information.
+
+If the input is Type `T`, then it is equivalent to [`floattype`](@ref).
+"""
+float(x::Colorant) = floattype(typeof(x))(x)
+float(::Type{T}) where T <: Colorant = floattype(T)

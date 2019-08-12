@@ -263,6 +263,29 @@ end
     @test eltype(float32.(a)) == Float32
     @test eltype(float64.(a)) == Float64
     @test axes(float32.(a)) == (-1:1,)
+
+    @testset "float" begin
+        # float(::Type) is equivalent to floattype
+        @test @inferred(float(RGBA{Float32})) == RGBA{Float32}
+        @test @inferred(float(BGR{N0f8})    ) == BGR{Float32}
+        @test @inferred(float(Gray{N0f8})   ) == Gray{Float32}
+
+        # `floattype(::Number)` is inconsistent to `float(::NUmber)`, see issue:
+        # https://github.com/JuliaMath/FixedPointNumbers.jl/issues/127
+        # @test @inferred(float(N0f8)         ) == Float32
+        # @test @inferred(float(Bool)         ) == Float32
+        # @test @inferred(float(Float32)      ) == Float32
+        # @test @inferred(float(Float64)      ) == Float64
+
+        @test @inferred(float(ARGB32)) == ARGB{Float32}
+        @test @inferred(float(AGray32)) == AGray{Float32}
+        @test @inferred(float(RGB24)) == RGB{Float32}
+        @test @inferred(float(Gray24)) == Gray{Float32}
+
+        # float(x::Colorant)
+        @test float(oneunit(Gray{N0f8})) == oneunit(Gray{Float32})
+        @test float(RGB(oneunit(Gray{N0f8}))) == RGB(oneunit(Gray{Float32}))
+    end
 end
 
 @testset "ambiguities" begin

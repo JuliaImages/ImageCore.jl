@@ -12,6 +12,7 @@ using Colors: Fractional
 using MappedArrays: AbstractMultiMappedArray
 
 using Base: tail, @pure, Indices
+import Base: float
 
 import Graphics: width, height
 

@@ -14,8 +14,8 @@ PaddedViews = "5432bcbf-9aad-5242-b902-cca2824c8663"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [compat]
-ColorTypes = ">= 0.7.5"
-FixedPointNumbers = ">= 0.3.0"
+ColorTypes = ">= 0.8.0"
+FixedPointNumbers = ">= 0.6.1"
 MappedArrays = ">= 0.2"
 OffsetArrays = ">= 0.8"
 PaddedViews = ">= 0.4.1"
@@ -24,9 +24,10 @@ julia = ">= 1.0"
 
 [extras]
 ColorVectorSpace = "c3611d14-8923-5661-9e6a-0046d554d3a4"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [targets]
-test = ["ColorVectorSpace", "Statistics", "Test", "Random"]
+test = ["ColorVectorSpace", "Random", "Statistics", "Test"]

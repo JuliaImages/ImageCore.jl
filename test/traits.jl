@@ -1,6 +1,6 @@
 using ImageCore, Colors, FixedPointNumbers, ColorVectorSpace, MappedArrays, OffsetArrays
 using Test
-using ImageCore: Pixel, NumberLike, GenericImage, GenericGrayImage
+using ImageCore: Pixel, NumberLike, GenericImage, GenericGrayImage, default_names
 
 @testset "Image traits" begin
     for (B, swap) in ((rand(UInt16(1):UInt16(20), 3, 5), false),
@@ -156,6 +156,34 @@ end
             @test whatis(rand(BGR{Float32}, 2, 2)) == "RGB2dImage"
         end
     end
+end
+
+struct RowVector{T,P} <: AbstractVector{T}
+    v::Vector{T}
+    p::P
+end
+
+ImageCore.HasDimNames(::Type{<:RowVector}) = HasDimNames{true}()
+
+ImageCore.HasProperties(::Type{<:RowVector}) = HasProperties{true}()
+
+Base.names(::RowVector) = (:row,)
+Base.axes(rv::RowVector) = axes(rv.v)
+
+
+@testset "Trait Interface" begin
+    img = reshape(1:24, 2,3,4)
+    @test @inferred(namedaxes(img)) == NamedTuple{(:dim_1, :dim_2, :dim_3)}(axes(img))
+    @test @inferred(HasDimNames(img)) == HasDimNames{false}()
+    @test @inferred(HasProperties(img)) == HasProperties{false}()
+
+    rv = RowVector([1:10...], Dict{String,Any}())
+    @test @inferred(HasDimNames(rv)) == HasDimNames{true}()
+    @test @inferred(HasProperties(rv)) == HasProperties{true}()
+    @test @inferred(namedaxes(rv)) == NamedTuple{(:row,)}((Base.OneTo(10),))
+
+    # default names
+    @test @inferred(default_names(Val(3))) == (:dim_1, :dim_2, :dim_3)
 end
 
 nothing

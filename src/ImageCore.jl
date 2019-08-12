@@ -40,6 +40,8 @@ const GenericImage{T<:Pixel,N} = AbstractArray{T,N}
 
 export
     ## Types
+    HasDimNames,
+    HasProperties,
     StackedView,
     ## constants
     zeroarray,
@@ -75,6 +77,7 @@ export
     coords_spatial,
     height,
     indices_spatial,
+    namedaxes,
     nimages,
     pixelspacing,
     sdims,

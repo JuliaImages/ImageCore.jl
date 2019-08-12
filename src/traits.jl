@@ -1,4 +1,57 @@
 """
+    HasProperties(img) -> HasProperties{::Bool}
+
+Returns the trait `HasProperties`, indicating whether `x` has `properties`
+method.
+"""
+struct HasProperties{T} end
+
+HasProperties(img::T) where T = HasProperties(T)
+
+HasProperties(::Type{T}) where T = HasProperties{false}()
+
+"""
+    HasDimNames(img) -> HasDimNames{::Bool}
+
+Returns the trait `HasDimNames`, indicating whether `x` has named dimensions.
+Types returning `HasDimNames{true}()` should also have a `names` method that
+returns a tuple of symbols for each dimension.
+"""
+struct HasDimNames{T} end
+
+HasDimNames(img::T) where T = HasDimNames(T)
+
+HasDimNames(::Type{T}) where T = HasDimNames{false}()
+
+"""
+    namedaxes(img) -> NamedTuple{names}(axes)
+
+Returns a `NamedTuple` where the names are the dimension names and each indice
+is the corresponding dimensions's axis. If `HasDimNames` is not defined for `x`
+default names are returned. `x` should have an `axes` method.
+
+```jldoctest
+julia> using ImagesCore
+
+julia> img = reshape(1:24, 2,3,4);
+
+julia> namedaxes(img)
+(dim_1 = Base.OneTo(2), dim_2 = Base.OneTo(3), dim_3 = Base.OneTo(4))
+```
+"""
+namedaxes(img::T) where T = namedaxes(HasDimNames(T), img)
+
+namedaxes(::HasDimNames{true}, x::T) where T = NamedTuple{names(x)}(axes(x))
+
+function namedaxes(::HasDimNames{false}, img::AbstractArray{T,N}) where {T,N}
+    NamedTuple{default_names(Val(N))}(axes(img))
+end
+
+@generated function default_names(img::Val{N}) where {N}
+    :($(ntuple(i -> Symbol(:dim_, i), N)))
+end
+
+"""
     pixelspacing(img) -> (sx, sy, ...)
 
 Return a tuple representing the separation between adjacent pixels

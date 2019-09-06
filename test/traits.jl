@@ -182,6 +182,19 @@ Base.axes(rv::RowVector) = axes(rv.v)
     @test @inferred(HasProperties(rv)) == HasProperties{true}()
     @test @inferred(namedaxes(rv)) == NamedTuple{(:row,)}((Base.OneTo(10),))
 
+    @test @inferred(hasdim(rv, :row)) == true
+    @test @inferred(hasdim(rv, :time)) == false
+    @test @inferred(hasdim(img, :time)) == false
+
+    @test @inferred(finddim(rv, :time)) == 0
+    @test @inferred(finddim(rv, :row)) == 1
+    @test @inferred(finddim(img, :dim_3)) == 3
+
+
+    @test findaxis(rv, :time) == 0:0
+    @test findaxis(rv, :row) == Base.OneTo(10)
+    @test findaxis(img, :dim_3) == Base.OneTo(4)
+
     # default names
     @test @inferred(default_names(Val(3))) == (:dim_1, :dim_2, :dim_3)
 end

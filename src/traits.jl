@@ -51,6 +51,57 @@ end
     :($(ntuple(i -> Symbol(:dim_, i), N)))
 end
 
+Base.@pure function _dim_find(dimnames::NTuple{N,Symbol}, name::Symbol) where {N}
+    for i in 1:N
+        getfield(dimnames, i) === name && return i
+    end
+    return 0
+end
+
+"""
+    findaxis(img, name) -> axis
+
+Returns the axis (as in `axes(img, dim)`) that corresponds to the `name`. If no
+matching name is found any empy axis (i.e. `0:0`) is returned.
+"""
+@inline findaxis(A::T, name::Symbol) where {T} = _findaxis(namedaxes(A), name)
+function _findaxis(nt::NamedTuple{syms}, name::Symbol) where {syms}
+    if hasdim_noerror(syms, name)
+        return getfield(nt, name)
+    else
+        return 0:0
+    end
+end
+
+"""
+    finddim(img, name) -> Int
+
+Returns the dimension that has the corresponding `name`. If `name` doesn't
+match any of the dimension names `0` is returned. If `img` doesn't have `names`
+then the default set of names is searched (e.g., dim_1, dim_2, ...).
+"""
+@inline finddim(A::T, name::Symbol) where {T} = finddim(HasDimNames(T), A, name)
+finddim(::HasDimNames{false}, A::T, name::Symbol) where {T} = _dim_find(keys(namedaxes(A)), name)
+finddim(::HasDimNames{true}, A::T, name::Symbol) where {T} = _dim_find(names(A), name)
+
+
+"""
+    hasdim(x, name) -> Bool
+
+Returns `true` if `name` is present.
+"""
+hasdim(x::T, name::Symbol) where {T} = _hasdim(HasDimNames(T), x, name)
+_hasdim(::HasDimNames{true}, x::T, name::Symbol) where {T} = hasdim_noerror(names(x), name)
+_hasdim(::HasDimNames{false}, x::T, name::Symbol) where {T} = false
+
+Base.@pure function hasdim_noerror(dimnames::Tuple{Vararg{Symbol, N}}, name::Symbol) where N
+    for ii in 1:N
+        getfield(dimnames, ii) === name && return true
+    end
+    return false
+end
+
+
 """
     pixelspacing(img) -> (sx, sy, ...)
 

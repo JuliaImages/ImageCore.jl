@@ -76,6 +76,9 @@ export
     # traits
     assert_timedim_last,
     coords_spatial,
+    findaxis,
+    finddim,
+    hasdim,
     height,
     indices_spatial,
     namedaxes,

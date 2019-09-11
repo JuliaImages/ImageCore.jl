@@ -31,31 +31,30 @@ is the corresponding dimensions's axis. If `HasDimNames` is not defined for `x`
 default names are returned. `x` should have an `axes` method.
 
 ```jldoctest
-julia> using ImagesCore
+julia> using ImageCore
 
 julia> img = reshape(1:24, 2,3,4);
 
 julia> namedaxes(img)
-(dim_1 = Base.OneTo(2), dim_2 = Base.OneTo(3), dim_3 = Base.OneTo(4))
+(:row = Base.OneTo(2), :col = Base.OneTo(3), :page = Base.OneTo(4))
 ```
 """
 namedaxes(img::T) where T = namedaxes(HasDimNames(T), img)
-
 namedaxes(::HasDimNames{true}, x::T) where T = NamedTuple{names(x)}(axes(x))
+namedaxes(::HasDimNames{false}, img) where {T,N} = NamedTuple{default_names(img)}(axes(img))
 
-function namedaxes(::HasDimNames{false}, img::AbstractArray{T,N}) where {T,N}
-    NamedTuple{default_names(Val(N))}(axes(img))
-end
+default_names(img::AbstractArray{T,N}) where {T,N} = ntuple(i->default_name(i), N)
 
-@generated function default_names(img::Val{N}) where {N}
-    :($(ntuple(i -> Symbol(:dim_, i), N)))
-end
-
-Base.@pure function _dim_find(dimnames::NTuple{N,Symbol}, name::Symbol) where {N}
-    for i in 1:N
-        getfield(dimnames, i) === name && return i
+@inline function default_name(i::Integer)
+    if i == 1
+        return :row
+    elseif i == 2
+        return :col
+    elseif i == 3
+        return :page
+    else
+        return Symbol(:dim_, i)
     end
-    return 0
 end
 
 """
@@ -64,12 +63,12 @@ end
 Returns the axis (as in `axes(img, dim)`) that corresponds to the `name`. If no
 matching name is found any empy axis (i.e. `0:0`) is returned.
 """
-@inline findaxis(A::T, name::Symbol) where {T} = _findaxis(namedaxes(A), name)
+@inline findaxis(A, name::Symbol) = _findaxis(namedaxes(A), name)
 function _findaxis(nt::NamedTuple{syms}, name::Symbol) where {syms}
-    if hasdim_noerror(syms, name)
+    if _hasdim(syms, name)
         return getfield(nt, name)
     else
-        return 0:0
+        return 0:-1
     end
 end
 
@@ -81,8 +80,15 @@ match any of the dimension names `0` is returned. If `img` doesn't have `names`
 then the default set of names is searched (e.g., dim_1, dim_2, ...).
 """
 @inline finddim(A::T, name::Symbol) where {T} = finddim(HasDimNames(T), A, name)
-finddim(::HasDimNames{false}, A::T, name::Symbol) where {T} = _dim_find(keys(namedaxes(A)), name)
-finddim(::HasDimNames{true}, A::T, name::Symbol) where {T} = _dim_find(names(A), name)
+finddim(::HasDimNames{false}, A::T, name::Symbol) where {T} = _finddim(default_names(A), name)
+finddim(::HasDimNames{true}, A::T, name::Symbol) where {T} = _finddim(names(A), name)
+
+Base.@pure function _finddim(dimnames::NTuple{N,Symbol}, name::Symbol) where {N}
+    for i in 1:N
+        getfield(dimnames, i) === name && return i
+    end
+    return 0
+end
 
 
 """
@@ -90,11 +96,11 @@ finddim(::HasDimNames{true}, A::T, name::Symbol) where {T} = _dim_find(names(A),
 
 Returns `true` if `name` is present.
 """
-hasdim(x::T, name::Symbol) where {T} = _hasdim(HasDimNames(T), x, name)
-_hasdim(::HasDimNames{true}, x::T, name::Symbol) where {T} = hasdim_noerror(names(x), name)
-_hasdim(::HasDimNames{false}, x::T, name::Symbol) where {T} = false
+hasdim(x::T, name::Symbol) where {T} = hasdim(HasDimNames(T), x, name)
+hasdim(::HasDimNames{true}, x::T, name::Symbol) where {T} = _hasdim(names(x), name)
+hasdim(::HasDimNames{false}, x::T, name::Symbol) where {T} = _hasdim(default_names(x), name)
 
-Base.@pure function hasdim_noerror(dimnames::Tuple{Vararg{Symbol, N}}, name::Symbol) where N
+Base.@pure function _hasdim(dimnames::Tuple{Vararg{Symbol,N}}, name::Symbol) where {N}
     for ii in 1:N
         getfield(dimnames, ii) === name && return true
     end

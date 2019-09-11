@@ -170,10 +170,9 @@ ImageCore.HasProperties(::Type{<:RowVector}) = HasProperties{true}()
 Base.names(::RowVector) = (:row,)
 Base.axes(rv::RowVector) = axes(rv.v)
 
-
 @testset "Trait Interface" begin
     img = reshape(1:24, 2,3,4)
-    @test @inferred(namedaxes(img)) == NamedTuple{(:dim_1, :dim_2, :dim_3)}(axes(img))
+    @test @inferred(namedaxes(img)) == NamedTuple{(:row, :col, :page)}(axes(img))
     @test @inferred(HasDimNames(img)) == HasDimNames{false}()
     @test @inferred(HasProperties(img)) == HasProperties{false}()
 
@@ -188,15 +187,15 @@ Base.axes(rv::RowVector) = axes(rv.v)
 
     @test @inferred(finddim(rv, :time)) == 0
     @test @inferred(finddim(rv, :row)) == 1
-    @test @inferred(finddim(img, :dim_3)) == 3
+    @test @inferred(finddim(img, :page)) == 3
 
 
-    @test findaxis(rv, :time) == 0:0
+    @test findaxis(rv, :time) == 0:-1
     @test findaxis(rv, :row) == Base.OneTo(10)
-    @test findaxis(img, :dim_3) == Base.OneTo(4)
+    @test findaxis(img, :page) == Base.OneTo(4)
 
     # default names
-    @test @inferred(default_names(Val(3))) == (:dim_1, :dim_2, :dim_3)
+    @test @inferred(default_names(img)) == (:row, :col, :page)
 end
 
 nothing

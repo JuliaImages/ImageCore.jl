@@ -39,9 +39,9 @@ julia> namedaxes(img)
 (:row = Base.OneTo(2), :col = Base.OneTo(3), :page = Base.OneTo(4))
 ```
 """
-namedaxes(img::T) where T = namedaxes(HasDimNames(T), img)
-namedaxes(::HasDimNames{true}, x::T) where T = NamedTuple{names(x)}(axes(x))
-namedaxes(::HasDimNames{false}, img) where {T,N} = NamedTuple{default_names(img)}(axes(img))
+namedaxes(img::T) where T = _namedaxes(HasDimNames(T), img)
+_namedaxes(::HasDimNames{true}, img) = NamedTuple{names(img)}(axes(img))
+_namedaxes(::HasDimNames{false}, img) = NamedTuple{default_names(img)}(axes(img))
 
 default_names(img::AbstractArray{T,N}) where {T,N} = ntuple(i->default_name(i), N)
 
@@ -65,7 +65,7 @@ matching name is found any empy axis (i.e. `0:0`) is returned.
 """
 @inline findaxis(A, name::Symbol) = _findaxis(namedaxes(A), name)
 function _findaxis(nt::NamedTuple{syms}, name::Symbol) where {syms}
-    if _hasdim(syms, name)
+    if __hasdim(syms, name)
         return getfield(nt, name)
     else
         return 0:-1
@@ -79,11 +79,11 @@ Returns the dimension that has the corresponding `name`. If `name` doesn't
 match any of the dimension names `0` is returned. If `img` doesn't have `names`
 then the default set of names is searched (e.g., dim_1, dim_2, ...).
 """
-@inline finddim(A::T, name::Symbol) where {T} = finddim(HasDimNames(T), A, name)
-finddim(::HasDimNames{false}, A::T, name::Symbol) where {T} = _finddim(default_names(A), name)
-finddim(::HasDimNames{true}, A::T, name::Symbol) where {T} = _finddim(names(A), name)
+@inline finddim(A::T, name::Symbol) where {T} = _finddim(HasDimNames(T), A, name)
+_finddim(::HasDimNames{false}, A::T, name::Symbol) where {T} = __finddim(default_names(A), name)
+_finddim(::HasDimNames{true}, A::T, name::Symbol) where {T} = __finddim(names(A), name)
 
-Base.@pure function _finddim(dimnames::NTuple{N,Symbol}, name::Symbol) where {N}
+Base.@pure function __finddim(dimnames::NTuple{N,Symbol}, name::Symbol) where {N}
     for i in 1:N
         getfield(dimnames, i) === name && return i
     end
@@ -96,11 +96,11 @@ end
 
 Returns `true` if `name` is present.
 """
-hasdim(x::T, name::Symbol) where {T} = hasdim(HasDimNames(T), x, name)
-hasdim(::HasDimNames{true}, x::T, name::Symbol) where {T} = _hasdim(names(x), name)
-hasdim(::HasDimNames{false}, x::T, name::Symbol) where {T} = _hasdim(default_names(x), name)
+hasdim(x::T, name::Symbol) where {T} = _hasdim(HasDimNames(T), x, name)
+_hasdim(::HasDimNames{true}, x::T, name::Symbol) where {T} = __hasdim(names(x), name)
+_hasdim(::HasDimNames{false}, x::T, name::Symbol) where {T} = __hasdim(default_names(x), name)
 
-Base.@pure function _hasdim(dimnames::Tuple{Vararg{Symbol,N}}, name::Symbol) where {N}
+Base.@pure function __hasdim(dimnames::Tuple{Vararg{Symbol,N}}, name::Symbol) where {N}
     for ii in 1:N
         getfield(dimnames, ii) === name && return true
     end

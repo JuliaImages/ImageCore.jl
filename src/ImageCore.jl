@@ -103,6 +103,8 @@ include("deprecations.jl")
 returns a "view" of `img` where the values are interpreted in terms of
 their raw underlying storage. For example, if `img` is an `Array{N0f8}`,
 the view will act like an `Array{UInt8}`.
+
+See also: [`normedview`](@ref)
 """
 rawview(a::AbstractArray{T}) where {T<:FixedPoint} = mappedarray(reinterpret, y->T(y,0), a)
 rawview(a::Array{T}) where {T<:FixedPoint} = reinterpret(FixedPointNumbers.rawtype(T), a)
@@ -116,6 +118,8 @@ returns a "view" of `img` where the values are interpreted in terms of
 view will act like an `Array{N0f8}`.  Supply `T` if the element
 type of `img` is `UInt16`, to specify whether you want a `N6f10`,
 `N4f12`, `N2f14`, or `N0f16` result.
+
+See also: [`rawview`](@ref)
 """
 normedview(::Type{T}, a::AbstractArray{S}) where {T<:FixedPoint,S<:Unsigned} = mappedarray(y->T(y,0),reinterpret, a)
 normedview(::Type{T}, a::Array{S}) where {T<:FixedPoint,S<:Unsigned} = reinterpret(T, a)

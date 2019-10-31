@@ -57,6 +57,8 @@ array will be in constructor-argument order, not memory order (see
 ```julia
 img = rand(RGB{N0f8}, 10, 10)
 A = channelview(img)   # a 3×10×10 array
+
+See also: [`colorview`](@ref)
 """
 channelview(A::AbstractArray{T}) where {T<:Number} = A
 channelview(A::RRPermArray{<:Colorant,<:Number}) = parent(parent(parent(A)))
@@ -96,6 +98,8 @@ interpreted in constructor-argument order, not memory order (see
 A = rand(3, 10, 10)
 img = colorview(RGB, A)
 ```
+
+See also: [`channelview`](@ref)
 """
 colorview(::Type{C}, A::AbstractArray{T}) where {C<:Colorant,T<:Number} =
     _ccolorview(ccolor_number(C, T), A)

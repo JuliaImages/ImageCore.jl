@@ -16,6 +16,7 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 [compat]
 ColorTypes = ">= 0.8.0"
 FixedPointNumbers = ">= 0.6.1"
+Graphics = "0.4"
 MappedArrays = ">= 0.2"
 OffsetArrays = ">= 0.8"
 PaddedViews = ">= 0.4.1"

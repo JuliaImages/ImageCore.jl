@@ -1,12 +1,11 @@
 using Documenter, ImageCore
 
+format = Documenter.HTML(edit_link = "master",
+                         prettyurls = get(ENV, "CI", nothing) == "true")
+
 makedocs(modules  = [ImageCore],
-         format   = :html,
+         format   = format,
          sitename = "ImageCore",
          pages    = ["index.md", "views.md", "map.md", "traits.md", "reference.md"])
 
-deploydocs(repo   = "github.com/JuliaImages/ImageCore.jl.git",
-           julia  = "0.5",
-           target = "build",
-           deps   = nothing,
-           make   = nothing)
+deploydocs(repo   = "github.com/JuliaImages/ImageCore.jl.git")

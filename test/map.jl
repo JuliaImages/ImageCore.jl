@@ -128,6 +128,7 @@ using Test
             @test f( 0.5) ≈ mapc(N0f8, 0.5w+0.5m)
             @test f(-0.25) ≈ mapc(N0f8, 0.25g+0.75w)
             @test f( 0.75) ≈ mapc(N0f8, 0.75m+0.25w)
+            @test f(Gray(0.75)) ≈ mapc(N0f8, 0.75m+0.25w)
         end
         g, w, m = RGBA(0.,1.,0.,1.), RGBA(1.,1.,1.,0.), RGBA(1.,0.,1.,1.)
         f = colorsigned(g, w, m)

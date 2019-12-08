@@ -11,7 +11,7 @@ channel separately.
 See also: [`clamp01!`](@ref), [`clamp01nan`](@ref).
 """
 clamp01(x::Union{N0f8,N0f16}) = x
-clamp01(x::Number) = clamp(x, zero(x), one(x))
+clamp01(x::Number) = clamp(x, zero(x), oneunit(x))
 clamp01(c::Colorant) = mapc(clamp01, c)
 
 """
@@ -209,7 +209,7 @@ The default colors are:
 See also: [`scalesigned`](@ref).
 """
 colorsigned(neg::C, center::C, pos::C) where {C<:Colorant} = function(x)
-    y = clamp(x, -one(x), one(x))
+    y = clamp(x, -oneunit(x), oneunit(x))
     yabs = abs(y)
     C(ifelse(y>0, weighted_color_mean(yabs, pos, center),
                   weighted_color_mean(yabs, neg, center)))

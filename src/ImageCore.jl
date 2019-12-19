@@ -39,6 +39,12 @@ const Pixel = Union{Number,Colorant}
 const GenericGrayImage{T<:NumberLike,N} = AbstractArray{T,N}
 const GenericImage{T<:Pixel,N} = AbstractArray{T,N}
 
+# backward compatibility for ColorTypes < v0.9
+if !isdefined(ColorTypes, :XRGB)
+    const XRGB = RGB1
+    const RGBX = RGB4
+end
+
 export
     ## Types
     HasDimNames,

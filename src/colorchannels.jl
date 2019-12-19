@@ -185,6 +185,47 @@ extractchannels(c::TransparentGray) = (gray(c), alpha(c))
 extractchannels(c::Color3)          = (comp1(c), comp2(c), comp3(c))
 extractchannels(c::Transparent3)    = (comp1(c), comp2(c), comp3(c), alpha(c))
 
+
+has_channel(x::Type) = false
+has_channel(x::Type{<:AbstractRGB}) = true
+has_channel(x::Type{<:AbstractGray}) = true
+has_channel(x::Type{<:AbstractArray}) = true # supported by channelview
+has_channel(x::T) where T = has_channel(T)
+has_channel(x::Symbol) = !Base.isoperator(x) && has_channel(eval(x))
+
+function has_channel(x::Expr)
+    x.head === :call || return false
+    args = [eval(x.args[i]) for i = 2:length(x.args)]
+    inftypes = Base.return_types(eval(x.args[1]), Base.typesof(args...))
+    return any(has_channel.(inftypes))
+end
+
+function _channelwise(ex::Expr)
+    if ex.head == :call
+        ex.args = map(ex.args) do x
+            if has_channel(x)
+                Expr(:call, :channelview, x)
+            else
+                x
+            end
+        end
+    end
+    return ex
+end
+
+"""
+    @channelwise f(x...)
+
+`@channelwise` simply wraps a `channelview` for each argument `x`. For example,
+
+`@channelwise rand(RGB{Float32}, 4, 4) + rand(RGB{Float32}, 4, 4)` is equivalent to
+`channelview(rand(RGB{Float32}, 4, 4)) + channelview(rand(RGB{Float32}, 4, 4))`
+```
+"""
+macro channelwise(ex)
+    _channelwise(ex)
+end
+
 ## Tuple & indexing utilities
 
 _size(A::AbstractArray) = map(length, axes(A))

@@ -404,4 +404,13 @@ end
 
 end
 
+@testset "channelwise" begin
+x = rand(RGB{Float32}, 4, 4)
+y = rand(RGB{Float32}, 4, 4)
+z = @channelwise x + y
+@test z == channelview(x) + channelview(y)
+@test z == @channelwise copy(x) + copy(y) # channelwise the result of function call
+# TODO: channelwise the argument of function call?
+end
+
 nothing

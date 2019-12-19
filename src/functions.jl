@@ -1,4 +1,4 @@
-import FFTW: fft, rfft, plan_fft, plan_rfft
+import .FFTW: fft, rfft, plan_fft, plan_rfft
 
 # It's better not to define fft on Colorant arrays, because keeping
 # track of the color dimension and the fft-dims is prone to omissions

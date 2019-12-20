@@ -7,7 +7,7 @@ using Reexport
 @reexport using FixedPointNumbers
 using MappedArrays, PaddedViews, Graphics
 using OffsetArrays # for show.jl
-using ColorTypes: colorant_string
+using .ColorTypes: colorant_string
 using Colors: Fractional
 using MappedArrays: AbstractMultiMappedArray
 
@@ -21,7 +21,7 @@ import Graphics: width, height
 plus(r::AbstractUnitRange, i::Integer) = broadcast(+, r, i)
 plus(a::AbstractArray, i::Integer) = a .+ i
 
-using ColorTypes: AbstractGray, TransparentGray, Color3, Transparent3
+using .ColorTypes: AbstractGray, TransparentGray, Color3, Transparent3
 Color1{T} = Colorant{T,1}
 Color2{T} = Colorant{T,2}
 Color4{T} = Colorant{T,4}

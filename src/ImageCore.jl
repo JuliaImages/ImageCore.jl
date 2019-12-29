@@ -3,6 +3,7 @@ VERSION < v"0.7.0-beta2.199" && __precompile__()
 module ImageCore
 
 using Reexport
+using Requires
 @reexport using Colors
 @reexport using FixedPointNumbers
 using MappedArrays, PaddedViews, Graphics
@@ -99,7 +100,6 @@ include("stackedviews.jl")
 include("convert_reinterpret.jl")
 include("traits.jl")
 include("map.jl")
-include("functions.jl")
 include("show.jl")
 include("deprecations.jl")
 
@@ -152,6 +152,10 @@ function Base.transpose(a::AbstractVector{C}) where C<:Colorant
     outr = reshape(out, ind)
     copy!(outr, a)
     out
+end
+
+function __init__()
+    @require FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341" include("functions.jl")
 end
 
 end ## module

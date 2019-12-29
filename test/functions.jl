@@ -1,6 +1,4 @@
-using ImageCore, Colors, FixedPointNumbers
 using FFTW
-using Test
 
 @testset "functions" begin
     ag = rand(Gray{Float32}, 4, 5)

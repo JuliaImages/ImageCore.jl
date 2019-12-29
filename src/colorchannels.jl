@@ -18,8 +18,8 @@ Base.getindex(v::ColorChanPerm, i::Int) = v.perm[i]
 
 dimorder(::Type{<:RGB}) = ColorChanPerm((1, 2, 3))
 dimorder(::Type{<:BGR}) = ColorChanPerm((3, 2, 1))
-dimorder(::Type{<:RGB1}) = ColorChanPerm((1, 1, 2, 3))
-dimorder(::Type{<:RGB4}) = ColorChanPerm((1, 2, 3, 3)) # this causes problems for setindex!, fixed below
+dimorder(::Type{<:XRGB}) = ColorChanPerm((1, 1, 2, 3))
+dimorder(::Type{<:RGBX}) = ColorChanPerm((1, 2, 3, 3)) # this causes problems for setindex!, fixed below
 dimorder(::Type{<:BGRA}) = ColorChanPerm((3, 2, 1, 4))
 dimorder(::Type{<:ABGR}) = ColorChanPerm((4, 3, 2, 1))
 dimorder(::Type{<:AlphaColor{<:Color1,T,N}}) where {T,N} = ColorChanPerm((2, 1))
@@ -40,7 +40,7 @@ Base.size(v::NVector{T,N}) where {T,N} = (N,)
 Base.getindex(v::NVector, i::Int) = v.v[i]
 NVector(x::Vararg{T,N}) where {T,N} = NVector{T,N}(x)
 
-@inline Base.setindex!(A::RRPermArray{<:RGB4,<:Number,N}, val::AbstractRGB, i::Vararg{Int,N}) where N =
+@inline Base.setindex!(A::RRPermArray{<:RGBX,<:Number,N}, val::AbstractRGB, i::Vararg{Int,N}) where N =
     setindex!(parent(parent(parent(A))), NVector(red(val), green(val), blue(val)), :, i...)
 
 """
@@ -66,7 +66,7 @@ channelview(A::RRArray{<:Colorant,<:Number}) = parent(parent(A))
 channelview(A::Base.ReinterpretArray{<:AbstractGray,M,<:Number}) where M = parent(A)
 channelview(A::AbstractArray{RGB{T}}) where {T} = reinterpretc(T, A)
 function channelview(A::AbstractArray{C}) where {C<:AbstractRGB}
-    # BGR, RGB1, etc don't satisfy conditions for reinterpret
+    # BGR, XRGB, etc don't satisfy conditions for reinterpret
     CRGB = RGB{eltype(C)}
     channelview(of_eltype(CRGB, A))
 end

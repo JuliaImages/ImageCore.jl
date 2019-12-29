@@ -80,9 +80,9 @@ using Test, Random
         @test eltype(rc) == T && ndims(rc) == 2
         @test size(rc) == (4,5)
     end
-    # RGB1/RGB4
+    # XRGB/RGBX
     a = rand(RGB{N0f8}, (4,5))
-    for T in (RGB1{N0f8},RGB4{Float32})
+    for T in (XRGB{N0f8},RGBX{Float32})
         b = @inferred(convert(Array{T}, a))
         rb = @inferred(reinterpretc(eltype(T), b))
         @test eltype(rb) == eltype(T) && ndims(rb) == 3

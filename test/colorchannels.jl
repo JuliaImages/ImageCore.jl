@@ -1,6 +1,9 @@
 using Colors, ImageCore, OffsetArrays, FixedPointNumbers, Test
 using OffsetArrays: IdentityUnitRange
 
+# backward-compatibility to ColorTypes < v0.9 or Colors < v0.11
+using ImageCore: XRGB, RGBX
+
 struct ArrayLF{T,N} <: AbstractArray{T,N}
     A::Array{T,N}
 end
@@ -58,7 +61,7 @@ Base.setindex!(A::ArrayLS{T,N}, val, i::Vararg{Int,N}) where {T,N} = A.A[i...] =
 end
 
 @testset "RGB, HSV, etc" begin
-    for T in (RGB, BGR, RGB1, RGB4, HSV, Lab, XYZ)
+    for T in (RGB, BGR, XRGB, RGBX, HSV, Lab, XYZ)
         a0 = [T(0.1,0.2,0.3), T(0.4, 0.5, 0.6)]
         for a in (copy(a0),
                   ArrayLS(copy(a0)))
@@ -276,7 +279,7 @@ end
 end
 
 @testset "RGB, HSV, etc" begin
-    for T in (RGB, BGR, RGB1, RGB4, HSV, Lab, XYZ)
+    for T in (RGB, BGR, XRGB, RGBX, HSV, Lab, XYZ)
         a0 = [0.1 0.2 0.3; 0.4 0.5 0.6]'
         for a in (copy(a0),
                   ArrayLS(copy(a0)))

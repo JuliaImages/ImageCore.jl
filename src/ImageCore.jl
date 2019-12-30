@@ -4,8 +4,11 @@ module ImageCore
 
 using Reexport
 using Requires
-@reexport using Colors
 @reexport using FixedPointNumbers
+@reexport using Colors
+Base.@deprecate_binding RGB1 XRGB
+Base.@deprecate_binding RGB4 RGBX
+
 using MappedArrays, PaddedViews, Graphics
 using OffsetArrays # for show.jl
 using .ColorTypes: colorant_string

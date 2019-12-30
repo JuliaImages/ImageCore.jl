@@ -6,8 +6,15 @@ using Reexport
 using Requires
 @reexport using FixedPointNumbers
 @reexport using Colors
-Base.@deprecate_binding RGB1 XRGB
-Base.@deprecate_binding RGB4 RGBX
+if isdefined(ColorTypes, :XRGB) && isdefined(ColorTypes, :RGB1)
+    Base.@deprecate_binding RGB1 XRGB
+    Base.@deprecate_binding RGB4 RGBX
+end
+# backward compatibility for ColorTypes < v0.9
+if !isdefined(ColorTypes, :XRGB)
+    const XRGB = RGB1
+    const RGBX = RGB4
+end
 
 using MappedArrays, PaddedViews, Graphics
 using OffsetArrays # for show.jl
@@ -42,12 +49,6 @@ const NumberLike = Union{Number,AbstractGray}
 const Pixel = Union{Number,Colorant}
 const GenericGrayImage{T<:NumberLike,N} = AbstractArray{T,N}
 const GenericImage{T<:Pixel,N} = AbstractArray{T,N}
-
-# backward compatibility for ColorTypes < v0.9
-if !isdefined(ColorTypes, :XRGB)
-    const XRGB = RGB1
-    const RGBX = RGB4
-end
 
 export
     ## Types

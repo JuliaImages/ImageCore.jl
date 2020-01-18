@@ -202,11 +202,11 @@ end
     @testset "Non-1 indices" begin
         a = OffsetArray(rand(RGB{N0f8}, 3, 5), -1:1, -2:2)
         v = @inferred(channelview(a))
-        @test @inferred(axes(v)) === (IdentityUnitRange(1:3), IdentityUnitRange(-1:1), IdentityUnitRange(-2:2))
+        @test @inferred(axes(v)) == (IdentityUnitRange(1:3), IdentityUnitRange(-1:1), IdentityUnitRange(-2:2))
         @test @inferred(v[1,0,0]) === a[0,0].r
         a = OffsetArray(rand(Gray{Float32}, 3, 5), -1:1, -2:2)
         v = @inferred(channelview(a))
-        @test @inferred(axes(v)) === (IdentityUnitRange(-1:1), IdentityUnitRange(-2:2))
+        @test @inferred(axes(v)) == (IdentityUnitRange(-1:1), IdentityUnitRange(-2:2))
         @test @inferred(v[0,0]) === gray(a[0,0])
         @test @inferred(v[5]) === gray(a[5])
         v[5] = -1
@@ -398,7 +398,7 @@ end
     @testset "Non-1 indices" begin
         a = OffsetArray(rand(3, 3, 5), 1:3, -1:1, -2:2)
         v = @inferred(colorview(RGB, a))
-        @test @inferred(axes(v)) === (IdentityUnitRange(-1:1), IdentityUnitRange(-2:2))
+        @test @inferred(axes(v)) == (IdentityUnitRange(-1:1), IdentityUnitRange(-2:2))
         @test @inferred(v[0,0]) === RGB(a[1,0,0], a[2,0,0], a[3,0,0])
         a = OffsetArray(rand(3, 3, 5), 0:2, -1:1, -2:2)
         @test_throws DimensionMismatch colorview(RGB, a)

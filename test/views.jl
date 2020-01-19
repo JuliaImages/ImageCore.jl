@@ -159,7 +159,7 @@ end
                                RGB(0.1,0,0) RGB(0.2,0.3,0) RGB(0,0.4,0);
                                RGB(0.3,0,0) RGB(0.4,0,0)   RGB(0,0,0)]
     chanv = channelview(cv)
-    @test @inferred(axes(chanv)) === (IdentityUnitRange(1:3), IdentityUnitRange(0:2), IdentityUnitRange(1:3))
+    @test @inferred(axes(chanv)) == (IdentityUnitRange(1:3), IdentityUnitRange(0:2), IdentityUnitRange(1:3))
     @test chanv[1,1,1] == 0.1
     @test chanv[2,1,2] == 0.3
 

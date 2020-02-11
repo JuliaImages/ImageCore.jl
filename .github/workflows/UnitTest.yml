@@ -1,6 +1,8 @@
 name: Unit test
 
 on:
+  create:
+    tags:
   push:
     branches:
       - master

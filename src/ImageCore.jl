@@ -138,17 +138,6 @@ normedview(::Type{T}, a::AbstractArray{T}) where {T<:Normed} = a
 normedview(a::AbstractArray{UInt8}) = normedview(N0f8, a)
 normedview(a::AbstractArray{T}) where {T<:Normed} = a
 
-"""
-    permuteddimsview(A, perm)
-
-returns a "view" of `A` with its dimensions permuted as specified by
-`perm`. This is like `permutedims`, except that it produces a view
-rather than a copy of `A`; consequently, any manipulations you make to
-the output will be mirrored in `A`. Compared to the copy, the view is
-much faster to create, but generally slower to use.
-"""
-permuteddimsview(A, perm) = Base.PermutedDimsArrays.PermutedDimsArray(A, perm)
-
 # PaddedViews support
 # This make sure Colorants as `fillvalue` are correctly filled, for example, let
 # `PaddedView(ARGB(0, 0, 0, 0), img)` correctly filled with transparent color even when

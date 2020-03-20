@@ -16,7 +16,8 @@ if !isdefined(ColorTypes, :XRGB)
     const RGBX = RGB4
 end
 
-using MappedArrays, PaddedViews, Graphics
+@reexport using PaddedViews
+using MappedArrays, Graphics
 using OffsetArrays # for show.jl
 using .ColorTypes: colorant_string
 using Colors: Fractional
@@ -64,7 +65,6 @@ export
     permuteddimsview,
     rawview,
     normedview,
-    paddedviews,
     reinterpretc,
     # conversions
 #    float16,

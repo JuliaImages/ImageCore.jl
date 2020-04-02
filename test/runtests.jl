@@ -1,6 +1,6 @@
 module ImageCoreTests
 
-using ImageCore, Test
+using ImageCore, Test, ReferenceTests
 
 # If we've run the tests previously, there might be ambiguities from other packages
 if :StatsBase ∉ map(x->Symbol(string(x)), values(Base.loaded_modules))

@@ -16,7 +16,8 @@ if !isdefined(ColorTypes, :XRGB)
     const RGBX = RGB4
 end
 
-using MappedArrays, PaddedViews, Graphics
+@reexport using PaddedViews
+using MappedArrays, Graphics
 using OffsetArrays # for show.jl
 using .ColorTypes: colorant_string
 using Colors: Fractional
@@ -64,7 +65,6 @@ export
     permuteddimsview,
     rawview,
     normedview,
-    paddedviews,
     reinterpretc,
     # conversions
 #    float16,
@@ -147,6 +147,26 @@ the output will be mirrored in `A`. Compared to the copy, the view is
 much faster to create, but generally slower to use.
 """
 permuteddimsview(A, perm) = Base.PermutedDimsArrays.PermutedDimsArray(A, perm)
+
+# PaddedViews support
+# This make sure Colorants as `fillvalue` are correctly filled, for example, let
+# `PaddedView(ARGB(0, 0, 0, 0), img)` correctly filled with transparent color even when
+# `img` is of eltype `RGB`
+function PaddedViews.filltype(::Type{FC}, ::Type{C}) where {FC<:Colorant, C<:Colorant}
+    # rand(RGB, 4, 4) has eltype RGB{Any} but it isn't a concrete type
+    # although the consensus[1] is to not make a concrete eltype, this op is needed to make a
+    # type-stable colorant construction in _filltype without error; there's no RGB{Any} thing
+    # [1]: https://github.com/JuliaLang/julia/pull/34948
+    T = eltype(C) === Any ? eltype(FC) : eltype(C)
+    _filltype(FC, base_colorant_type(C){T})
+end
+_filltype(::Type{<:Colorant}, ::Type{C}) where {C<:Colorant} = C
+_filltype(::Type{FC}, ::Type{C}) where {FC<:Color3, C<:AbstractGray} =
+    base_colorant_type(FC){promote_type(eltype(FC), eltype(C))}
+_filltype(::Type{FC}, ::Type{C}) where {FC<:TransparentColor, C<:AbstractGray} =
+    alphacolor(FC){promote_type(eltype(FC), eltype(C))}
+_filltype(::Type{FC}, ::Type{C}) where {FC<:TransparentColor, C<:Color3} =
+    alphacolor(C){promote_type(eltype(FC), eltype(C))}
 
 # Support transpose
 Base.transpose(a::AbstractMatrix{C}) where {C<:Colorant} = permutedims(a, (2,1))

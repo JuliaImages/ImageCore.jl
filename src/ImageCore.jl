@@ -16,6 +16,7 @@ if !isdefined(ColorTypes, :XRGB)
     const RGBX = RGB4
 end
 
+@reexport using MosaicViews
 @reexport using PaddedViews
 using MappedArrays, Graphics
 using OffsetArrays # for show.jl

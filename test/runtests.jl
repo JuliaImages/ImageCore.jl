@@ -7,6 +7,10 @@ if :StatsBase ∉ map(x->Symbol(string(x)), values(Base.loaded_modules))
     @test isempty(detect_ambiguities(ImageCore, Base, Core))
 end
 
+using Documenter
+DocMeta.setdocmeta!(ImageCore, :DocTestSetup, :(using ImageCore); recursive=true)
+doctest(ImageCore, manual = false)
+
 include("colorchannels.jl")
 include("views.jl")
 include("convert_reinterpret.jl")

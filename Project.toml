@@ -27,6 +27,7 @@ julia = "1"
 
 [extras]
 ColorVectorSpace = "c3611d14-8923-5661-9e6a-0046d554d3a4"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
@@ -35,4 +36,4 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["ColorVectorSpace", "FFTW", "ImageMagick", "Random", "ReferenceTests", "Statistics", "Test"]
+test = ["ColorVectorSpace", "Documenter", "FFTW", "ImageMagick", "Random", "ReferenceTests", "Statistics", "Test"]

@@ -31,8 +31,6 @@ is the corresponding dimensions's axis. If `HasDimNames` is not defined for `x`
 default names are returned. `x` should have an `axes` method.
 
 ```jldoctest
-julia> using ImagesCore
-
 julia> img = reshape(1:24, 2,3,4);
 
 julia> namedaxes(img)

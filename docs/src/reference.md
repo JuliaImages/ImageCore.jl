@@ -11,9 +11,7 @@ of the opposite type.
 
 ```@docs
 channelview
-ChannelView
 colorview
-ColorView
 rawview
 normedview
 permuteddimsview

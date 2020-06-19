@@ -59,59 +59,6 @@ ccolor_number(::Type{CV}, ::Type{T}) where {CV<:Colorant,T<:Number} =
 ccolor_number(::Type{CV}, ::Type{CVT}, ::Type{T}) where {CV,CVT<:Number,T} = CV # form 1
 ccolor_number(::Type{CV}, ::Type{Any}, ::Type{T}) where {CV<:Colorant,T} = CV{T} # form 2
 
-
-### convert
-#
-# The main contribution here is "concretizing" the colorant type: allow
-#    convert(RGB, a)
-# rather than requiring
-#    convert(RGB{N0f8}, a)
-# Where possible the raw element type of the source is retained.
-Base.convert(::Type{Array{C}},   img::Array{C,n}) where {C<:Color1,n} = img
-Base.convert(::Type{Array{C,n}}, img::Array{C,n}) where {C<:Color1,n} = img
-Base.convert(::Type{Array{C}},   img::Array{C,n}) where {C<:Colorant,n} = img
-Base.convert(::Type{Array{C,n}}, img::Array{C,n}) where {C<:Colorant,n} = img
-
-function Base.convert(::Type{Array{Cdest}},
-                      img::AbstractArray{Csrc,n}) where {Cdest<:Colorant,n,Csrc<:Colorant}
-    convert(Array{Cdest,n}, img)
-end
-
-function Base.convert(::Type{Array{Cdest,n}},
-                      img::AbstractArray{Csrc,n}) where {Cdest<:Colorant,n,Csrc<:Colorant}
-    copyto!(Array{ccolor(Cdest, Csrc)}(undef, size(img)), img)
-end
-
-function Base.convert(::Type{Array{Cdest}},
-                      img::BitArray{n}) where {Cdest<:Color1,n}
-    convert(Array{Cdest,n}, img)
-end
-
-function Base.convert(::Type{Array{Cdest}},
-                      img::AbstractArray{T,n}) where {Cdest<:Color1,n,T<:Real}
-    convert(Array{Cdest,n}, img)
-end
-
-function Base.convert(::Type{Array{Cdest,n}},
-                      img::BitArray{n}) where {Cdest<:Color1,n}
-    copyto!(Array{ccolor(Cdest, Gray{Bool})}(undef, size(img)), img)
-end
-
-function Base.convert(::Type{Array{Cdest,n}},
-                      img::AbstractArray{T,n}) where {Cdest<:Color1,n,T<:Real}
-    copyto!(Array{ccolor(Cdest, Gray{T})}(undef, size(img)), img)
-end
-
-function Base.convert(::Type{OffsetArray{Cdest,n,A}},
-                      img::AbstractArray{Csrc,n}) where {Cdest<:Colorant,n, A <:AbstractArray,Csrc<:Colorant}
-    copyto!(OffsetArray{ccolor(Cdest, Csrc)}(undef, axes(img)),img)
-end
-
-function Base.convert(::Type{OffsetArray{C,n,A}},
-                      img::AbstractArray{C,n}) where {C<:Colorant,n, A <:AbstractArray}
-    img
-end
-
 # for docstrings in the operations below
 shortname(::Type{T}) where {T<:FixedPoint} = (io = IOBuffer(); FixedPointNumbers.showtype(io, T); String(take!(io)))
 shortname(::Type{T}) where {T} = string(T)

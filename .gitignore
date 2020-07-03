@@ -6,3 +6,5 @@ docs/build/
 docs/site/
 docs/notebooks/.ipynb_checkpoints
 codecov.io_token
+/.benchmarkci
+/benchmark/*.json

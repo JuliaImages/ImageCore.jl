@@ -1,7 +1,8 @@
+# Usage:
+#     julia benchmark/run_benchmarks.jl
+
 using BenchmarkTools
 using Random
-using Logging
-using TerminalLoggers
 using ImageCore, ColorVectorSpace
 
 # Showing a benchmark table of everything doesn't make much sense, hence we need to make
@@ -29,19 +30,4 @@ const SUITE = BenchmarkGroup(
 const Bsuite = SUITE["baseline"]
 const Csuite = SUITE["imagecore"]
 
-results = nothing
-with_logger(TerminalLogger()) do
-    global results
-
-    include("views.jl")
-
-
-    tune!(SUITE; verbose=true)
-    results = run(SUITE; verbose=true)
-end
-
-
-# TODO: export benchmark results
-results
-
-judgement = median(results)
+include("views.jl")

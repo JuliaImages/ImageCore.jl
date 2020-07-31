@@ -278,6 +278,25 @@ end
     end
 end
 
+
+@testset "channelwise" begin
+    x = rand(RGB{Float32}, 4, 4)
+    y = rand(RGB{Float32}, 4, 4)
+
+    z = channelview(x) + channelview(y)
+    z1 = @channelwise x + y
+
+    @test z == z1
+
+    z = euclidean(channelview(x), channelview(y))
+    z1 = @channelwise euclidean(x, y)
+
+    @test z == z1
+end
+
+
+
+
 @testset "RGB, HSV, etc" begin
     for T in (RGB, BGR, XRGB, RGBX, HSV, Lab, XYZ)
         a0 = [0.1 0.2 0.3; 0.4 0.5 0.6]'

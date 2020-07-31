@@ -186,6 +186,27 @@ extractchannels(c::TransparentGray) = (gray(c), alpha(c))
 extractchannels(c::Color3)          = (comp1(c), comp2(c), comp3(c))
 extractchannels(c::Transparent3)    = (comp1(c), comp2(c), comp3(c), alpha(c))
 
+
+
+function _channelview(ex::Expr)
+    args = [ex.args[i] for i = 1:length(ex.args)]
+    for j = 1:length(args)
+        if isa(eval(ex.args[j]), AbstractArray)
+            ex.args[j] = channelview(eval(ex.args[j]))
+        else
+            ex.args[j]
+        end
+    end
+    return ex
+
+end
+
+macro channelwise(ex)
+    _channelview(ex)
+end
+
+
+
 ## Tuple & indexing utilities
 
 _size(A::AbstractArray) = map(length, axes(A))

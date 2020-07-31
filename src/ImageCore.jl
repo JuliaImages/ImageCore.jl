@@ -61,6 +61,7 @@ export
     zeroarray,
     ## functions
     # views
+    @channelwise,
     channelview,
     colorview,
     permuteddimsview,

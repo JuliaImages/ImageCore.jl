@@ -19,6 +19,9 @@ include("map.jl")
 include("functions.jl")
 include("show.jl")
 
+# To ensure our deprecations work and don't break code
+include("deprecated.jl")
+
 # run these last
 isCI = haskey(ENV, "CI") || get(ENV, "JULIA_PKGEVAL", false)
 if Base.JLOptions().can_inline == 1 && !isCI

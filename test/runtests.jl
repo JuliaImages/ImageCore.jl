@@ -18,6 +18,7 @@ include("traits.jl")
 include("map.jl")
 include("functions.jl")
 include("show.jl")
+include("deprecations.jl")
 
 # To ensure our deprecations work and don't break code
 include("deprecated.jl")

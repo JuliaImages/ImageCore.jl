@@ -47,3 +47,6 @@ function convert(::Type{OffsetArray{Cdest,n,A}}, img::AbstractArray{Csrc,n}) whe
 end
 
 convert(::Type{OffsetArray{Cdest,n,A}}, img::OffsetArray{Cdest,n,A}) where {Cdest<:Colorant,n, A <:AbstractArray} = img
+
+# a perhaps "permanent" deprecation
+Base.@deprecate_binding permuteddimsview PermutedDimsArray

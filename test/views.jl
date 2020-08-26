@@ -38,17 +38,6 @@ end
     @test normedview(N0f8, v) === v
 end
 
-@testset "permuteddimsview" begin
-    a = [1 3; 2 4]
-    v = permuteddimsview(a, (1,2))
-    @test v == a
-    v = permuteddimsview(a, (2,1))
-    @test v == a'
-    a = rand(3,7,5)
-    v = permuteddimsview(a, (2,3,1))
-    @test v == permutedims(a, (2,3,1))
-end
-
 @testset "StackedView" begin
     for (A, B, T) = (([1 3;2 4], [-1 -5; -2 -3], Int),
                      ([1 3;2 4], [-1.0 -5.0; -2.0 -3.0], Float64))

@@ -10,8 +10,8 @@ using ImageCore: Pixel, NumberLike, GenericImage, GenericGrayImage, default_name
                       (rand(UInt32, 3, 5), false),
                       (view(rand(3, 2, 5), :, 1, :), false),
                       (OffsetArray(rand(3, 5), -1:1, -2:2), false),
-                      (permuteddimsview(rand(5, 3), (2, 1)), true),
-                      (mappedarray(identity, permuteddimsview(rand(5, 3), (2, 1))), true),
+                      (PermutedDimsArray(rand(5, 3), (2, 1)), true),
+                      (mappedarray(identity, PermutedDimsArray(rand(5, 3), (2, 1))), true),
                       (colorview(RGB, zeros(3, 5), zeroarray, zeros(3, 5)), false))
         @test pixelspacing(B) == (1,1)
         if !isa(B, SubArray)

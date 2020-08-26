@@ -22,3 +22,28 @@ end
 ColorView(parent::AbstractArray) = error("must specify the colortype, use colorview(C, A)")
 
 Base.@deprecate_binding squeeze1 true
+
+import Base: convert
+
+function cname(::Type{C}) where C
+    io = IOBuffer()
+    ColorTypes.colorant_string_with_eltype(io, C)
+    return String(take!(io))
+end
+
+function convert(::Type{Array{Cdest}}, img::AbstractArray{Csrc,n}) where {Cdest<:Colorant,n,Csrc<:Colorant}
+    Base.depwarn("`convert(Array{$(cname(Cdest))}, img)` is deprecated, use $(cname(Cdest)).(img) instead", :convert)
+    Cdest.(img)
+end
+
+function convert(::Type{Array{Cdest}}, img::AbstractArray{T,n}) where {Cdest<:Color1,n,T<:Real}
+    Base.depwarn("`convert(Array{$(cname(Cdest))}, img)` is deprecated, use $(cname(Cdest)).(img) instead", :convert)
+    Cdest.(img)
+end
+
+function convert(::Type{OffsetArray{Cdest,n,A}}, img::AbstractArray{Csrc,n}) where {Cdest<:Colorant,n, A <:AbstractArray,Csrc<:Colorant}
+    Base.depwarn("`convert(OffsetArray{$(cname(Cdest))}, img)` is deprecated, use $(cname(Cdest)).(img) instead", :convert)
+    Cdest.(img)
+end
+
+convert(::Type{OffsetArray{Cdest,n,A}}, img::OffsetArray{Cdest,n,A}) where {Cdest<:Colorant,n, A <:AbstractArray} = img

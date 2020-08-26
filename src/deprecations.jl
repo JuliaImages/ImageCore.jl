@@ -31,21 +31,24 @@ function cname(::Type{C}) where C
     return String(take!(io))
 end
 
+const _explain =
+"""will soon switch to returning an array with non-concrete element type, which adds flexibility but
+   with great cost to performance. To maintain the current behavior, use """
 function convert(::Type{Array{Cdest}}, img::AbstractArray{Csrc,n}) where {Cdest<:Colorant,n,Csrc<:Colorant}
     if isconcretetype(Cdest)
         # This mimics the Base implementation
         return img isa Array{Cdest} ? img : Array{Cdest}(img)
     end
-    Base.depwarn("`convert(Array{$(cname(Cdest))}, img)` is deprecated, use $(cname(Cdest)).(img) instead", :convert)
-    Cdest.(img)
+    Base.depwarn("`convert(Array{$(cname(Cdest))}, img)` $_explain $(cname(Cdest)).(img) instead", :convert)
+    convert(Array, Cdest.(img))
 end
 
 function convert(::Type{Array{Cdest}}, img::AbstractArray{T,n}) where {Cdest<:Color1,n,T<:Real}
     if isconcretetype(Cdest)
         return img isa Array{Cdest} ? img : Array{Cdest}(img)
     end
-    Base.depwarn("`convert(Array{$(cname(Cdest))}, img)` is deprecated, use $(cname(Cdest)).(img) instead", :convert)
-    Cdest.(img)
+    Base.depwarn("`convert(Array{$(cname(Cdest))}, img)` $_explain $(cname(Cdest)).(img) instead", :convert)
+    convert(Array, Cdest.(img))
 end
 
 function convert(::Type{OffsetArray{Cdest,n,A}}, img::AbstractArray{Csrc,n}) where {Cdest<:Colorant,n, A <:AbstractArray,Csrc<:Colorant}
@@ -53,11 +56,11 @@ function convert(::Type{OffsetArray{Cdest,n,A}}, img::AbstractArray{Csrc,n}) whe
         return img isa OffsetArray{Cdest,n,A} ? img : (img isa OffsetArray ? OffsetArray(A(Cdest.(parent(img))), axes(img)) : OffsetArray(A(Cdest.(img)), axes(img)))
     end
     if img isa OffsetArray
-        Base.depwarn("`convert(OffsetArray{$(cname(Cdest))}, img)` is deprecated, use $(cname(Cdest)).(img) instead", :convert)
+        Base.depwarn("`convert(OffsetArray{$(cname(Cdest))}, img)` $_explain $(cname(Cdest)).(img) instead", :convert)
     else
-        Base.depwarn("`convert(OffsetArray{$(cname(Cdest))}, img)` is deprecated, use OffsetArray($(cname(Cdest)).(img)) instead", :convert)
+        Base.depwarn("`convert(OffsetArray{$(cname(Cdest))}, img)` $_explain OffsetArray($(cname(Cdest)).(img)) instead", :convert)
     end
-    Cdest.(img)
+    OffsetArray(Cdest.(img), axes(img))
 end
 
 convert(::Type{OffsetArray{Cdest,n,A}}, img::OffsetArray{Cdest,n,A}) where {Cdest<:Colorant,n, A <:AbstractArray} = img

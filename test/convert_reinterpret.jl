@@ -147,6 +147,8 @@ end
     @test eltype(c) == BGR{N0f8}
     c = @inferred(broadcast(BGR{Float32}, a))
     @test eltype(c) == BGR{Float32}
+    c = @inferred(convert(Array{BGR{Float32}}, a))   # convert(Array{C}, a) where C is a concrete colortype is not deprecated
+    @test eltype(c) == BGR{Float32}
     c = @inferred(broadcast(Lab, a))
     @test eltype(c) == Lab{Float32}
     for a in (rand(Float32, (4,5)),
@@ -154,6 +156,8 @@ end
         b = @inferred(broadcast(Gray, a))
         @test eltype(b) == Gray{eltype(a)}
         b = @inferred(broadcast(Gray{N0f8}, a))
+        @test eltype(b) == Gray{N0f8}
+        b = @inferred(convert(Array{Gray{N0f8}}, a))
         @test eltype(b) == Gray{N0f8}
     end
 
@@ -164,6 +168,11 @@ end
                  Gray.(N0f16.(A)) )
         imgo = OffsetArray(img, -2, -1)
         s = @inferred(broadcast(Gray{Float32}, imgo))
+        @test eltype(s) == Gray{Float32}
+        @test s isa OffsetArray{Gray{Float32},2,Array{Gray{Float32},2}}
+        @test permutedims(permutedims(s,(2,1)),(2,1)) == s
+        @test axes(s) === axes(imgo)
+        s = @inferred(convert(OffsetArray{Gray{Float32},2,Array{Gray{Float32},2}},imgo))
         @test eltype(s) == Gray{Float32}
         @test s isa OffsetArray{Gray{Float32},2,Array{Gray{Float32},2}}
         @test permutedims(permutedims(s,(2,1)),(2,1)) == s
@@ -202,6 +211,11 @@ end
                  n0f16.(A))
         imgo = OffsetArray(img, -2, -1)
         s = @inferred(broadcast(RGB{N0f8}, imgo))
+        @test eltype(s) == RGB{N0f8}
+        @test s isa OffsetArray{RGB{N0f8},2,Array{RGB{N0f8},2}}
+        @test permutedims(permutedims(s,(2,1)),(2,1)) == s
+        @test axes(s) === axes(imgo)
+        s = @inferred(convert(OffsetArray{RGB{N0f8},2,Array{RGB{N0f8},2}},imgo))
         @test eltype(s) == RGB{N0f8}
         @test s isa OffsetArray{RGB{N0f8},2,Array{RGB{N0f8},2}}
         @test permutedims(permutedims(s,(2,1)),(2,1)) == s

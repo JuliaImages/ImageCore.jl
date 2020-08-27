@@ -1,7 +1,8 @@
 using ImageCore, Colors, FixedPointNumbers, OffsetArrays
 using Test, Random
 
-@testset "convert" begin
+@testset "convert (deprecations)" begin
+    @info "Deprecation warnings are expected"
     a = [RGB(1,0,0) RGB(0,0,1);
          RGB(0,1,0) RGB(1,1,1)]
     c = @inferred(convert(Array{BGR}, a))

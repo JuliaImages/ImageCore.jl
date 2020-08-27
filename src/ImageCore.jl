@@ -168,6 +168,11 @@ function Base.transpose(a::AbstractVector{C}) where C<:Colorant
     out
 end
 
+if VERSION >= v"1.4.2" # work around https://github.com/JuliaLang/julia/issues/34121
+    include("precompile.jl")
+    _precompile_()
+end
+
 function __init__()
     @require FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341" include("functions.jl")
 end

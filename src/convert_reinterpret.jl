@@ -39,8 +39,8 @@ _len(::Type{C}, ::Type{T}) where {C,T} = sizeof(C) ÷ sizeof(T)
 # We have to distinguish two forms of call:
 #   form 1: reinterpretc(RGB{N0f8}, img)
 #   form 2: reinterpretc(RGB, img)
-function reinterpretc(::Type{CV}, a::AbstractArray{T}) where {CV<:Colorant,T<:Number}
-    @noinline throwdm(::Type{C}, ind1) where C =
+function reinterpretc(CV::Type{<:Colorant}, a::AbstractArray{T}) where T<:Number # {CV<:Colorant,T<:Number}
+    @noinline throwdm(C::Type, ind1) =
         throw(DimensionMismatch("indices $ind1 are not consistent with color type $C"))
     CVT = ccolor_number(CV, T)
     if samesize(CVT, T)

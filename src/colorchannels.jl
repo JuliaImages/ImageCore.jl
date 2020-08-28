@@ -178,7 +178,7 @@ Create a function that is equivalent to `(As...) -> colorview(C, Ax...)`.
 
 ```jldoctest; setup = :(using ImageCore)
 julia> ones(Float32, 2, 2) |> colorview(Gray)
-2×2 reinterpret(Gray{Float32}, ::Array{Float32,2}):
+2×2 reinterpret(Gray{Float32}, ::$(Array{Float32,2})):
  Gray{Float32}(1.0)  Gray{Float32}(1.0)
  Gray{Float32}(1.0)  Gray{Float32}(1.0)
 ```

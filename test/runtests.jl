@@ -9,7 +9,14 @@ end
 
 using Documenter
 DocMeta.setdocmeta!(ImageCore, :DocTestSetup, :(using ImageCore); recursive=true)
+
+# ReferenceTests uses ImageInTerminal as a default image rendering backend, we need to
+# temporarily disable it when we do doctest.
+# TODO: ReferenceTests doesn't yet support this switch. That's why we need ImageInTerminal dependency.
+using ImageInTerminal
+ImageInTerminal.disable_encoding()
 doctest(ImageCore, manual = false)
+ImageInTerminal.enable_encoding()
 
 include("colorchannels.jl")
 include("views.jl")

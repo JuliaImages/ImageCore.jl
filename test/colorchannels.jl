@@ -225,6 +225,7 @@ end
                     (ArrayLS(copy(a0)), IndexCartesian()))
         @test_throws MethodError colorview(a)
         v = @inferred(colorview(Gray, a))
+        @test colorview(Gray)(a) === colorview(Gray, a)
         @test @inferred(IndexStyle(v)) == LI
         @test ndims(v) == 1
         @test size(v) == (2,)
@@ -261,6 +262,7 @@ end
                     (ArrayLS(copy(a0)), IndexCartesian()))
         @test_throws MethodError colorview(a)
         v = @inferred(colorview(Gray, a))
+        @test colorview(Gray)(a) === colorview(Gray, a)
         @test @inferred(IndexStyle(v)) == LI
         @test ndims(v) == 2
         @test size(v) == (2,2)
@@ -284,6 +286,7 @@ end
         for a in (copy(a0),
                   ArrayLS(copy(a0)))
             v = @inferred(colorview(T,a))
+            @test v === colorview(T)(a)
             @test @inferred(channelview(v)) === a
             @test ndims(v) == 1
             @test size(v) == (2,)
@@ -317,6 +320,7 @@ end
     for T in (AGray, GrayA)
         a = [0.1f0 0.2f0; 0.3f0 0.4f0; 0.5f0 0.6f0]'
         v = @inferred(colorview(T, a))
+        @test colorview(T, a) === colorview(T)(a)
         @test ndims(v) == 1
         @test size(v) == (3,)
         @test eltype(v) == T{Float32}
@@ -365,6 +369,7 @@ end
               XYZA)
         a = [0.1 0.2 0.3 0.4; 0.5 0.6 0.7 0.8]'
         v = @inferred(colorview(T, a))
+        @test colorview(T, a) === colorview(T)(a)
         @test eltype(v) == T{Float64}
         @test @inferred(channelview(v)) === a
         @test ndims(v) == 1
@@ -398,6 +403,7 @@ end
     @testset "Non-1 indices" begin
         a = OffsetArray(rand(3, 3, 5), 1:3, -1:1, -2:2)
         v = @inferred(colorview(RGB, a))
+        @test colorview(RGB, a) === colorview(RGB)(a)
         @test @inferred(axes(v)) == (IdentityUnitRange(-1:1), IdentityUnitRange(-2:2))
         @test @inferred(v[0,0]) === RGB(a[1,0,0], a[2,0,0], a[3,0,0])
         a = OffsetArray(rand(3, 3, 5), 0:2, -1:1, -2:2)

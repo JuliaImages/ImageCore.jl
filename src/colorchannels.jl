@@ -169,6 +169,30 @@ function colorview(::Type{C}, gray1, gray2, grays...) where C<:Colorant
     mappedarray(CT, extractchannels, take_zeros(eltype(CT), axs, gray1, gray2, grays...)...)
 end
 
+"""
+    colorview(C)
+
+Create a function that is equivalent to `(As...) -> colorview(C, Ax...)`.
+
+# Examples
+
+```jldoctest; setup = :(using ImageCore)
+julia> ones(Float32, 2, 2) |> colorview(Gray)
+2×2 reinterpret(Gray{Float32}, ::$(Array{Float32,2})):
+ Gray{Float32}(1.0)  Gray{Float32}(1.0)
+ Gray{Float32}(1.0)  Gray{Float32}(1.0)
+```
+
+This can be slightly convenient when you want to convert a batch of channel data, for example:
+
+```julia
+julia> Rs, Gs, Bs = ntuple( i -> [randn(2, 2) for _ in 1:4], 3)
+
+julia> map(colorview(RGB), Rs, Gs, Bs)
+```
+"""
+colorview(::Type{C}) where C<:Colorant = (As...) -> colorview(C, As...)
+
 _colorview_type(::Type{Any}, ::Type{T}) where {T} = T
 _colorview_type(::Type{T1}, ::Type{T2}) where {T1,T2} = T1
 

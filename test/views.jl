@@ -262,9 +262,6 @@ end
 end
 
 @testset "PaddedViews" begin
-    # don't promote to Colorant if it's a numerical array
-    @test @inferred(filltype(Gray{N0f8}, Float32)) === Float32
-
     # cases that don't promote array eltype:
     #   * (Number, Colorant)
     #   * (Gray, Gray)
@@ -293,8 +290,17 @@ end
     @test @inferred(filltype(AGray{Float32}, ARGB{N0f8})) === ARGB{N0f8}
 
     # cases that promote both colorant type and storage type
+    #   * (Colorant, Number) -- numeric arrays are treated like gray images
     #   * (Color3, Gray)
     #   * (TransparentColor, Colorant)
+    @test @inferred(filltype(Gray{N0f8}, Float32)) === Gray{Float32}
+    @test @inferred(filltype(Gray{Float64}, Float32)) === Gray{Float32}
+    @test @inferred(filltype(RGB{N0f8}, Float32)) === RGB{Float32}
+    @test @inferred(filltype(RGB{Float64}, Float32)) === RGB{Float32}
+    for T in (Gray24, AGray32, RGB24, ARGB32)
+        @test @inferred(filltype(T, Float32)) === @inferred(filltype(Float32, T)) === T
+    end
+
     @test @inferred(filltype(RGB{N0f8}, Gray{Float32})) === RGB{Float32}
     @test @inferred(filltype(RGB{Float32}, Gray{N0f8})) === RGB{Float32}
     @test @inferred(filltype(Lab{Float32}, Gray{N0f8})) === Lab{Float32}
@@ -343,6 +349,25 @@ end
     @test @inferred(getindex(Ap, -1, -1)) === fv
     @test @inferred(getindex(Ap, 2, 2)) === ARGB{Float32}(1., 1., 1., 1.)
     @test Ap[axes(A)...] == ARGB{Float32}.(A)
+
+    # order irrelevant
+    A = mosaicview(rand(Float32, 4, 4), rand(RGB{N0f8}, 4, 4))
+    @test eltype(A) == RGB{Float32}
+    A = mosaicview(rand(RGB{N0f8}, 4, 4), rand(Float32, 4, 4))
+    @test eltype(A) == RGB{Float32}
+
+    A = mosaicview(rand(Float32, 4, 4), rand(Gray{Float64}, 4, 4))
+    @test eltype(A) == Gray{Float64}
+    A = mosaicview(rand(Gray{Float64}, 4, 4), rand(Float32, 4, 4))
+    @test eltype(A) == Gray{Float64}
+
+    A = mosaicview(rand(Float32, 4, 4), rand(Gray{Float64}, 4, 4), rand(RGB{N0f8}, 4, 4))
+    @test eltype(A) == RGB{Float64}
+    A = mosaicview(rand(Float32, 4, 4), rand(RGB{N0f8}, 4, 4), rand(Gray{Float64}, 4, 4))
+    @test eltype(A) == RGB{Float64}
+
+    A = mosaicview(rand(Gray, 4, 4), rand(RGB, 4, 4))
+    @test eltype(A) == RGB{Float64} # the filltype is always a concrete type
 end
 
 nothing

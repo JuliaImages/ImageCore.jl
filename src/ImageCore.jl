@@ -150,6 +150,8 @@ function PaddedViews.filltype(::Type{FC}, ::Type{C}) where {FC<:Colorant, C<:Col
     T = eltype(C) === Any ? eltype(FC) : eltype(C)
     _filltype(FC, base_colorant_type(C){T})
 end
+PaddedViews.filltype(::Type{FC}, ::Type{C}) where {FC<:Colorant, C<:Number} = base_color_type(FC){C}
+PaddedViews.filltype(::Type{FC}, ::Type{<:Number}) where {FC<:Union{Gray24, AGray32, RGB24, ARGB32}} = FC
 _filltype(::Type{<:Colorant}, ::Type{C}) where {C<:Colorant} = C
 _filltype(::Type{FC}, ::Type{C}) where {FC<:Color3, C<:AbstractGray} =
     base_colorant_type(FC){promote_type(eltype(FC), eltype(C))}

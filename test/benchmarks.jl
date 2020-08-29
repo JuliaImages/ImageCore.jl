@@ -54,13 +54,15 @@ end
 function test_getindex(f, ar, cv, n)
     t_ar = Array{Float64}(undef, n)
     t_cv = Array{Float64}(undef, n)
+    # Store the results to prevent the compiler from eliding the call
     f_ar = Ref(f(ar))
     f_cv = Ref(f(cv))
+    @test f_ar[] ≈ f_cv[]  # but this also gives us a chance to test correctness
     for i = 1:n
         t_ar[i] = (tstart = time(); f_ar[] = f(ar); time()-tstart)
         t_cv[i] = (tstart = time(); f_cv[] = f(cv); time()-tstart)
     end
-    median(t_ar), median(t_cv), f_ar
+    median(t_ar), median(t_cv)
 end
 function test_setindex(f, ar, cv, n)
     t_ar = Array{Float64}(undef, n)
@@ -72,11 +74,6 @@ function test_setindex(f, ar, cv, n)
     median(t_ar), median(t_cv)
 end
 
-ssz = (1000,1000)
-c = rand(RGB{Float64}, ssz...)
-a = copy(reinterpretc(Float64, c))
-vchan = channelview(c)
-vcol = colorview(RGB, a)
 cc_getindex_funcs = (mysum_elt_boundscheck,
                      mysum_index_boundscheck,
                      mysum_elt_inbounds,
@@ -92,25 +89,57 @@ colvtol = Dict(mysum_elt_boundscheck=>5,
                mysum_index_boundscheck=>5)
 colvdefault = 3
 
+ssz = (1000,300)
+
 @info "Benchmark tests are warnings for now"
 # @testset "benchmarks" begin
-for (suite, testf) in ((cc_getindex_funcs, test_getindex),
-                       (cc_setindex_funcs, test_setindex))
-    for f in suite
-        # Channelview
-        t_ar, t_cv = testf(f, a, vchan, 10^2)
-        tol = haskey(chanvtol, f) ? chanvtol[f] : chanvdefault
-        if t_cv >= tol*t_ar
-            @warn "ChannelView: failed on $f, time ratio $(t_cv/t_ar), tol $tol"
+for T in (Float32, Float64)
+    @show T
+    c = rand(RGB{T}, ssz...)
+    a = copy(reinterpretc(T, c))
+    vchan = channelview(c)
+    vcol = colorview(RGB, a)
+
+    # view versions
+    rview = 2:ssz[1]-1
+    csub = view(c, rview, :)
+    asub = view(a, :, rview, :)
+    vchansub = channelview(csub)
+    vcolsub = colorview(RGB, asub)
+
+    for (suite, testf) in ((cc_getindex_funcs, test_getindex),
+                           (cc_setindex_funcs, test_setindex))
+        @show testf
+        for f in suite
+            @show f
+            # channelview
+            t_ar, t_cv = testf(f, a, vchan, 30)
+            @show t_cv/t_ar
+            tol = haskey(chanvtol, f) ? chanvtol[f] : chanvdefault
+            if t_cv >= tol*t_ar
+                @warn "channelview1: failed on $f, time ratio $(t_cv/t_ar), tol $tol"
+            end
+            t_ar, t_cv = testf(f, asub, vchansub, 30)
+            @show t_cv/t_ar
+            tol = haskey(chanvtol, f) ? chanvtol[f] : chanvdefault
+            if t_cv >= tol*t_ar
+                @warn "channelview2: failed on $f, time ratio $(t_cv/t_ar), tol $tol"
+            end
+            # colorview
+            t_ar, t_cv = testf(f, c, vcol, 30)
+            tol = haskey(colvtol, f) ? colvtol[f] : colvdefault
+            @show t_cv/t_ar
+            if t_cv >= tol*t_ar
+                @warn "colorview1: failed on $f, time ratio $(t_cv/t_ar), tol $tol"
+            end
+            t_ar, t_cv = testf(f, csub, vcolsub, 30)
+            tol = haskey(colvtol, f) ? colvtol[f] : colvdefault
+            @show t_cv/t_ar
+            if t_cv >= tol*t_ar
+                @warn "colorview2: failed on $f, time ratio $(t_cv/t_ar), tol $tol"
+            end
         end
-        # @test t_cv < tol*t_ar
-        # ColorView
-        t_ar, t_cv = testf(f, c, vcol, 10^2)
-        tol = haskey(colvtol, f) ? colvtol[f] : colvdefault
-        if t_cv >= tol*t_ar
-            @warn "ColorView: failed on $f, time ratio $(t_cv/t_ar), tol $tol"
-        end
-        # @test t_cv < tol*t_ar
     end
+    println()
 end
 # end

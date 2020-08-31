@@ -58,7 +58,7 @@ function convert(::Type{Array{Cdest}}, img::AbstractArray{Csrc,n}) where {Cdest<
         # This mimics the Base implementation
         return img isa Array{Cdest} ? img : Array{Cdest}(img)
     end
-    forced_depwarn("`convert(Array{$(cname(Cdest))}, img)` $_explain `$(cname(Cdest)).(img)` instead", :convert)
+    forced_depwarn("`convert(Array{$(cname(Cdest))}, img)` $_explain `$(cname(Cdest)).(img)` instead.", :convert)
     convert(Array, Cdest.(img))
 end
 
@@ -66,7 +66,7 @@ function convert(::Type{Array{Cdest}}, img::AbstractArray{T,n}) where {Cdest<:Co
     if isconcretetype(Cdest)
         return img isa Array{Cdest} ? img : Array{Cdest}(img)
     end
-    forced_depwarn("`convert(Array{$(cname(Cdest))}, img)` $_explain `$(cname(Cdest)).(img)` instead", :convert)
+    forced_depwarn("`convert(Array{$(cname(Cdest))}, img)` $_explain `$(cname(Cdest)).(img)` instead.", :convert)
     convert(Array, Cdest.(img))
 end
 
@@ -75,9 +75,9 @@ function convert(::Type{OffsetArray{Cdest,n,A}}, img::AbstractArray{Csrc,n}) whe
         return img isa OffsetArray{Cdest,n,A} ? img : (img isa OffsetArray ? OffsetArray(A(Cdest.(parent(img))), axes(img)) : OffsetArray(A(Cdest.(img)), axes(img)))
     end
     if img isa OffsetArray
-        forced_depwarn("`convert(OffsetArray{$(cname(Cdest))}, img)` $_explain `$(cname(Cdest)).(img)` instead", :convert)
+        forced_depwarn("`convert(OffsetArray{$(cname(Cdest))}, img)` $_explain `$(cname(Cdest)).(img)` instead.", :convert)
     else
-        forced_depwarn("`convert(OffsetArray{$(cname(Cdest))}, img)` $_explain `OffsetArray($(cname(Cdest)).(img), axes(img))` instead", :convert)
+        forced_depwarn("`convert(OffsetArray{$(cname(Cdest))}, img)` $_explain `OffsetArray($(cname(Cdest)).(img), axes(img))` instead.", :convert)
     end
     OffsetArray(Cdest.(img), axes(img))
 end

@@ -25,10 +25,9 @@ include("traits.jl")
 include("map.jl")
 include("functions.jl")
 include("show.jl")
-include("deprecations.jl")
 
 # To ensure our deprecations work and don't break code
-include("deprecated.jl")
+include("deprecations.jl")
 
 # run these last
 isCI = haskey(ENV, "CI") || get(ENV, "JULIA_PKGEVAL", false)

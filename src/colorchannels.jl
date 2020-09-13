@@ -28,8 +28,13 @@ dimorder(::Type{<:AlphaColor{<:Color3,T,N}}) where {T,N} = ColorChanPerm((4, 1, 
 const ColorChanPermIndexType{NC} = Tuple{<:ColorChanPerm,Vararg{<:Base.Slice,NC}}
 const ColorChanPermSubArray{T,N,P,I<:ColorChanPermIndexType,L} =
     SubArray{T,N,P,I,L}
-const RRPermArray{To,From,N,M,P<:ColorChanPermSubArray} =
-    RRArray{To,From,N,M,P}
+if VERSION >= v"1.6.0-DEV.1083"
+    const RRPermArray{To,From,M,P<:ColorChanPermSubArray} =
+        RRArray{To,From,M,P}
+else
+    const RRPermArray{To,From,N,M,P<:ColorChanPermSubArray} =
+        RRArray{To,From,N,M,P}
+end
 
 # This type exists solely to set multiple values in the color channel axis
 struct NVector{T,N} <: AbstractVector{T}
@@ -62,8 +67,13 @@ A = channelview(img)   # a 3×10×10 array
 See also: [`colorview`](@ref)
 """
 channelview(A::AbstractArray{T}) where {T<:Number} = A
-channelview(A::RRPermArray{<:Colorant,<:Number}) = parent(parent(parent(A)))
-channelview(A::RRArray{<:Colorant,<:Number}) = parent(parent(A))
+if VERSION >= v"1.6.0-DEV.1083"
+    channelview(A::RRArray{<:Colorant,<:Number}) = parent(A)
+    channelview(A::RRPermArray{<:Colorant,<:Number}) = parent(parent(A))
+else
+    channelview(A::RRArray{<:Colorant,<:Number}) = parent(parent(A))
+    channelview(A::RRPermArray{<:Colorant,<:Number}) = parent(parent(parent(A)))
+end
 channelview(A::Base.ReinterpretArray{<:AbstractGray,M,<:Number}) where M = parent(A)
 channelview(A::AbstractArray{RGB{T}}) where {T} = reinterpretc(T, A)
 function channelview(A::AbstractArray{C}) where {C<:AbstractRGB}
@@ -108,14 +118,25 @@ _ccolorview(::Type{C}, A::RRPermArray{T,C}) where {C<:Colorant,T<:Number} =
     parent(parent(parent(A)))
 _ccolorview(::Type{C}, A::RRArray{T,C}) where {C<:Colorant,T<:Number} =
     parent(parent(A))
-_ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:AbstractGray,T<:Number,M} =
-    parent(A)
-_ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:RGB,T<:Number,M} =
-    reshape(parent(A), Base.tail(axes(parent(A))))
+if VERSION >= v"1.6.0-DEV.1083"
+    _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C,AA,false}) where {C<:RGB,T<:Number,M,AA} =
+        reshape(parent(A), Base.tail(axes(parent(A))))
+    _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C,AA,true}) where {C<:RGB,T<:Number,M,AA} =
+        parent(A)
+    _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C,AA,false}) where {C<:Color,T<:Number,M,AA} =
+        reshape(parent(A), Base.tail(axes(parent(A))))
+    _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C,AA,true}) where {C<:Color,T<:Number,M,AA} =
+        parent(A)
+else
+    _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:AbstractGray,T<:Number,M} =
+        parent(A)
+    _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:RGB,T<:Number,M} =
+        reshape(parent(A), Base.tail(axes(parent(A))))
+    _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:Color,T<:Number,M} =
+        reshape(parent(A), Base.tail(axes(parent(A))))
+    end
 _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:AbstractRGB,T<:Number,M} =
     _colorview_reorder(C, A)
-_ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:Color,T<:Number,M} =
-    reshape(parent(A), Base.tail(axes(parent(A))))
 _ccolorview(::Type{C}, A::AbstractArray{T}) where {C<:Colorant,T<:Number} =
     __ccolorview(C, A)  # necessary to avoid ambiguities from dispatch on eltype
 __ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:RGB{T}} = reinterpretc(C, A)
@@ -178,7 +199,7 @@ Create a function that is equivalent to `(As...) -> colorview(C, Ax...)`.
 
 ```jldoctest; setup = :(using ImageCore)
 julia> ones(Float32, 2, 2) |> colorview(Gray)
-2×2 reinterpret(Gray{Float32}, ::$(Array{Float32,2})):
+2×2 reinterpret($(VERSION >= v"1.6.0-DEV.1083" ? "reshape, " : "")Gray{Float32}, ::$(Array{Float32,2}))$(VERSION >= v"1.6.0-DEV.1083" ? " with eltype Gray{Float32}" : ""):
  Gray{Float32}(1.0)  Gray{Float32}(1.0)
  Gray{Float32}(1.0)  Gray{Float32}(1.0)
 ```

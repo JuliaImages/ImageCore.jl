@@ -407,7 +407,7 @@ end
         @test @inferred(axes(v)) == (IdentityUnitRange(-1:1), IdentityUnitRange(-2:2))
         @test @inferred(v[0,0]) === RGB(a[1,0,0], a[2,0,0], a[3,0,0])
         a = OffsetArray(rand(3, 3, 5), 0:2, -1:1, -2:2)
-        @test_throws DimensionMismatch colorview(RGB, a)
+        @test_throws (VERSION >= v"1.6.0-DEV.1083" ? ArgumentError : DimensionMismatch) colorview(RGB, a)
     end
 end
 

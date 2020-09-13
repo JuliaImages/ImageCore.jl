@@ -43,7 +43,11 @@ ColorA{N,C,T} = ColorAlpha{C,T,N}
 const NonparametricColors = Union{RGB24,ARGB32,Gray24,AGray32}
 Color1Array{C<:Color1,N} = AbstractArray{C,N}
 # Type that arises from reshape(reinterpret(To, A), sz):
-const RRArray{To,From,N,M,P} = Base.ReshapedArray{To,N,Base.ReinterpretArray{To,M,From,P}}
+if VERSION >= v"1.6.0-DEV.1083"
+    const RRArray{To,From,M,P} = Base.ReinterpretArray{To,M,From,P,true}
+else
+    const RRArray{To,From,N,M,P} = Base.ReshapedArray{To,N,Base.ReinterpretArray{To,M,From,P}}
+end
 const RGArray = Union{Base.ReinterpretArray{<:AbstractGray,M,<:Number,P}, Base.ReinterpretArray{<:Number,M,<:AbstractGray,P}} where {M,P}
 
 # delibrately not export these constants to enable extensibility for downstream packages

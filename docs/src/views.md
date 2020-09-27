@@ -15,7 +15,7 @@ potential cost of converting from one format to another.
 
 To illustrate views, it's helpful to begin with a very simple image:
 
-```julia
+```jldoctest
 julia> using Colors
 
 julia> img = [RGB(1,0,0) RGB(0,1,0);
@@ -36,6 +36,7 @@ DocTestSetup = quote
            RGB(0,0,1) RGB(0,0,0)]
     v = channelview(img)
     r = rawview(v)
+    r[3,1,1] = 128
 end
 ```
 
@@ -48,7 +49,7 @@ contents when you access that location.
 That said, occassionally there are reasons to want to treat `RGB` as a
 3-component vector.  That's motivation for introducing our first view:
 
-```julia
+```jldoctest
 julia> v = channelview(img)
 3×2×2 reinterpret(N0f8, ::Array{RGB{N0f8},3}):
 [:, :, 1] =
@@ -68,7 +69,7 @@ the array using separate channels for the color components.
 To access the underlying representation of the `N0f8` numbers, there's
 another view called `rawview`:
 
-```julia
+```jldoctest
 julia> r = rawview(v)
 3×2×2 rawview(reinterpret(N0f8, ::Array{RGB{N0f8},3})) with eltype UInt8:
 [:, :, 1] =
@@ -84,7 +85,7 @@ julia> r = rawview(v)
 
 Let's make a change in one of the entries:
 
-```julia
+```jldoctest
 julia> r[3,1,1] = 128
 128
 ```
@@ -97,7 +98,7 @@ You can see that the first pixel has taken on a magenta hue, which is
 a mixture of red and blue.  Why does this happen? Let's look at the
 array values themselves:
 
-```julia
+```jldoctest
 julia> r
 3×2×2 rawview(reinterpret(N0f8, ::Array{RGB{N0f8},3})) with eltype UInt8:
 [:, :, 1] =
@@ -137,18 +138,7 @@ views simply reference it.
 Maybe you're used to having the color channel be the last dimension,
 rather than the first. We can achieve that using `PermutedDimsArray`:
 
-```@meta
-DocTestSetup = quote
-    using Colors, ImageCore
-    img = [RGB(1,0,0) RGB(0,1,0);
-           RGB(0,0,1) RGB(0,0,0)]
-    v = channelview(img)
-    r = rawview(v)
-    r[3,1,1] = 128
-end
-```
-
-```julia
+```jldoctest
 julia> p = PermutedDimsArray(v, (2,3,1))
 2×2×3 PermutedDimsArray(reinterpret(N0f8, ::Array{RGB{N0f8},3}), (2, 3, 1)) with eltype Normed{UInt8,8}:
 [:, :, 1] =
@@ -209,7 +199,7 @@ array. We'll use the
 [lighthouse](http://juliaimages.github.io/TestImages.jl/images/lighthouse.png)
 image:
 
-```julia
+```@example
 using ImageCore, TestImages, Colors
 img = testimage("lighthouse")
 # Split out into separate channels
@@ -247,3 +237,62 @@ large images.
 
 `colorview`'s ability to combine multiple grayscale images is based on
 another view, `StackedView`, which you can also use directly.
+
+## Return types from views
+
+```@meta
+DocTestSetup = quote
+    using Colors, ImageCore
+end
+```
+
+Consider the following examples with different input images.
+
+In both instances, using the `channelview` returns a `reinterpret`
+(but with different type parameters).
+
+```jldoctest
+julia> img = [RGB(1,0,0) RGB(0,1,0);
+              RGB(0,0,1) RGB(0,0,0)]
+2×2 Array{RGB{N0f8},2} with eltype RGB{Normed{UInt8,8}}:
+ RGB{N0f8}(1.0,0.0,0.0)  RGB{N0f8}(0.0,1.0,0.0)
+ RGB{N0f8}(0.0,0.0,1.0)  RGB{N0f8}(0.0,0.0,0.0)
+
+julia> cv = channelview(img)
+3×2×2 reinterpret(N0f8, ::Array{RGB{N0f8},3}):
+[:, :, 1] =
+ 1.0  0.0
+ 0.0  0.0
+ 0.0  1.0
+
+[:, :, 2] =
+ 0.0  0.0
+ 1.0  0.0
+ 0.0  0.0
+```
+
+```jldoctest
+julia> img0 = rand(RGB{Float64}, 3, 2)
+3×2 Array{RGB{Float64},2} with eltype RGB{Float64}:
+ RGB{Float64}(0.721651,0.436883,0.0249213)  RGB{Float64}(0.838438,0.741055,0.289334)
+ RGB{Float64}(0.314968,0.175824,0.392317)   RGB{Float64}(0.984615,0.186958,0.328459)
+ RGB{Float64}(0.982128,0.922775,0.704911)   RGB{Float64}(0.967755,0.488064,0.780718)
+
+julia> imgs = view(img0, 1:2:3, :)
+2×2 view(::Array{RGB{Float64},2}, 1:2:3, :) with eltype RGB{Float64}:
+ RGB{Float64}(0.721651,0.436883,0.0249213)  RGB{Float64}(0.838438,0.741055,0.289334)
+ RGB{Float64}(0.982128,0.922775,0.704911)   RGB{Float64}(0.967755,0.488064,0.780718)
+
+julia> channelview(imgs)
+3×2×2 reinterpret(Float64, reshape(view(::Array{RGB{Float64},2}, 1:2:3, :), 1, 2, 2)):
+[:, :, 1] =
+ 0.721651   0.982128
+ 0.436883   0.922775
+ 0.0249213  0.704911
+
+[:, :, 2] =
+ 0.838438  0.967755
+ 0.741055  0.488064
+ 0.289334  0.780718
+ ```
+ 

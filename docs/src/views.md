@@ -36,7 +36,6 @@ DocTestSetup = quote
            RGB(0,0,1) RGB(0,0,0)]
     v = channelview(img)
     r = rawview(v)
-    r[3,1,1] = 128
 end
 ```
 
@@ -46,7 +45,7 @@ dimensions of the array corresponding to "color channels" and other
 the spatial location, and you're guaranteed to get the entire pixel
 contents when you access that location.
 
-That said, occassionally there are reasons to want to treat `RGB` as a
+That said, occasionally there are reasons to want to treat `RGB` as a
 3-component vector.  That's motivation for introducing our first view:
 
 ```jldoctest
@@ -97,6 +96,17 @@ If we display `img`, now we get this:
 You can see that the first pixel has taken on a magenta hue, which is
 a mixture of red and blue.  Why does this happen? Let's look at the
 array values themselves:
+
+```@meta
+DocTestSetup = quote
+    using Colors, ImageCore
+    img = [RGB(1,0,0) RGB(0,1,0);
+           RGB(0,0,1) RGB(0,0,0)]
+    v = channelview(img)
+    r = rawview(v)
+    r[3,1,1] = 128
+end
+```
 
 ```jldoctest
 julia> r
@@ -237,4 +247,3 @@ large images.
 
 `colorview`'s ability to combine multiple grayscale images is based on
 another view, `StackedView`, which you can also use directly.
- 

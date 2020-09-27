@@ -14,7 +14,7 @@ channelview
 colorview
 rawview
 normedview
-permuteddimsview
+PermutedDimsArray
 StackedView
 ```
 

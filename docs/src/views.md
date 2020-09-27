@@ -135,7 +135,7 @@ and `img`: there is only one underlying array, `img`, and the two
 views simply reference it.
 
 Maybe you're used to having the color channel be the last dimension,
-rather than the first. We can achieve that using `permuteddimsview`:
+rather than the first. We can achieve that using `PermutedDimsArray`:
 
 ```@meta
 DocTestSetup = quote
@@ -149,8 +149,8 @@ end
 ```
 
 ```julia
-julia> p = permuteddimsview(v, (2,3,1))
-2×2×3 permuteddimsview(Array{FixedPointNumbers.Normed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.Normed{UInt8,8}:
+julia> p = PermutedDimsArray(v, (2,3,1))
+2×2×3 PermutedDimsArray(Array{FixedPointNumbers.Normed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.Normed{UInt8,8}:
 [:, :, 1] =
  1.0N0f8  0.0N0f8
  0.0N0f8  0.0N0f8
@@ -167,7 +167,7 @@ julia> p[1,2,:] = 0.25
 0.25
 
 julia> p
-2×2×3 permuteddimsview(Array{FixedPointNumbers.Normed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.Normed{UInt8,8}:
+2×2×3 PermutedDimsArray(Array{FixedPointNumbers.Normed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.Normed{UInt8,8}:
 [:, :, 1] =
  1.0N0f8  0.251N0f8
  0.0N0f8  0.0N0f8

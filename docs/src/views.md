@@ -15,12 +15,12 @@ potential cost of converting from one format to another.
 
 To illustrate views, it's helpful to begin with a very simple image:
 
-```julia
+```jldoctest
 julia> using Colors
 
 julia> img = [RGB(1,0,0) RGB(0,1,0);
               RGB(0,0,1) RGB(0,0,0)]
-2×2 Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}:
+2×2 Array{RGB{N0f8},2} with eltype RGB{FixedPointNumbers.Normed{UInt8,8}}:
  RGB{N0f8}(1.0,0.0,0.0)  RGB{N0f8}(0.0,1.0,0.0)
  RGB{N0f8}(0.0,0.0,1.0)  RGB{N0f8}(0.0,0.0,0.0)
 ```
@@ -45,21 +45,21 @@ dimensions of the array corresponding to "color channels" and other
 the spatial location, and you're guaranteed to get the entire pixel
 contents when you access that location.
 
-That said, occassionally there are reasons to want to treat `RGB` as a
+That said, occasionally there are reasons to want to treat `RGB` as a
 3-component vector.  That's motivation for introducing our first view:
 
-```julia
+```jldoctest
 julia> v = channelview(img)
-3×2×2 Array{FixedPointNumbers.Normed{UInt8,8},3}:
+3×2×2 reinterpret(N0f8, ::Array{RGB{N0f8},3}):
 [:, :, 1] =
- 1.0N0f8  0.0N0f8
- 0.0N0f8  0.0N0f8
- 0.0N0f8  1.0N0f8
+ 1.0  0.0
+ 0.0  0.0
+ 0.0  1.0
 
 [:, :, 2] =
- 0.0N0f8  0.0N0f8
- 1.0N0f8  0.0N0f8
- 0.0N0f8  0.0N0f8
+ 0.0  0.0
+ 1.0  0.0
+ 0.0  0.0
 ```
 
 `channelview` does exactly what the name suggests: provide a view of
@@ -68,9 +68,9 @@ the array using separate channels for the color components.
 To access the underlying representation of the `N0f8` numbers, there's
 another view called `rawview`:
 
-```julia
+```jldoctest
 julia> r = rawview(v)
-3×2×2 Array{UInt8,3}:
+3×2×2 rawview(reinterpret(N0f8, ::Array{RGB{N0f8},3})) with eltype UInt8:
 [:, :, 1] =
  0xff  0x00
  0x00  0x00
@@ -84,7 +84,7 @@ julia> r = rawview(v)
 
 Let's make a change in one of the entries:
 
-```julia
+```jldoctest
 julia> r[3,1,1] = 128
 128
 ```
@@ -97,46 +97,6 @@ You can see that the first pixel has taken on a magenta hue, which is
 a mixture of red and blue.  Why does this happen? Let's look at the
 array values themselves:
 
-```julia
-julia> r
-3×2×2 Array{UInt8,3}:
-[:, :, 1] =
- 0xff  0x00
- 0x00  0x00
- 0x80  0xff
-
-[:, :, 2] =
- 0x00  0x00
- 0xff  0x00
- 0x00  0x00
-
-julia> v
-3×2×2 Array{FixedPointNumbers.Normed{UInt8,8},3}:
-[:, :, 1] =
- 1.0N0f8    0.0N0f8
- 0.0N0f8    0.0N0f8
- 0.502N0f8  1.0N0f8
-
-[:, :, 2] =
- 0.0N0f8  0.0N0f8
- 1.0N0f8  0.0N0f8
- 0.0N0f8  0.0N0f8
-
-julia> img
-2×2 Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}:
- RGB{N0f8}(1.0,0.0,0.502)  RGB{N0f8}(0.0,1.0,0.0)
- RGB{N0f8}(0.0,0.0,1.0)    RGB{N0f8}(0.0,0.0,0.0)
-```
-
-The hexidecimal representation of 128 is 0x80; this is approximately
-halfway to 255, and as a consequence the `N0f8` representation is
-very near 0.5.  You can see the same change is reflected in `r`, `v`,
-and `img`: there is only one underlying array, `img`, and the two
-views simply reference it.
-
-Maybe you're used to having the color channel be the last dimension,
-rather than the first. We can achieve that using `permuteddimsview`:
-
 ```@meta
 DocTestSetup = quote
     using Colors, ImageCore
@@ -148,52 +108,95 @@ DocTestSetup = quote
 end
 ```
 
-```julia
-julia> p = permuteddimsview(v, (2,3,1))
-2×2×3 permuteddimsview(Array{FixedPointNumbers.Normed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.Normed{UInt8,8}:
+```jldoctest
+julia> r
+3×2×2 rawview(reinterpret(N0f8, ::Array{RGB{N0f8},3})) with eltype UInt8:
 [:, :, 1] =
- 1.0N0f8  0.0N0f8
- 0.0N0f8  0.0N0f8
+ 0xff  0x00
+ 0x00  0x00
+ 0x80  0xff
 
 [:, :, 2] =
- 0.0N0f8  1.0N0f8
- 0.0N0f8  0.0N0f8
-
-[:, :, 3] =
- 0.502N0f8  0.0N0f8
- 1.0N0f8    0.0N0f8
-
-julia> p[1,2,:] = 0.25
-0.25
-
-julia> p
-2×2×3 permuteddimsview(Array{FixedPointNumbers.Normed{UInt8,8},3}, (2,3,1)) with element type FixedPointNumbers.Normed{UInt8,8}:
-[:, :, 1] =
- 1.0N0f8  0.251N0f8
- 0.0N0f8  0.0N0f8
-
-[:, :, 2] =
- 0.0N0f8  0.251N0f8
- 0.0N0f8  0.0N0f8
-
-[:, :, 3] =
- 0.502N0f8  0.251N0f8
- 1.0N0f8    0.0N0f8
+ 0x00  0x00
+ 0xff  0x00
+ 0x00  0x00
 
 julia> v
-3×2×2 Array{FixedPointNumbers.Normed{UInt8,8},3}:
+3×2×2 reinterpret(N0f8, ::Array{RGB{N0f8},3}):
 [:, :, 1] =
- 1.0N0f8    0.0N0f8
- 0.0N0f8    0.0N0f8
- 0.502N0f8  1.0N0f8
+ 1.0    0.0
+ 0.0    0.0
+ 0.502  1.0
 
 [:, :, 2] =
- 0.251N0f8  0.0N0f8
- 0.251N0f8  0.0N0f8
- 0.251N0f8  0.0N0f8
+ 0.0  0.0
+ 1.0  0.0
+ 0.0  0.0
 
 julia> img
-2×2 Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}:
+2×2 Array{RGB{N0f8},2} with eltype RGB{Normed{UInt8,8}}:
+ RGB{N0f8}(1.0,0.0,0.502)  RGB{N0f8}(0.0,1.0,0.0)
+ RGB{N0f8}(0.0,0.0,1.0)    RGB{N0f8}(0.0,0.0,0.0)
+```
+
+The hexidecimal representation of 128 is 0x80; this is approximately
+halfway to 255, and as a consequence the `N0f8` representation is
+very near 0.5.  You can see the same change is reflected in `r`, `v`,
+and `img`: there is only one underlying array, `img`, and the two
+views simply reference it.
+
+Maybe you're used to having the color channel be the last dimension,
+rather than the first. We can achieve that using `PermutedDimsArray`:
+
+```jldoctest
+julia> p = PermutedDimsArray(v, (2,3,1))
+2×2×3 PermutedDimsArray(reinterpret(N0f8, ::Array{RGB{N0f8},3}), (2, 3, 1)) with eltype Normed{UInt8,8}:
+[:, :, 1] =
+ 1.0  0.0
+ 0.0  0.0
+
+[:, :, 2] =
+ 0.0  1.0
+ 0.0  0.0
+
+[:, :, 3] =
+ 0.502  0.0
+ 1.0    0.0
+
+julia> p[1,2,:] .= 0.25
+3-element view(PermutedDimsArray(reinterpret(N0f8, ::Array{RGB{N0f8},3}), (2, 3, 1)), 1, 2, :) with eltype Normed{UInt8,8}:
+ 0.251N0f8
+ 0.251N0f8
+ 0.251N0f8
+
+julia> p
+2×2×3 PermutedDimsArray(reinterpret(N0f8, ::Array{RGB{N0f8},3}), (2, 3, 1)) with eltype Normed{UInt8,8}:
+[:, :, 1] =
+ 1.0  0.251
+ 0.0  0.0
+
+[:, :, 2] =
+ 0.0  0.251
+ 0.0  0.0
+
+[:, :, 3] =
+ 0.502  0.251
+ 1.0    0.0
+
+julia> v
+3×2×2 reinterpret(N0f8, ::Array{RGB{N0f8},3}):
+[:, :, 1] =
+ 1.0    0.0
+ 0.0    0.0
+ 0.502  1.0
+
+[:, :, 2] =
+ 0.251  0.0
+ 0.251  0.0
+ 0.251  0.0
+
+julia> img
+2×2 Array{RGB{N0f8},2} with eltype RGB{Normed{UInt8,8}}:
  RGB{N0f8}(1.0,0.0,0.502)  RGB{N0f8}(0.251,0.251,0.251)
  RGB{N0f8}(0.0,0.0,1.0)    RGB{N0f8}(0.0,0.0,0.0)
 ```
@@ -206,7 +209,7 @@ array. We'll use the
 [lighthouse](http://juliaimages.github.io/TestImages.jl/images/lighthouse.png)
 image:
 
-```julia
+```@example
 using ImageCore, TestImages, Colors
 img = testimage("lighthouse")
 # Split out into separate channels
@@ -223,7 +226,7 @@ rb = colorview(RGB, cv[1,:,:], zeroarray, cv[3,:,:])
 ![redblue](assets/redblue.png)
 
 In this case, we could have done the same thing somewhat more simply
-with `cv[2,:,:] = 0` and then visualize `img`. However, more generally
+with `cv[2,:,:] .= 0` and then visualize `img`. However, more generally
 you can apply this to independent arrays which may not allow you to
 set values to 0. In IJulia,
 
@@ -244,86 +247,3 @@ large images.
 
 `colorview`'s ability to combine multiple grayscale images is based on
 another view, `StackedView`, which you can also use directly.
-
-## A note on the return types from the views
-
-The lowercase functions try to return the "simplest" type that will
-serve as a view. For example, our very first view at the top of this
-page returned an `Array`:
-
-```@meta
-DocTestSetup = quote
-    using Colors, ImageCore
-    img = [RGB(1,0,0) RGB(0,1,0);
-           RGB(0,0,1) RGB(0,0,0)]
-```
-
-```julia
-julia> img
-2×2 Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}:
- RGB{N0f8}(1.0,0.0,0.0)  RGB{N0f8}(0.0,1.0,0.0)
- RGB{N0f8}(0.0,0.0,1.0)  RGB{N0f8}(0.0,0.0,0.0)
-
-julia> cv = channelview(img)
-3×2×2 Array{FixedPointNumbers.Normed{UInt8,8},3}:
-[:, :, 1] =
- 1.0N0f8  0.0N0f8
- 0.0N0f8  0.0N0f8
- 0.0N0f8  1.0N0f8
-
-[:, :, 2] =
- 0.0N0f8  0.0N0f8
- 1.0N0f8  0.0N0f8
- 0.0N0f8  0.0N0f8
-```
-
-However, if we used a slightly different input, we get a `ChannelView`:
-
-```julia
-julia> img0 = rand(RGB{Float64}, 3, 2)
-3×2 Array{ColorTypes.RGB{Float64},2}:
- RGB{Float64}(0.663329,0.902757,0.598058)  RGB{Float64}(0.0830178,0.729289,0.760395)
- RGB{Float64}(0.554595,0.698961,0.709871)  RGB{Float64}(0.268782,0.242491,0.537012)
- RGB{Float64}(0.617316,0.296282,0.838878)  RGB{Float64}(0.192074,0.0743438,0.830025)
-
-julia> imgs = view(img0, 1:2:3, :)
-2×2 SubArray{ColorTypes.RGB{Float64},2,Array{ColorTypes.RGB{Float64},2},Tuple{StepRange{Int64,Int64},Colon},false}:
- RGB{Float64}(0.663329,0.902757,0.598058)  RGB{Float64}(0.0830178,0.729289,0.760395)
- RGB{Float64}(0.617316,0.296282,0.838878)  RGB{Float64}(0.192074,0.0743438,0.830025)
-
-julia> channelview(imgs)
-3×2×2 ChannelView(::SubArray{ColorTypes.RGB{Float64},2,Array{ColorTypes.RGB{Float64},2},Tuple{StepRange{Int64,Int64},Colon},false}) with element type Float64:
-[:, :, 1] =
- 0.663329  0.617316
- 0.902757  0.296282
- 0.598058  0.838878
-
-[:, :, 2] =
- 0.0830178  0.192074
- 0.729289   0.0743438
- 0.760395   0.830025
-```
-
-The reason for this difference is the following: an `Array` always
-uses contiguous memory to represent its values, and consequently you
-can only use an `Array` to represent a view if the "source" object is
-contiguous in memory. In the latter case, the `SubArray` created by
-`view` does not have contiguous memory, so instead a `ChannelView`
-type is returned, which can create a channel view of any type of
-input.
-
-If your application requires consistency, you can use `ChannelView` directly:
-
-```julia
-julia> ChannelView(img)
-3×2×2 ChannelView(::Array{ColorTypes.RGB{FixedPointNumbers.Normed{UInt8,8}},2}) with element type FixedPointNumbers.Normed{UInt8,8}:
-[:, :, 1] =
- 1.0N0f8  0.0N0f8
- 0.0N0f8  0.0N0f8
- 0.0N0f8  1.0N0f8
-
-[:, :, 2] =
- 0.0N0f8  0.0N0f8
- 1.0N0f8  0.0N0f8
- 0.0N0f8  0.0N0f8
-```

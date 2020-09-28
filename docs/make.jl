@@ -1,4 +1,4 @@
-using Documenter, ImageCore
+using Documenter, ImageCore, ImageShow
 
 format = Documenter.HTML(edit_link = "master",
                          prettyurls = get(ENV, "CI", nothing) == "true")

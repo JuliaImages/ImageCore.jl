@@ -29,30 +29,45 @@ RGB_str = typestring(RGB)
                                                         "3×3×5 reinterpret(Float32, ::Array{RGB{Float32},3})")
     num64 = rand(3,5)
     b = colorview(RGB, num64)
-    @test summary(b) == (VERSION >= v"1.6.0-DEV.1083" ? "5-element reinterpret(reshape, RGB{Float64}, ::$(typeof(num64))) with eltype $(RGB_str){Float64}" :
-                                                        "5-element reshape(reinterpret(RGB{Float64}, ::$(typeof(num64))), 5) with eltype $(RGB_str){Float64}")
+    str = summary(b)
+    @test occursin("5-element", str) && occursin("reinterpret", str) && occursin("reshape", str) && occursin("RGB{Float64}", str) &&
+          occursin("::$(typeof(num64))", str) && occursin("with eltype", str)
     rgb8 = rand(RGB{N0f8}, 3, 5)
     c = rawview(channelview(rgb8))
-    @test summary(c) == "3×3×5 rawview(reinterpret($(rrstr)N0f8, ::Array{RGB{N0f8},$(rrdim(3))})) with eltype UInt8"
+    str = summary(c)
+    @test occursin("3×3×5 rawview(reinterpret($(rrstr)", str) && occursin("N0f8", str) &&
+          occursin("::Array{RGB{N0f8},$(rrdim(3))}", str) && occursin("with eltype UInt8", str)
     @test summary(rgb8) == "3×5 Array{RGB{N0f8},2} with eltype $(RGB_str){$(N0f8_str)}"
     rand8 = rand(UInt8, 3, 5)
     d = normedview(PermutedDimsArray(rand8, (2,1)))
     @test summary(d) == "5×3 normedview(N0f8, PermutedDimsArray(::$(typeof(rand8)), (2, 1))) with eltype $(N0f8_str)"
     e = PermutedDimsArray(normedview(rand8), (2,1))
-    @test summary(e) == "5×3 PermutedDimsArray(reinterpret(N0f8, ::$(typeof(rand8))), (2, 1)) with eltype $(N0f8_str)"
+    str = summary(e)
+    @test occursin("5×3 PermutedDimsArray(reinterpret", str) && occursin("N0f8", str) &&
+          occursin("::$(typeof(rand8))), (2, 1)", str) && occursin("with eltype $(N0f8_str)", str)
     rand16 = rand(UInt16, 3, 5)
     f = PermutedDimsArray(normedview(N0f16, rand16), (2,1))
-    @test summary(f) == "5×3 PermutedDimsArray(reinterpret(N0f16, ::$(typeof(rand16))), (2, 1)) with eltype $(N0f16_str)"
+    str = summary(f)
+    @test occursin("5×3 PermutedDimsArray(reinterpret", str) && occursin("N0f16", str) &&
+          occursin("::$(typeof(rand16))), (2, 1)", str) && occursin("with eltype $(N0f16_str)", str)
     g = channelview(rgb8)
-    etstr = VERSION >= v"1.6.0-DEV.1083" ? " with eltype N0f8" : ""
-    @test summary(g) == "3×3×5 reinterpret($(rrstr)N0f8, ::Array{RGB{N0f8},$(rrdim(3))})$etstr"
+    etstr = VERSION >= v"1.6.0-DEV.1083" ? " with eltype" : ""
+    str = summary(g)
+    @test occursin("3×3×5 reinterpret($(rrstr)", str) && occursin("N0f8", str) &&
+          occursin("::Array{RGB{N0f8},$(rrdim(3))}", str)
+    VERSION >= v"1.6.0-DEV.1083" && @test occursin("with eltype", str)
     h = OffsetArray(rgb8, -1:1, -2:2)
     @test summary(h) == "$(sumsz(h))OffsetArray(::Array{RGB{N0f8},2}, -1:1, -2:2) with eltype $(RGB_str){$(N0f8_str)} with indices -1:1×-2:2"
     i = channelview(h)
-    @test summary(i) == "$(sumsz(i))reinterpret($(rrstr)N0f8, OffsetArray(::Array{RGB{N0f8},$(rrdim(3))}, 1:1, -1:1, -2:2)) with indices 1:3×-1:1×-2:2"
+    str = summary(i)
+    @test occursin("$(sumsz(i))reinterpret($(rrstr)", str) && occursin("N0f8", str) &&
+          occursin("OffsetArray(::Array{RGB{N0f8},$(rrdim(3))}", str) && occursin("-1:1, -2:2", str) && occursin("with indices", str)
     c = channelview(rand(RGB{N0f8}, 2))
     o = OffsetArray(c, -1:1, 0:1)
-    @test summary(o) == "$(sumsz(o))OffsetArray(reinterpret($(rrstr)N0f8, ::Array{RGB{N0f8},$(rrdim(2))}), -1:1, 0:1) with eltype $(N0f8_str) with indices -1:1×0:1"
+    str = summary(o)
+    @test occursin("$(sumsz(o))OffsetArray(reinterpret($(rrstr)", str) && occursin("N0f8,", str) &&
+          occursin("::Array{RGB{N0f8},$(rrdim(2))}", str) && occursin("-1:1, 0:1", str) && occursin("with eltype $(N0f8_str)", str) &&
+          occursin("with indices", str)
     # Issue #45
     a = collect(tuple())
     @test summary(a) == "0-element $(typeof(a))"

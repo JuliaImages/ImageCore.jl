@@ -129,9 +129,9 @@ using Test, Random
 
     # indeterminate type tests
     a = Array{RGB{AbstractFloat}}(undef, 3)
-    @test_throws ErrorException reinterpretc(Float64, a)
+    @test_throws Union{ArgumentError,ErrorException} reinterpretc(Float64, a)
     a = Vector{RGB}(undef, 3)
-    @test_throws ErrorException reinterpretc(Float64, a)
+    @test_throws Union{ArgumentError,ErrorException} reinterpretc(Float64, a)
 
     # Invalid conversions
     a = rand(UInt8, 4,5)

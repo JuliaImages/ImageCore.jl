@@ -3,7 +3,6 @@ VERSION < v"0.7.0-beta2.199" && __precompile__()
 module ImageCore
 
 using Reexport
-using Requires
 @reexport using FixedPointNumbers
 @reexport using Colors
 if isdefined(ColorTypes, :XRGB) && isdefined(ColorTypes, :RGB1)
@@ -110,6 +109,7 @@ include("convert_reinterpret.jl")
 include("traits.jl")
 include("map.jl")
 include("show.jl")
+include("functions.jl")
 include("deprecations.jl")
 
 """
@@ -177,10 +177,6 @@ end
 if VERSION >= v"1.4.2" # work around https://github.com/JuliaLang/julia/issues/34121
     include("precompile.jl")
     _precompile_()
-end
-
-function __init__()
-    @require FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341" include("functions.jl")
 end
 
 end ## module

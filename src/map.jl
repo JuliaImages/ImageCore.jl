@@ -210,9 +210,9 @@ See also: [`scalesigned`](@ref).
 """
 colorsigned(neg::C, center::C, pos::C) where {C<:Colorant} = function(x)
     y = clamp(x, -oneunit(x), oneunit(x))
-    yabs = abs(y)
-    C(ifelse(y>0, weighted_color_mean(yabs, pos, center),
-                  weighted_color_mean(yabs, neg, center)))
+    yabs = norm(y)
+    C(ifelse(y>zero(y), weighted_color_mean(yabs, pos, center),
+                        weighted_color_mean(yabs, neg, center)))
 end
 
 function colorsigned(colorneg::C, colorpos::C) where C<:Colorant

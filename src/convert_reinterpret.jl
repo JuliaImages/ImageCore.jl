@@ -83,7 +83,6 @@ for (fn,T) in (#(:float16, Float16),   # Float16 currently has promotion problem
         ($fn)(::Type{S}) where {S<:Number  } = $T
         ($fn)(c::Colorant) = convert(($fn)(typeof(c)), c)
         ($fn)(n::Number)   = convert(($fn)(typeof(n)), n)
-        @deprecate ($fn)(A::AbstractArray{C}) where {C<:Colorant} ($fn).(A)
         fname = $(Expr(:quote, fn))
         Tname = shortname($T)
 @doc """

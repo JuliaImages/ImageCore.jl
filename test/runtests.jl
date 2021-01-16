@@ -4,7 +4,11 @@ using ImageCore, Test, ReferenceTests
 
 # If we've run the tests previously, there might be ambiguities from other packages
 if :StatsBase ∉ map(x->Symbol(string(x)), values(Base.loaded_modules))
-    @test isempty(detect_ambiguities(ImageCore, Base, Core))
+    if Base.VERSION < v"1.6.0-DEV.1005"
+        @test isempty(detect_ambiguities(ImageCore, Base, Core))
+    else
+        @test isempty(detect_ambiguities(ImageCore))
+    end
 end
 
 using Documenter

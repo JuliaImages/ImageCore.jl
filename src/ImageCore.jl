@@ -164,6 +164,10 @@ function Base.transpose(a::AbstractVector{C}) where C<:Colorant
     out
 end
 
+MosaicViews.promote_wrapped_type(::Type{T}, ::Type{S}) where {T<:Colorant,S<:Colorant} = promote_type(T, S)
+MosaicViews.promote_wrapped_type(::Type{T}, ::Type{S}) where {T,S<:Colorant} = S === Union{} ? T : base_colorant_type(S){MosaicViews.promote_wrapped_type(T, eltype(S))}
+MosaicViews.promote_wrapped_type(::Type{T}, ::Type{S}) where {T<:Colorant,S} = MosaicViews.promote_wrapped_type(S, T)
+
 if VERSION >= v"1.4.2" # work around https://github.com/JuliaLang/julia/issues/34121
     include("precompile.jl")
     _precompile_()

@@ -20,7 +20,7 @@ using Test
         f = takemap(clamp01, A)
         fA = f.(A)
         @test eltype(fA) == Float64
-        @test fA == [0, 0.4, 1]
+        @test fA == [0.0, 0.4, 1.0]
         f = takemap(clamp01, N0f8, A)
         fA = f.(A)
         @test eltype(fA) == N0f8
@@ -52,7 +52,7 @@ using Test
         f = takemap(clamp01nan, A)
         fA = f.(A)
         @test eltype(fA) == Float64
-        @test fA == [0, 0.4, 0, 0, 1, 1]
+        @test fA == Float64[0, 0.4, 0, 0, 1, 1]
         f = takemap(clamp01nan, N0f8, A)
         fA = f.(A)
         @test eltype(fA) == N0f8

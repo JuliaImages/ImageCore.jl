@@ -129,15 +129,15 @@ end
     # to use tuple tricks (i.e., make a tuple of length(inds)+1)
     _stackedview(T, (length(arrays), inds...), arrays_T)
 end
-_stackedview(::Type{T}, ::Tuple{Vararg{Any,N}}, arrays) where {T,N} = StackedView{T,N,typeof(arrays)}(arrays)
+@inline _stackedview(::Type{T}, ::Tuple{Vararg{Any,N}}, arrays) where {T,N} = StackedView{T,N,typeof(arrays)}(arrays)
 
 
 @inline firstinds(A::AbstractArray, Bs...) = axes(A)
 @inline firstinds(::ZeroArrayPromise, Bs...) = firstinds(Bs...)
 firstinds() = error("not all arrays can be zeroarray")
 
-@inline take_zeros(T, inds, ::ZeroArrayPromise, Bs...) = (ZeroArrayPromise{T}(inds), take_zeros(T, inds, Bs...)...)
-@inline take_zeros(T, inds, A::AbstractArray, Bs...) = (A, take_zeros(T, inds, Bs...)...)
+@inline take_zeros(::Type{T}, inds, ::ZeroArrayPromise, Bs...) where T = (ZeroArrayPromise{T}(inds), take_zeros(T, inds, Bs...)...)
+@inline take_zeros(::Type{T}, inds, A::AbstractArray, Bs...) where T = (A, take_zeros(T, inds, Bs...)...)
 take_zeros(T, inds) = ()
 
 # Extensions of PaddedViews

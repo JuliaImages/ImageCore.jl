@@ -68,7 +68,7 @@ end
         @test size(V) == (3, 2, 2)
         @test axes(V) === (Base.OneTo(3), Base.OneTo(2), Base.OneTo(2))
         @test V[1,:,:] == A
-        @test all(V[2,:,:] .== 0)
+        @test all(iszero, V[2,:,:])
         @test V[3,:,:] == B
         @test_throws ErrorException V[2,1,1] = 7
         V32 = @inferred(StackedView{Float32}(A, zeroarray, B))
@@ -186,21 +186,21 @@ end
         A1 = fill(Gray(1.), 2, 2)
         A2 = fill(RGB(1., 0., 0.), 3, 3)
         A3 = fill(RGB(0., 1., 0.), 3, 3)
-        out = mosaicview(A1, A2, A3) |> collect
+        out = mosaic(A1, A2, A3) |> collect
         @test_reference "references/mosaicviews/2d_opaque_1.png" out by=isequal
-        out = mosaicview(A1, A2, A3; npad=2, fillvalue=Gray(0.), nrow=2) |> collect
+        out = mosaic(A1, A2, A3; npad=2, fillvalue=Gray(0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/2d_opaque_2.png" out by=isequal
-        out = mosaicview(A1, A2, A3; npad=2, fillvalue=Gray(0.), nrow=2, rowmajor=true) |> collect
+        out = mosaic(A1, A2, A3; npad=2, fillvalue=Gray(0.), nrow=2, rowmajor=true) |> collect
         @test_reference "references/mosaicviews/2d_opaque_3.png" out by=isequal
 
         A1 = fill(GrayA(1.), 2, 2)
         A2 = fill(RGBA(1., 0., 0.), 3, 3)
         A3 = fill(RGBA(0., 1., 0.), 3, 3)
-        out = mosaicview(A1, A2, A3) |> collect
+        out = mosaic(A1, A2, A3) |> collect
         @test_reference "references/mosaicviews/2d_transparent_1.png" out by=isequal
-        out = mosaicview(A1, A2, A3; npad=2, fillvalue=GrayA(0., 0.), nrow=2) |> collect
+        out = mosaic(A1, A2, A3; npad=2, fillvalue=GrayA(0., 0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/2d_transparent_2.png" out by=isequal
-        out = mosaicview(A1, A2, A3; npad=2, fillvalue=GrayA(0., 0.), nrow=2, rowmajor=true) |> collect
+        out = mosaic(A1, A2, A3; npad=2, fillvalue=GrayA(0., 0.), nrow=2, rowmajor=true) |> collect
         @test_reference "references/mosaicviews/2d_transparent_3.png" out by=isequal
     end
 
@@ -215,7 +215,7 @@ end
         @test_reference "references/mosaicviews/3d_opaque_2.png" out by=isequal
         out = mosaicview(A; npad=2, fillvalue=Gray(0.), nrow=2, rowmajor=true) |> collect
         @test_reference "references/mosaicviews/3d_opaque_3.png" out by=isequal
-        out = mosaicview(A, A; npad=2, fillvalue=Gray(0.), nrow=2) |> collect
+        out = mosaic(A, A; npad=2, fillvalue=Gray(0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/3d_opaque_4.png" out by=isequal
 
         A = fill(RGBA(0., 0., 0.), 2, 2, 3)
@@ -228,7 +228,7 @@ end
         @test_reference "references/mosaicviews/3d_transparent_2.png" out by=isequal
         out = mosaicview(A; npad=2, fillvalue=GrayA(0.), nrow=2, rowmajor=true) |> collect
         @test_reference "references/mosaicviews/3d_transparent_3.png" out by=isequal
-        out = mosaicview(A, A; npad=2, fillvalue=GrayA(0.), nrow=2) |> collect
+        out = mosaic(A, A; npad=2, fillvalue=GrayA(0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/3d_transparent_4.png" out by=isequal
     end
 
@@ -243,7 +243,7 @@ end
         @test_reference "references/mosaicviews/4d_opaque_2.png" out by=isequal
         out = mosaicview(A; npad=2, fillvalue=Gray(0.), nrow=2, rowmajor=true) |> collect
         @test_reference "references/mosaicviews/4d_opaque_3.png" out by=isequal
-        out = mosaicview(A, A; npad=2, fillvalue=Gray(0.), nrow=2) |> collect
+        out = mosaic(A, A; npad=2, fillvalue=Gray(0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/4d_opaque_4.png" out by=isequal
 
         A = fill(RGBA(0., 0., 0.), 2, 2, 2, 2)
@@ -256,7 +256,7 @@ end
         @test_reference "references/mosaicviews/4d_transparent_2.png" out by=isequal
         out = mosaicview(A; npad=2, fillvalue=GrayA(0., 0.), nrow=2, rowmajor=true) |> collect
         @test_reference "references/mosaicviews/4d_transparent_3.png" out by=isequal
-        out = mosaicview(A, A; npad=2, fillvalue=GrayA(0.), nrow=2) |> collect
+        out = mosaic(A, A; npad=2, fillvalue=GrayA(0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/4d_transparent_4.png" out by=isequal
     end
 end
@@ -351,22 +351,22 @@ end
     @test Ap[axes(A)...] == ARGB{Float32}.(A)
 
     # order irrelevant
-    A = mosaicview(rand(Float32, 4, 4), rand(RGB{N0f8}, 4, 4))
+    A = mosaic(rand(Float32, 4, 4), rand(RGB{N0f8}, 4, 4))
     @test eltype(A) == RGB{Float32}
-    A = mosaicview(rand(RGB{N0f8}, 4, 4), rand(Float32, 4, 4))
+    A = mosaic(rand(RGB{N0f8}, 4, 4), rand(Float32, 4, 4))
     @test eltype(A) == RGB{Float32}
 
-    A = mosaicview(rand(Float32, 4, 4), rand(Gray{Float64}, 4, 4))
+    A = mosaic(rand(Float32, 4, 4), rand(Gray{Float64}, 4, 4))
     @test eltype(A) == Gray{Float64}
-    A = mosaicview(rand(Gray{Float64}, 4, 4), rand(Float32, 4, 4))
+    A = mosaic(rand(Gray{Float64}, 4, 4), rand(Float32, 4, 4))
     @test eltype(A) == Gray{Float64}
 
-    A = mosaicview(rand(Float32, 4, 4), rand(Gray{Float64}, 4, 4), rand(RGB{N0f8}, 4, 4))
+    A = mosaic(rand(Float32, 4, 4), rand(Gray{Float64}, 4, 4), rand(RGB{N0f8}, 4, 4))
     @test eltype(A) == RGB{Float64}
-    A = mosaicview(rand(Float32, 4, 4), rand(RGB{N0f8}, 4, 4), rand(Gray{Float64}, 4, 4))
+    A = mosaic(rand(Float32, 4, 4), rand(RGB{N0f8}, 4, 4), rand(Gray{Float64}, 4, 4))
     @test eltype(A) == RGB{Float64}
 
-    A = mosaicview(rand(Gray, 4, 4), rand(RGB, 4, 4))
+    A = mosaic(rand(Gray, 4, 4), rand(RGB, 4, 4))
     @test eltype(A) == RGB{Float64} # the filltype is always a concrete type
 end
 

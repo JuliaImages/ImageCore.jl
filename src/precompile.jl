@@ -1,3 +1,14 @@
+macro warnpcfail(ex::Expr)
+    modl = __module__
+    file = __source__.file === nothing ? "?" : String(__source__.file)
+    line = __source__.line
+    quote
+        $(esc(ex)) || @warn """precompile directive
+     $($(Expr(:quote, ex)))
+ failed. Please report an issue in $($modl) (after checking for duplicates) or remove this directive.""" _file=$file _line=$line
+    end
+end
+
 function pcarray(f::F, ::Type{A}, sz) where {F,A}
     a = f(A(undef, sz))
     fill!(a, zero(eltype(a)))
@@ -21,21 +32,21 @@ function _precompile_()
     szs   = ((2,), (2, 2), (2, 2, 2), (2, 2, 2, 2))
 
     for T in eltypes
-        @assert precompile(clamp01, (T,))
-        @assert precompile(clamp01nan, (T,))
-        @assert precompile(scaleminmax, (T, T))
-        @assert precompile(scalesigned, (T,))
-        @assert precompile(scalesigned, (T,T,T))
+        @warnpcfail precompile(clamp01, (T,))
+        @warnpcfail precompile(clamp01nan, (T,))
+        @warnpcfail precompile(scaleminmax, (T, T))
+        @warnpcfail precompile(scalesigned, (T,))
+        @warnpcfail precompile(scalesigned, (T,T,T))
         for C in pctypes
-            @assert precompile(clamp01, (C{T},))
-            @assert precompile(clamp01nan, (C{T},))
-            @assert precompile(colorsigned, (C{T},C{T}))
+            @warnpcfail precompile(clamp01, (C{T},))
+            @warnpcfail precompile(clamp01nan, (C{T},))
+            @warnpcfail precompile(colorsigned, (C{T},C{T}))
         end
     end
     for C in cctypes
-        @assert precompile(clamp01, (C,))
-        @assert precompile(clamp01nan, (C,))
-        @assert precompile(colorsigned, (C,C))
+        @warnpcfail precompile(clamp01, (C,))
+        @warnpcfail precompile(clamp01nan, (C,))
+        @warnpcfail precompile(colorsigned, (C,C))
     end
     # For the arrays, it's better to make them and exercise them so we get the getindex/setindex!
     # methods precompiled too.

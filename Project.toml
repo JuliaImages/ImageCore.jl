@@ -1,6 +1,6 @@
 name = "ImageCore"
 uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
-version = "0.8.20"
+version = "0.8.21"
 
 [deps]
 AbstractFFTs = "621f4979-c628-5d54-868e-fcf4e3e8185c"

@@ -164,6 +164,12 @@ _filltype(::Type{FC}, ::Type{C}) where {FC<:TransparentColor, C<:AbstractGray} =
 _filltype(::Type{FC}, ::Type{C}) where {FC<:TransparentColor, C<:Color3} =
     alphacolor(C){promote_type(eltype(FC), eltype(C))}
 
+
+# MosaicViews support (require MosaicViews >= v0.3.0)
+MosaicViews.promote_wrapped_type(::Type{T}, ::Type{S}) where {T<:Colorant,S<:Colorant} = promote_type(T, S)
+MosaicViews.promote_wrapped_type(::Type{T}, ::Type{S}) where {T,S<:Colorant} = S === Union{} ? T : base_colorant_type(S){MosaicViews.promote_wrapped_type(T, eltype(S))}
+MosaicViews.promote_wrapped_type(::Type{T}, ::Type{S}) where {T<:Colorant,S} = MosaicViews.promote_wrapped_type(S, T)
+
 # Support transpose
 Base.transpose(a::AbstractMatrix{C}) where {C<:Colorant} = permutedims(a, (2,1))
 function Base.transpose(a::AbstractVector{C}) where C<:Colorant

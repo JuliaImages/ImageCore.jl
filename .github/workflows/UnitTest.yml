@@ -40,7 +40,13 @@ jobs:
 
       - name: "Compat fix for Julia < v1.3.0"
         if: ${{ matrix.julia-version == '1.0' }}
-        run: julia --project=. --startup=no --color=yes -e 'using Pkg; pkg"add FFTW@1.1 AbstractFFTs@0.5"'
+        run: |
+          using Pkg
+          Pkg.add([
+            PackageSpec(name="FFTW", version="1.1"),
+            PackageSpec(name="AbstractFFTs", version="0.5")
+          ])
+        shell: julia --project=. --startup=no --color=yes {0}
       - name: "Unit Test"
         uses: julia-actions/julia-runtest@master
 

@@ -209,11 +209,11 @@ end
         A[:, :, 1] .= RGB(1., 0., 0.)
         A[:, :, 2] .= RGB(0., 1., 0.)
         A[:, :, 3] .= RGB(0., 0., 1.)
-        out = mosaicview(A) |> collect
+        out = mosaic(A) |> collect
         @test_reference "references/mosaicviews/3d_opaque_1.png" out by=isequal
-        out = mosaicview(A; npad=2, fillvalue=Gray(0.), nrow=2) |> collect
+        out = mosaic(A; npad=2, fillvalue=Gray(0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/3d_opaque_2.png" out by=isequal
-        out = mosaicview(A; npad=2, fillvalue=Gray(0.), nrow=2, rowmajor=true) |> collect
+        out = mosaic(A; npad=2, fillvalue=Gray(0.), nrow=2, rowmajor=true) |> collect
         @test_reference "references/mosaicviews/3d_opaque_3.png" out by=isequal
         out = mosaic(A, A; npad=2, fillvalue=Gray(0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/3d_opaque_4.png" out by=isequal
@@ -222,11 +222,11 @@ end
         A[:, :, 1] .= RGBA(1., 0., 0.)
         A[:, :, 2] .= RGBA(0., 1., 0.)
         A[:, :, 3] .= RGBA(0., 0., 1.)
-        out = mosaicview(A) |> collect
+        out = mosaic(A) |> collect
         @test_reference "references/mosaicviews/3d_transparent_1.png" out by=isequal
-        out = mosaicview(A; npad=2, fillvalue=GrayA(0., 0.), nrow=2) |> collect
+        out = mosaic(A; npad=2, fillvalue=GrayA(0., 0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/3d_transparent_2.png" out by=isequal
-        out = mosaicview(A; npad=2, fillvalue=GrayA(0.), nrow=2, rowmajor=true) |> collect
+        out = mosaic(A; npad=2, fillvalue=GrayA(0.), nrow=2, rowmajor=true) |> collect
         @test_reference "references/mosaicviews/3d_transparent_3.png" out by=isequal
         out = mosaic(A, A; npad=2, fillvalue=GrayA(0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/3d_transparent_4.png" out by=isequal
@@ -237,11 +237,11 @@ end
         A[1, :, 1, 1] .= RGB(1., 0., 0.)
         A[:, :, 1, 2] .= RGB(0., 1., 0.)
         A[:, :, 2, 1] .= RGB(0., 0., 1.)
-        out = mosaicview(A) |> collect
+        out = mosaic(A) |> collect
         @test_reference "references/mosaicviews/4d_opaque_1.png" out by=isequal
-        out = mosaicview(A; npad=2, fillvalue=Gray(0.), nrow=2) |> collect
+        out = mosaic(A; npad=2, fillvalue=Gray(0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/4d_opaque_2.png" out by=isequal
-        out = mosaicview(A; npad=2, fillvalue=Gray(0.), nrow=2, rowmajor=true) |> collect
+        out = mosaic(A; npad=2, fillvalue=Gray(0.), nrow=2, rowmajor=true) |> collect
         @test_reference "references/mosaicviews/4d_opaque_3.png" out by=isequal
         out = mosaic(A, A; npad=2, fillvalue=Gray(0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/4d_opaque_4.png" out by=isequal
@@ -250,11 +250,11 @@ end
         A[1, :, 1, 1] .= RGBA(1., 0., 0.)
         A[:, :, 1, 2] .= RGBA(0., 1., 0.)
         A[:, :, 2, 1] .= RGBA(0., 0., 1.)
-        out = mosaicview(A) |> collect
+        out = mosaic(A) |> collect
         @test_reference "references/mosaicviews/4d_transparent_1.png" out by=isequal
-        out = mosaicview(A; npad=2, fillvalue=GrayA(0., 0.), nrow=2) |> collect
+        out = mosaic(A; npad=2, fillvalue=GrayA(0., 0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/4d_transparent_2.png" out by=isequal
-        out = mosaicview(A; npad=2, fillvalue=GrayA(0., 0.), nrow=2, rowmajor=true) |> collect
+        out = mosaic(A; npad=2, fillvalue=GrayA(0., 0.), nrow=2, rowmajor=true) |> collect
         @test_reference "references/mosaicviews/4d_transparent_3.png" out by=isequal
         out = mosaic(A, A; npad=2, fillvalue=GrayA(0.), nrow=2) |> collect
         @test_reference "references/mosaicviews/4d_transparent_4.png" out by=isequal

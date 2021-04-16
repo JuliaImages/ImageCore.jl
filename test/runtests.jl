@@ -1,14 +1,20 @@
 module ImageCoreTests
 
-using ImageCore, Test, ReferenceTests
+using ImageCore
+using Test, ReferenceTests
+using Aqua, Documenter # for meta quality checks
 
-# If we've run the tests previously, there might be ambiguities from other packages
-if :StatsBase ∉ map(x->Symbol(string(x)), values(Base.loaded_modules))
-    @test isempty(detect_ambiguities(ImageCore, Base, Core))
+@testset "Project meta quality checks" begin
+    # Not checking compat section for test-only dependencies
+    Aqua.test_all(ImageCore;
+                  project_extras=true,
+                  deps_compat=true,
+                  stale_deps=true,
+                  project_toml_formatting=true,
+                  unbound_args=false, # FIXME: it fails when this is true
+    )
+    DocMeta.setdocmeta!(ImageCore, :DocTestSetup, :(using ImageCore); recursive=true)
 end
-
-using Documenter
-DocMeta.setdocmeta!(ImageCore, :DocTestSetup, :(using ImageCore); recursive=true)
 
 # ReferenceTests uses ImageInTerminal as a default image rendering backend, we need to
 # temporarily disable it when we do doctest.

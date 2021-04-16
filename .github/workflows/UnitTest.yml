@@ -43,8 +43,7 @@ jobs:
         run: |
           using Pkg
           Pkg.add([
-            PackageSpec(name="FFTW", version="1.1"),
-            PackageSpec(name="AbstractFFTs", version="0.5")
+            PackageSpec(name="AbstractFFTs", version="0.5"),
           ])
         shell: julia --project=. --startup=no --color=yes {0}
       - name: "Unit Test"

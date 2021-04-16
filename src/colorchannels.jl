@@ -121,12 +121,12 @@ _ccolorview(::Type{C}, A::RRArray{T,C}) where {C<:Colorant,T<:Number} =
 if VERSION >= v"1.6.0-DEV.1083"
     _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C,AA,false}) where {C<:RGB,T<:Number,M,AA} =
         reshape(parent(A), Base.tail(axes(parent(A))))
-    _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C,AA,true}) where {C<:RGB,T<:Number,M,AA} =
-        parent(A)
+    # _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C,AA,true}) where {C<:RGB,T<:Number,M,AA} =
+    #     parent(A)
     _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C,AA,false}) where {C<:Color,T<:Number,M,AA} =
         reshape(parent(A), Base.tail(axes(parent(A))))
-    _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C,AA,true}) where {C<:Color,T<:Number,M,AA} =
-        parent(A)
+    # _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C,AA,true}) where {C<:Color,T<:Number,M,AA} =
+    #     parent(A)
 else
     _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:AbstractGray,T<:Number,M} =
         parent(A)
@@ -135,8 +135,8 @@ else
     _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:Color,T<:Number,M} =
         reshape(parent(A), Base.tail(axes(parent(A))))
     end
-_ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:AbstractRGB,T<:Number,M} =
-    _colorview_reorder(C, A)
+# _ccolorview(::Type{C}, A::Base.ReinterpretArray{T,M,C}) where {C<:AbstractRGB,T<:Number,M} =
+#     _colorview_reorder(C, A)
 _ccolorview(::Type{C}, A::AbstractArray{T}) where {C<:Colorant,T<:Number} =
     __ccolorview(C, A)  # necessary to avoid ambiguities from dispatch on eltype
 __ccolorview(::Type{C}, A::AbstractArray{T}) where {T<:Number,C<:RGB{T}} = reinterpretc(C, A)

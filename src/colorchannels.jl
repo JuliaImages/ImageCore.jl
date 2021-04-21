@@ -217,7 +217,7 @@ colorview(::Type{C}) where C<:Colorant = (As...) -> colorview(C, As...)
 _colorview_type(::Type{Any}, ::Type{T}) where {T} = T
 _colorview_type(::Type{T1}, ::Type{T2}) where {T1,T2} = T1
 
-Base.@pure promote_eleltype_all(gray, grays...) = _promote_eleltype_all(beltype(eltype(gray)), grays...)
+Base.@pure @inline promote_eleltype_all(gray, grays...) = _promote_eleltype_all(beltype(eltype(gray)), grays...)
 @inline function _promote_eleltype_all(::Type{T}, gray, grays...) where T
     _promote_eleltype_all(promote_type(T, beltype(eltype(gray))), grays...)
 end

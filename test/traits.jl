@@ -63,7 +63,7 @@ end
 
     @testset "GenericImage" begin
         @test GenericGrayImage <: GenericImage
-        for sz in [(3, 3), (3, 3, 3)]
+        for sz in Any[(3, 3), (3, 3, 3)]
             @test isa(rand(Bool, sz), GenericImage)
             @test isa(rand(N0f8, sz), GenericImage)
             @test isa(rand(Float32, sz), GenericImage)

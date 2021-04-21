@@ -83,13 +83,13 @@ cc_setindex_funcs = (myfill1!,
 
 # Performance tolerances
 isfast = VERSION >= v"1.6.0-DEV.1083"
-chanvtol = Dict(mysum_index_inbounds_simd => isfast ? 3 : 20,
-                mysum_elt_boundscheck => isfast ? 3 : 20,
-                myfill1! => 20,
-                myfill2! => isfast ? 3 : 20)
+chanvtol = Dict{Any,Int}(mysum_index_inbounds_simd => isfast ? 3 : 20,
+                         mysum_elt_boundscheck => isfast ? 3 : 20,
+                         myfill1! => 20,
+                         myfill2! => isfast ? 3 : 20)
 chanvdefault = isfast ? 3 : 10
-colvtol = Dict(mysum_elt_boundscheck=>isfast ? 3 : 5,
-               mysum_index_boundscheck=>isfast ? 3 : 5)
+colvtol = Dict{Any,Int}(mysum_elt_boundscheck=>isfast ? 3 : 5,
+                        mysum_index_boundscheck=>isfast ? 3 : 5)
 colvdefault = 3
 
 ssz = (1000,300)

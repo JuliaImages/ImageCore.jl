@@ -1,19 +1,9 @@
-VERSION < v"0.7.0-beta2.199" && __precompile__()
-
 module ImageCore
 
 using Reexport
 @reexport using FixedPointNumbers
 @reexport using Colors
-if isdefined(ColorTypes, :XRGB) && isdefined(ColorTypes, :RGB1)
-    Base.@deprecate_binding RGB1 XRGB
-    Base.@deprecate_binding RGB4 RGBX
-end
-# backward compatibility for ColorTypes < v0.9
-if !isdefined(ColorTypes, :XRGB)
-    const XRGB = RGB1
-    const RGBX = RGB4
-end
+@reexport using ColorVectorSpace
 
 @reexport using MosaicViews
 @reexport using PaddedViews

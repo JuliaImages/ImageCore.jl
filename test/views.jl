@@ -68,7 +68,7 @@ end
         @test size(V) == (3, 2, 2)
         @test axes(V) === (Base.OneTo(3), Base.OneTo(2), Base.OneTo(2))
         @test V[1,:,:] == A
-        @test all(V[2,:,:] .== 0)
+        @test all(iszero, V[2,:,:])
         @test V[3,:,:] == B
         @test_throws ErrorException V[2,1,1] = 7
         V32 = @inferred(StackedView{Float32}(A, zeroarray, B))

@@ -3,7 +3,7 @@ module ImageCore
 using Reexport
 @reexport using FixedPointNumbers
 @reexport using Colors
-using ColorVectorSpace
+@reexport using ColorVectorSpace
 
 @reexport using MosaicViews
 @reexport using PaddedViews

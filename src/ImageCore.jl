@@ -5,10 +5,18 @@ using Reexport
 @reexport using Colors
 @reexport using ColorVectorSpace
 
+# These view/array/iterator types are used widely in downstream packages for image processing purposes.
+# Here we maintain the compatibility inside ImageCore and so that downstream packages don't need
+# to directly depend on them. The advantages are 1) less manual maintenance work required in
+# downstream packages, and consequently 2) less potential version locks/conflicts.
 @reexport using MosaicViews
 @reexport using PaddedViews
-using MappedArrays, Graphics
-using OffsetArrays # for show.jl
+@reexport using IndirectArrays
+@reexport using MappedArrays
+@reexport using OffsetArrays
+@reexport using TiledIteration
+
+using Graphics
 using .ColorTypes: colorant_string
 using Colors: Fractional
 using MappedArrays: AbstractMultiMappedArray

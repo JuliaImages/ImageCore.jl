@@ -25,7 +25,7 @@ dimorder(::Type{<:ABGR}) = ColorChanPerm((4, 3, 2, 1))
 dimorder(::Type{<:AlphaColor{<:Color1,T,N}}) where {T,N} = ColorChanPerm((2, 1))
 dimorder(::Type{<:AlphaColor{<:Color3,T,N}}) where {T,N} = ColorChanPerm((4, 1, 2, 3))
 
-const ColorChanPermIndexType{NC} = Tuple{<:ColorChanPerm,Vararg{<:Base.Slice,NC}}
+const ColorChanPermIndexType{NC} = Tuple{<:ColorChanPerm,NTuple{NC,<:Base.Slice}}
 const ColorChanPermSubArray{T,N,P,I<:ColorChanPermIndexType,L} =
     SubArray{T,N,P,I,L}
 if VERSION >= v"1.6.0-DEV.1083"

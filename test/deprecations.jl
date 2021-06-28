@@ -1,6 +1,7 @@
 using ImageCore, Colors, FixedPointNumbers, OffsetArrays
 using Test, Random
 
+@info "Deprecations are expected"
 @testset "permuteddimsview" begin
     a = [1 3; 2 4]
     v = permuteddimsview(a, (1,2))

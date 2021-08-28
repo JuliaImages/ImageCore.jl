@@ -6,12 +6,7 @@ using Aqua, Documenter # for meta quality checks
 
 @testset "Project meta quality checks" begin
     # Not checking compat section for test-only dependencies
-
-    ambiguity_exclude_list = [
-        # https://github.com/JuliaDiff/ChainRulesCore.jl/pull/367#issuecomment-869071000
-        Base.:(==),
-    ]
-    Aqua.test_ambiguities([ImageCore, Base, Core], exclude=ambiguity_exclude_list)
+    Aqua.test_ambiguities(ImageCore)
     Aqua.test_all(ImageCore;
                   ambiguities=false,
                   project_extras=true,

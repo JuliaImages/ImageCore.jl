@@ -1,6 +1,6 @@
 name = "ImageCore"
 uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
-version = "0.9.2"
+version = "0.9.3"
 
 [deps]
 AbstractFFTs = "621f4979-c628-5d54-868e-fcf4e3e8185c"
@@ -16,7 +16,7 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [compat]
 AbstractFFTs = "0.4, 0.5, 1.0"
-ColorVectorSpace = "0.9"
+ColorVectorSpace = "0.9.7"
 Colors = "0.12"
 FixedPointNumbers = "0.8"
 Graphics = "0.4, 1.0"

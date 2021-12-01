@@ -18,6 +18,19 @@ using PaddedViews: filltype
     v[2,2] = 0x0f
     @test a[2,2].i == 0x0f
     @test rawview(v) === v
+
+    if VERSION >= v"1.6.0-DEV.1083"
+        @testset "rawview(::AbstractArray)" begin
+            a = rand(RGB{N0f8}, 5, 5)
+            X1 = rawview(channelview(a))
+            X2 = rawview(collect(channelview(a)))
+            @test !isa(parent(X1), Base.ReinterpretArray)
+            @test typeof(X1) != typeof(X2)
+            @test axes(X1) == axes(X2)
+            @test eltype(X1) == eltype(X2)
+            @test X1 == X2
+        end
+    end
 end
 
 @testset "normedview" begin

@@ -4,18 +4,20 @@ using ImageCore
 using Test, ReferenceTests
 using Aqua, Documenter # for meta quality checks
 
-@testset "Project meta quality checks" begin
-    # Not checking compat section for test-only dependencies
-    Aqua.test_ambiguities(ImageCore)
-    Aqua.test_all(ImageCore;
-                  ambiguities=false,
-                  project_extras=true,
-                  deps_compat=true,
-                  stale_deps=true,
-                  project_toml_formatting=true,
-                  unbound_args=false, # FIXME: it fails when this is true
-    )
-    DocMeta.setdocmeta!(ImageCore, :DocTestSetup, :(using ImageCore); recursive=true)
+@static if VERSION >= v"1.3"
+    @testset "Project meta quality checks" begin
+        # Not checking compat section for test-only dependencies
+        Aqua.test_ambiguities(ImageCore)
+        Aqua.test_all(ImageCore;
+                    ambiguities=false,
+                    project_extras=true,
+                    deps_compat=true,
+                    stale_deps=true,
+                    project_toml_formatting=true,
+                    unbound_args=false, # FIXME: it fails when this is true
+        )
+        DocMeta.setdocmeta!(ImageCore, :DocTestSetup, :(using ImageCore); recursive=true)
+    end
 end
 
 # ReferenceTests uses ImageInTerminal as a default image rendering backend, we need to

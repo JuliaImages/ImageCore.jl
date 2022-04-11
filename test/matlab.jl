@@ -164,17 +164,29 @@
 
         @testset "RGB" begin
             img = rand(RGB{N0f8}, 4, 5)
-            data = @inferred im_to_matlab(img)
+            data = if VERSION >= v"1.6"
+                @inferred im_to_matlab(img)
+            else
+                im_to_matlab(img)
+            end
             @test eltype(data) == N0f8
             @test size(data) == (4, 5, 3)
             @test permutedims(channelview(img), (2, 3, 1)) == data
-            data = @inferred im_to_matlab(Float64, img)
+            data = if VERSION >= v"1.6"
+                @inferred im_to_matlab(Float64, img)
+            else
+                im_to_matlab(Float64, img)
+            end
             @test eltype(data) == Float64
             @test size(data) == (4, 5, 3)
             @test permutedims(channelview(img), (2, 3, 1)) == data
 
             img = rand(RGB{Float64}, 4, 5)
-            data = @inferred im_to_matlab(img)
+            data = if VERSION >= v"1.6"
+                @inferred im_to_matlab(img)
+            else
+                im_to_matlab(img)
+            end
             @test eltype(data) == Float64
             @test size(data) == (4, 5, 3)
             @test permutedims(channelview(img), (2, 3, 1)) == data
@@ -183,7 +195,11 @@
             @test img === @inferred im_to_matlab(img)
 
             img = rand(RGB{Float64}, 4)
-            data = @inferred im_to_matlab(img)
+            data = if VERSION >= v"1.6"
+                @inferred im_to_matlab(img)
+            else
+                im_to_matlab(img)
+            end
             @test eltype(data) == Float64
             @test size(data) == (4, 1, 3) # oh yes, we add one extra dimension for RGB but not for Gray
 
@@ -194,13 +210,25 @@
 
         @testset "Color3" begin
             img = Lab.(rand(RGB, 4, 5))
-            @test @inferred(im_to_matlab(img)) ≈ @inferred(im_to_matlab(RGB.(img)))
+            if VERSION >= v"1.6"
+                @test @inferred(im_to_matlab(img)) ≈ @inferred(im_to_matlab(RGB.(img)))
+            else
+                @test im_to_matlab(img) ≈ im_to_matlab(RGB.(img))
+            end
         end
         @testset "transparent" begin
             img = rand(AGray, 4, 5)
-            @test @inferred(im_to_matlab(img)) == @inferred(im_to_matlab(Gray.(img)))
+            if VERSION >= v"1.6"
+                @test @inferred(im_to_matlab(img)) == @inferred(im_to_matlab(Gray.(img)))
+            else
+                @test im_to_matlab(img) == im_to_matlab(Gray.(img))
+            end
             img = rand(RGBA, 4, 5)
-            @test @inferred(im_to_matlab(img)) == @inferred(im_to_matlab(RGB.(img)))
+            if VERSION >= v"1.6"
+                @test @inferred(im_to_matlab(img)) == @inferred(im_to_matlab(RGB.(img)))
+            else
+                @test im_to_matlab(img) == im_to_matlab(RGB.(img))
+            end
         end
     end
 

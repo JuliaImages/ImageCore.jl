@@ -32,6 +32,7 @@ include("convert_reinterpret.jl")
 include("traits.jl")
 include("map.jl")
 include("functions.jl")
+include("matlab.jl")
 include("show.jl")
 
 # To ensure our deprecations work and don't break code

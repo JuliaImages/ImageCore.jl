@@ -12,6 +12,7 @@ using OffsetArrays # for show.jl
 using .ColorTypes: colorant_string
 using Colors: Fractional
 using MappedArrays: AbstractMultiMappedArray
+@reexport using StructArrays: StructArray # for struct of array layout
 
 using Base: tail, @pure, Indices
 import Base: float
@@ -91,7 +92,10 @@ export
     spacedirections,
     spatialorder,
     width,
-    widthheight
+    widthheight,
+    # matlab compatibility
+    im_from_matlab
+
 
 include("colorchannels.jl")
 include("stackedviews.jl")
@@ -100,6 +104,7 @@ include("traits.jl")
 include("map.jl")
 include("show.jl")
 include("functions.jl")
+include("matlab.jl")
 include("deprecations.jl")
 
 """

@@ -159,6 +159,11 @@ im_to_matlab(::Type{T}, img::AbstractMatrix{<:RGB}) where T =
 im_to_matlab(::Type{T}, img::AbstractArray{<:RGB}) where T =
     throw(ArgumentError("For $(ndims(img)) dimensional color image, manual conversion to MATLAB layout is required."))
 
-# this method allows `data === im_to_matlab(im_from_matlab(data))` for gray image
-im_to_matlab(::Type{T}, img::Base.ReinterpretArray{CT,N,T,<:AbstractArray{T,N}, true}) where {CT,N,T} =
-    img.parent
+if VERSION >= v"1.6.0-DEV.1083"
+    # this method allows `data === im_to_matlab(im_from_matlab(data))` for gray image
+    im_to_matlab(::Type{T}, img::Base.ReinterpretArray{CT,N,T,<:AbstractArray{T,N}, true}) where {CT,N,T} =
+        img.parent
+else
+    im_to_matlab(::Type{T}, img::Base.ReinterpretArray{CT,N,T,<:AbstractArray{T,N}}) where {CT,N,T} =
+        img.parent
+end

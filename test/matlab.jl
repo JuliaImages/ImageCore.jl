@@ -124,4 +124,83 @@
         msg = "Unrecognized MATLAB image layout."
         @test_throws ArgumentError(msg) im_from_matlab(data)
     end
+
+    @testset "im_to_matlab" begin
+        @testset "Gray" begin
+            img = rand(Gray{N0f8}, 4, 5)
+            data = @inferred im_to_matlab(img)
+            @test eltype(data) == N0f8
+            @test size(data) == (4, 5)
+            @test img == data
+            data = @inferred im_to_matlab(Float64, img)
+            @test eltype(data) == Float64
+            @test img == data
+
+            img = rand(Gray{Float64}, 4, 5)
+            data = @inferred im_to_matlab(img)
+            @test eltype(data) == Float64
+            @test size(data) == (4, 5)
+            @test img == data
+
+            img = rand(UInt8, 4, 5)
+            @test img === @inferred im_to_matlab(img)
+
+            img = rand(Gray{Float64}, 4)
+            data = @inferred im_to_matlab(img)
+            @test eltype(data) == Float64
+            @test size(data) == (4, )
+        end
+
+        @testset "RGB" begin
+            img = rand(RGB{N0f8}, 4, 5)
+            data = @inferred im_to_matlab(img)
+            @test eltype(data) == N0f8
+            @test size(data) == (4, 5, 3)
+            @test permutedims(channelview(img), (2, 3, 1)) == data
+            data = @inferred im_to_matlab(Float64, img)
+            @test eltype(data) == Float64
+            @test size(data) == (4, 5, 3)
+            @test permutedims(channelview(img), (2, 3, 1)) == data
+
+            img = rand(RGB{Float64}, 4, 5)
+            data = @inferred im_to_matlab(img)
+            @test eltype(data) == Float64
+            @test size(data) == (4, 5, 3)
+            @test permutedims(channelview(img), (2, 3, 1)) == data
+
+            img = rand(UInt8, 4, 5, 3)
+            @test img === @inferred im_to_matlab(img)
+
+            img = rand(RGB{Float64}, 4)
+            data = @inferred im_to_matlab(img)
+            @test eltype(data) == Float64
+            @test size(data) == (4, 1, 3) # oh yes, we add one extra dimension for RGB but not for Gray
+
+            img = rand(RGB{Float64}, 2, 3, 4)
+            msg = "For 3 dimensional color image, manual conversion to MATLAB layout is required."
+            @test_throws ArgumentError(msg) im_to_matlab(img)
+        end
+
+        @testset "Color3" begin
+            img = Lab.(rand(RGB, 4, 5))
+            @test @inferred(im_to_matlab(img)) ≈ @inferred(im_to_matlab(RGB.(img)))
+        end
+        @testset "transparent" begin
+            img = rand(AGray, 4, 5)
+            @test @inferred(im_to_matlab(img)) == @inferred(im_to_matlab(Gray.(img)))
+            img = rand(RGBA, 4, 5)
+            @test @inferred(im_to_matlab(img)) == @inferred(im_to_matlab(RGB.(img)))
+        end
+    end
+
+    # test `im_from_matlab` and `im_to_matlab` are inverses of each other.
+    data = rand(4, 5)
+    @test data === im_to_matlab(im_from_matlab(data))
+    # For RGB, ideally we would want to ensure this === equality, but it's not possible at the moment.
+    data = rand(4, 5, 3)
+    @test data == im_to_matlab(im_from_matlab(data))
+    # the output range are always in [0, 1]; in this case they're not inverse of each other.
+    data = rand(UInt8, 4, 5)
+    img = im_from_matlab(data)
+    @test im_to_matlab(img) == data ./ 255
 end

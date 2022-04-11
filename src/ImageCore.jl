@@ -94,7 +94,8 @@ export
     width,
     widthheight,
     # matlab compatibility
-    im_from_matlab
+    im_from_matlab,
+    im_to_matlab
 
 
 include("colorchannels.jl")

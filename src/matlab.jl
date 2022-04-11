@@ -94,4 +94,71 @@ function _im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Colorant, T
     # FIXME(johnnychen94): not type inferrable here
     return StructArray{_CT}(X; dims=3)
 end
-_im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Gray, T<:Real} = of_eltype(CT, X)
+_im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Gray, T<:Real} = colorview(CT, X)
+
+
+"""
+    im_to_matlab([T], X::AbstractArray) -> AbstractArray{T}
+
+Convert colorant array `X` to numerical array, using MATLAB's image layout convention.
+
+```julia
+img = rand(Gray{N0f8}, 4, 4)
+im_to_matlab(img) # 4×4 array with element type N0f8
+im_to_matlab(Float64, img) # 4×4 array with element type Float64
+
+img = rand(RGB{N0f8}, 4, 4)
+im_to_matlab(img) # 4×4×3 array with element type N0f8
+im_to_matlab(Float64, img) # 4×4×3 array with element type Float64
+```
+
+For color image `X`, it will be converted to RGB colorspace first. The alpha channel, if
+presented, will be removed.
+
+```jldoctest; setup = :(using ImageCore, Random; Random.seed!(1234))
+julia> img = Lab.(rand(RGB, 4, 4));
+
+julia> im_to_matlab(img) ≈ im_to_matlab(RGB.(img))
+true
+
+julia> img = rand(AGray{N0f8}, 4, 4);
+
+julia> im_to_matlab(img) ≈ im_to_matlab(gray.(img))
+true
+```
+
+!!! tip "lazy conversion"
+    To save memory allocation, the conversion is done in lazy mode. In some cases, this
+    could introduce performance overhead due to the repeat computation. This can be easily
+    solved by converting eagerly via, e.g., `collect(im_to_matlab(...))`.
+
+!!! info "value range"
+    The output value is always in range \$[0, 1]\$. Thus the equality
+    `data ≈ im_to_matlab(im_from_matlab(data))` only holds when `data` is in also range
+    \$[0, 1]\$. For example, if `eltype(data) == UInt8`, this equality will not hold.
+
+See also: [`im_from_matlab`](@ref).
+"""
+function im_to_matlab end
+
+im_to_matlab(X::AbstractArray{<:Number}) = X
+im_to_matlab(img::AbstractArray{CT}) where CT<:Colorant = im_to_matlab(eltype(CT), img)
+
+im_to_matlab(::Type{T}, img::AbstractArray{CT}) where {T,CT<:TransparentColor} =
+    im_to_matlab(T, of_eltype(base_color_type(CT), img))
+im_to_matlab(::Type{T}, img::AbstractArray{<:Color}) where T =
+    im_to_matlab(T, of_eltype(RGB{T}, img))
+im_to_matlab(::Type{T}, img::AbstractArray{<:Gray}) where T =
+    of_eltype(T, channelview(img))
+
+# for RGB, only 1d and 2d cases are supported as other cases are not well-defined in MATLAB.
+im_to_matlab(::Type{T}, img::AbstractVector{<:RGB}) where T =
+    im_to_matlab(T, reshape(img, (length(img), 1)))
+im_to_matlab(::Type{T}, img::AbstractMatrix{<:RGB}) where T =
+    PermutedDimsArray(of_eltype(T, channelview(img)), (2, 3, 1))
+im_to_matlab(::Type{T}, img::AbstractArray{<:RGB}) where T =
+    throw(ArgumentError("For $(ndims(img)) dimensional color image, manual conversion to MATLAB layout is required."))
+
+# this method allows `data === im_to_matlab(im_from_matlab(data))` for gray image
+im_to_matlab(::Type{T}, img::Base.ReinterpretArray{CT,N,T,<:AbstractArray{T,N}, true}) where {CT,N,T} =
+    img.parent

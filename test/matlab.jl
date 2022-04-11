@@ -159,7 +159,7 @@
             img = rand(Gray{Float64}, 4)
             data = @inferred im_to_matlab(img)
             @test eltype(data) == Float64
-            @test size(data) == (4, )
+            @test size(data) == (4,)
         end
 
         @testset "RGB" begin

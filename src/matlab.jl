@@ -155,26 +155,26 @@ See also: [`im_from_matlab`](@ref).
 function im_to_matlab end
 
 im_to_matlab(X::AbstractArray{<:Number}) = X
-im_to_matlab(img::AbstractArray{CT}) where CT<:Colorant = im_to_matlab(eltype(CT), img)
+im_to_matlab(img::AbstractArray{CT}) where {CT<:Colorant} = im_to_matlab(eltype(CT), img)
 
 im_to_matlab(::Type{T}, img::AbstractArray{CT}) where {T,CT<:TransparentColor} =
     im_to_matlab(T, of_eltype(base_color_type(CT), img))
-im_to_matlab(::Type{T}, img::AbstractArray{<:Color}) where T =
+im_to_matlab(::Type{T}, img::AbstractArray{<:Color}) where {T} =
     im_to_matlab(T, of_eltype(RGB{T}, img))
-im_to_matlab(::Type{T}, img::AbstractArray{<:Gray}) where T =
+im_to_matlab(::Type{T}, img::AbstractArray{<:Gray}) where {T} =
     of_eltype(T, channelview(img))
 
 # for RGB, only 1d and 2d cases are supported as other cases are not well-defined in MATLAB.
-im_to_matlab(::Type{T}, img::AbstractVector{<:RGB}) where T =
+im_to_matlab(::Type{T}, img::AbstractVector{<:RGB}) where {T} =
     im_to_matlab(T, reshape(img, (length(img), 1)))
-im_to_matlab(::Type{T}, img::AbstractMatrix{<:RGB}) where T =
+im_to_matlab(::Type{T}, img::AbstractMatrix{<:RGB}) where {T} =
     PermutedDimsArray(of_eltype(T, channelview(img)), (2, 3, 1))
-im_to_matlab(::Type{T}, img::AbstractArray{<:RGB}) where T =
+im_to_matlab(::Type{T}, img::AbstractArray{<:RGB}) where {T} =
     throw(ArgumentError("For $(ndims(img)) dimensional color image, manual conversion to MATLAB layout is required."))
 
 if VERSION >= v"1.6.0-DEV.1083"
     # this method allows `data === im_to_matlab(im_from_matlab(data))` for gray image
-    im_to_matlab(::Type{T}, img::Base.ReinterpretArray{CT,N,T,<:AbstractArray{T,N}, true}) where {CT,N,T} =
+    im_to_matlab(::Type{T}, img::Base.ReinterpretArray{CT,N,T,<:AbstractArray{T,N},true}) where {CT,N,T} =
         img.parent
 else
     im_to_matlab(::Type{T}, img::Base.ReinterpretArray{CT,N,T,<:AbstractArray{T,N}}) where {CT,N,T} =

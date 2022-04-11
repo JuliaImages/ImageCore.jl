@@ -116,6 +116,15 @@
             @test_throws ArgumentError(msg) im_from_matlab(data)
         end
 
+        @testset "Color3" begin
+            img = Lab.(rand(RGB{Float64}, 4, 5))
+            data = permutedims(channelview(img), (2, 3, 1))
+            img1 = im_from_matlab(Lab, data)
+            @test eltype(img1) == Lab{Float64}
+            @test size(img1) == (4, 5)
+            @test RGB.(img) ≈ RGB.(img1)
+        end
+
         data = rand(4, 4, 2)
         msg = "Unrecognized MATLAB image layout."
         @test_throws ArgumentError(msg) im_from_matlab(data)
@@ -123,6 +132,8 @@
         data = rand(4, 4, 3, 1)
         msg = "Unrecognized MATLAB image layout."
         @test_throws ArgumentError(msg) im_from_matlab(data)
+        msg = "For 4 dimensional numerical array, manual conversion from MATLAB layout is required."
+        @test_throws ArgumentError(msg) im_from_matlab(RGB, data)
     end
 
     @testset "im_to_matlab" begin

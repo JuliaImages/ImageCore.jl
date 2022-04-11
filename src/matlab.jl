@@ -59,7 +59,7 @@ im_from_matlab(X::AbstractArray) = throw(ArgumentError("Unrecognized MATLAB imag
 
 # Step 2: storage type conversion
 function im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT,T}
-    if T<:Union{Normed, AbstractFloat}
+    if T <: Union{Normed,AbstractFloat}
         return _im_from_matlab(CT, X)
     else
         msg = "Unrecognized element type $T, manual conversion to float point number or fixed point number is needed."
@@ -68,11 +68,11 @@ function im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT,T}
         throw(ArgumentError(msg))
     end
 end
-im_from_matlab(::Type{CT}, X::AbstractArray{UInt8}) where CT = _im_from_matlab(CT, reinterpret(N0f8, X))
-im_from_matlab(::Type{CT}, X::AbstractArray{UInt16}) where CT = _im_from_matlab(CT, reinterpret(N0f16, X))
-function im_from_matlab(::Type{CT}, X::AbstractArray{Int16}) where CT
+im_from_matlab(::Type{CT}, X::AbstractArray{UInt8}) where {CT} = _im_from_matlab(CT, reinterpret(N0f8, X))
+im_from_matlab(::Type{CT}, X::AbstractArray{UInt16}) where {CT} = _im_from_matlab(CT, reinterpret(N0f16, X))
+function im_from_matlab(::Type{CT}, X::AbstractArray{Int16}) where {CT}
     # MALTAB compat
-    _im2double(x) = (Float64(x)+Float64(32768))/Float64(65535)
+    _im2double(x) = (Float64(x) + Float64(32768)) / Float64(65535)
     return _im_from_matlab(CT, mappedarray(_im2double, X))
 end
 
@@ -88,22 +88,26 @@ function _matlab_type_hint(@nospecialize X)
 end
 
 # Step 3: colorspace conversion
-_im_from_matlab(::Type{CT}, X::AbstractArray{CT}) where CT<:Colorant = X
+_im_from_matlab(::Type{CT}, X::AbstractArray{CT}) where {CT<:Colorant} = X
 @static if VERSION >= v"1.3"
     # use StructArray to inform that this is a struct of array layout
-    function _im_from_matlab(::Type{CT}, X::AbstractArray{T,3}) where {CT<:Colorant, T<:Real}
+    function _im_from_matlab(::Type{CT}, X::AbstractArray{T,3}) where {CT<:Colorant,T<:Real}
         _CT = isconcretetype(CT) ? CT : base_colorant_type(CT){T}
         # FIXME(johnnychen94): not type inferrable here
         return StructArray{_CT}(X; dims=3)
     end
 else
-    function _im_from_matlab(::Type{CT}, X::AbstractArray{T,3}) where {CT<:Colorant, T<:Real}
+    function _im_from_matlab(::Type{CT}, X::AbstractArray{T,3}) where {CT<:Colorant,T<:Real}
         _CT = isconcretetype(CT) ? CT : base_colorant_type(CT){T}
         # FIXME(johnnychen94): not type inferrable here
         return colorview(_CT, PermutedDimsArray(X, (3, 1, 2)))
     end
 end
-_im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Gray, T<:Real} = colorview(CT, X)
+function _im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Colorant,T<:Real}
+    throw(ArgumentError("For $(ndims(X)) dimensional numerical array, manual conversion from MATLAB layout is required."))
+end
+_im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Gray,T<:Real} = colorview(CT, X)
+_im_from_matlab(::Type{CT}, X::AbstractArray{T,3}) where {CT<:Gray,T<:Real} = colorview(CT, X)
 
 
 """

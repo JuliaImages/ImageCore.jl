@@ -12,7 +12,9 @@ using OffsetArrays # for show.jl
 using .ColorTypes: colorant_string
 using Colors: Fractional
 using MappedArrays: AbstractMultiMappedArray
-@reexport using StructArrays: StructArray # for struct of array layout
+@static if VERSION >= v"1.3"
+    @reexport using StructArrays: StructArray # for struct of array layout
+end
 
 using Base: tail, @pure, Indices
 import Base: float

@@ -89,10 +89,19 @@ end
 
 # Step 3: colorspace conversion
 _im_from_matlab(::Type{CT}, X::AbstractArray{CT}) where CT<:Colorant = X
-function _im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Colorant, T<:Real}
-    _CT = isconcretetype(CT) ? CT : base_colorant_type(CT){T}
-    # FIXME(johnnychen94): not type inferrable here
-    return StructArray{_CT}(X; dims=3)
+@static if VERSION >= v"1.3"
+    # use StructArray to inform that this is a struct of array layout
+    function _im_from_matlab(::Type{CT}, X::AbstractArray{T,3}) where {CT<:Colorant, T<:Real}
+        _CT = isconcretetype(CT) ? CT : base_colorant_type(CT){T}
+        # FIXME(johnnychen94): not type inferrable here
+        return StructArray{_CT}(X; dims=3)
+    end
+else
+    function _im_from_matlab(::Type{CT}, X::AbstractArray{T,3}) where {CT<:Colorant, T<:Real}
+        _CT = isconcretetype(CT) ? CT : base_colorant_type(CT){T}
+        # FIXME(johnnychen94): not type inferrable here
+        return colorview(_CT, PermutedDimsArray(X, (3, 1, 2)))
+    end
 end
 _im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Gray, T<:Real} = colorview(CT, X)
 

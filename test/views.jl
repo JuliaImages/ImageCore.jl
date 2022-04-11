@@ -70,7 +70,8 @@ end
         @test V[1,:,:] == A
         @test all(iszero, V[2,:,:])
         @test V[3,:,:] == B
-        @test_throws ErrorException V[2,1,1] = 7
+        err = VERSION >= v"1.9.0-DEV.351" ? CanonicalIndexError : ErrorException
+        @test_throws err V[2,1,1] = 7
         V32 = @inferred(StackedView{Float32}(A, zeroarray, B))
         @test eltype(V32) == Float32
         @test V32[1,1,2] == Float32(3)
@@ -106,7 +107,8 @@ end
     @test @inferred(v[1,2]) === GrayA{N0f8}(0.25, 0.25)
     v = @inferred(colorview(GrayA{N0f8}, a, zeroarray))
     @test @inferred(v[2,1]) === GrayA{N0f8}(0.3,0)
-    @test_throws ErrorException (v[1,2] = GrayA(0.25, 0.25))
+    err = VERSION >= v"1.9.0-DEV.351" ? CanonicalIndexError : ErrorException
+    @test_throws err (v[1,2] = GrayA(0.25, 0.25))
     # RGB
     v = @inferred(colorview(RGB{N0f8}, a, zeroarray, b))
     @test @inferred(v[2,1]) === RGB{N0f8}(0.3,0,0.7)

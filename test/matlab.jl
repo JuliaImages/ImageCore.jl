@@ -132,8 +132,24 @@
         data = rand(4, 4, 3, 1)
         msg = "Unrecognized MATLAB image layout."
         @test_throws ArgumentError(msg) im_from_matlab(data)
-        msg = "For 4 dimensional numerical array, manual conversion from MATLAB layout is required."
-        @test_throws ArgumentError(msg) im_from_matlab(RGB, data)
+
+        @testset "indexed image" begin
+            index = [1 2 3 4 5
+                     2 3 4 5 1]
+            values = [0.0 0.0 0.0  # black
+                      1.0 0.0 0.0  # red
+                      0.0 1.0 0.0  # green
+                      0.0 0.0 1.0  # blue
+                      1.0 1.0 1.0] # white
+            img = im_from_matlab(index, values)
+            @test size(img) == (2, 5)
+            @test eltype(img) == RGB{Float64}
+            @test img[2, 3] == RGB(0.0, 0.0, 1.0)
+
+            lab_values = permutedims(channelview(Lab.(img.values)), (2, 1))
+            lab_img = im_from_matlab(Lab, index, lab_values)
+            @test sum(abs2, channelview(RGB.(lab_img) - img)) < 1e-10
+        end
     end
 
     @testset "im_to_matlab" begin
@@ -201,11 +217,7 @@
                 im_to_matlab(img)
             end
             @test eltype(data) == Float64
-            @test size(data) == (4, 1, 3) # oh yes, we add one extra dimension for RGB but not for Gray
-
-            img = rand(RGB{Float64}, 2, 3, 4)
-            msg = "For 3 dimensional color image, manual conversion to MATLAB layout is required."
-            @test_throws ArgumentError(msg) im_to_matlab(img)
+            @test size(data) == (4, 3)
         end
 
         @testset "Color3" begin
@@ -229,6 +241,30 @@
             else
                 @test im_to_matlab(img) == im_to_matlab(RGB.(img))
             end
+        end
+
+        @testset "indexed image" begin
+            index = [1 2 3 4 5
+                     2 3 4 5 1]
+            values = [
+                RGB(0.0,0.0,0.0), # black
+                RGB(1.0,0.0,0.0), # red
+                RGB(0.0,1.0,0.0), # green
+                RGB(0.0,0.0,1.0), # blue
+                RGB(1.0,1.0,1.0)  # white
+            ]
+            img = IndirectArray(index, values)
+            m_index, m_values = im_to_matlab(img)
+            @test size(m_index) == (2, 5)
+            @test eltype(m_index) == eltype(index)
+            @test size(m_values) == (5, 3)
+            @test eltype(m_values) == Float64
+            @test index == m_index
+            @test m_values == permutedims(channelview(values), (2, 1))
+
+            m_index, m_values = im_to_matlab(N0f8, img)
+            @test eltype(m_values) == N0f8
+            @test m_values == permutedims(channelview(values), (2, 1))
         end
     end
 

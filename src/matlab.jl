@@ -6,31 +6,53 @@
 
 """
     im_from_matlab([CT], X::AbstractArray) -> AbstractArray{CT}
+    im_from_matlab([CT], index::AbstractArray, values::AbstractArray)
 
-Convert numerical array `X` to colorant array, using the MATLAB image layout convention.
+Convert numerical array image `X` to colorant array, using the MATLAB image layout
+convention. The image can also be an indexed image by passing the `index`, `values` pair.
 
-The input image `X` is assumed to be either grayscale image or RGB image. For other
-colorspaces, the input `X` must be converted to RGB colorspace first.
+By default, the input image `X` is assumed to be either grayscale image or RGB image. For
+other colorspaces, explicit colorspace `CT` must be specified. Note that `CT` is only used
+to interpret the values without numerical changes, thus using it incorrectly would produce
+unexpected results, e.g., `im_from_matlab(Lab, rgb_values)` would be terribly wrong.
 
 ```julia
 im_from_matlab(rand(4, 4)) # 4×4 Gray image
 im_from_matlab(rand(4, 4, 3)) # 4×4 RGB image
 
-im_from_matlab(GrayA, rand(4, 4, 2)) # 4×4 Gray-alpha image
+im_from_matlab(GrayA, rand(4, 4, 2)) # 4×4 Gray image with alpha channel
 im_from_matlab(HSV, rand(4, 4, 3)) # 4×4 HSV image
 ```
 
-Integer values must be converted to float point numbers or fixed point numbers first. For
+Except for special types `UInt8` and `UInt16`, the value range is typically \$[0, 1]\$. Thus
+integer values must be converted to float point numbers or fixed point numbers first. For
 instance:
 
 ```julia
 img = rand(1:255, 16, 16) # 16×16 Int array
 
-im_from_matlab(img ./ 255) # convert to Float64 first
-im_from_matlab(UInt8.(img)) # convert to UInt8 first
+im_from_matlab(img ./ 255) # convert to Float64
+im_from_matlab(UInt8.(img)) # convert to UInt8
 ```
 
-!!! tip "lazy conversion"
+Indexd image in MATLAB convention consists of the `index`-`values` pair. `values` is a
+two-dimensional N×3 numerical array, and `index` is a integer-valued array in range \$[1,
+N]\$.
+
+```julia
+# a 4×4 random indexed image using five colors
+index = rand(1:5, 4, 4)
+values = [0.0 0.0 0.0  # black
+          1.0 0.0 0.0  # red
+          0.0 1.0 0.0  # green
+          0.0 0.0 1.0  # blue
+          1.0 1.0 1.0] # white
+
+# 4×4 matrix with eltype RGB{Float64}
+im_from_matlab(index, values)
+```
+
+!!! tip "eager conversion"
     To save memory allocation, the conversion is done in lazy mode. In some cases, this
     could introduce performance overhead due to the repeat computation. This can be easily
     solved by converting eagerly via, e.g., `collect(im_from_matlab(...))`.
@@ -91,10 +113,10 @@ end
 _im_from_matlab(::Type{CT}, X::AbstractArray{CT}) where {CT<:Colorant} = X
 @static if VERSION >= v"1.3"
     # use StructArray to inform that this is a struct of array layout
-    function _im_from_matlab(::Type{CT}, X::AbstractArray{T,3}) where {CT<:Colorant,T<:Real}
+    function _im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Colorant,T<:Real}
         _CT = isconcretetype(CT) ? CT : base_colorant_type(CT){T}
         # FIXME(johnnychen94): not type inferrable here
-        return StructArray{_CT}(X; dims=3)
+        return StructArray{_CT}(X; dims=ndims(X))
     end
 else
     function _im_from_matlab(::Type{CT}, X::AbstractArray{T,3}) where {CT<:Colorant,T<:Real}
@@ -102,18 +124,33 @@ else
         # FIXME(johnnychen94): not type inferrable here
         return colorview(_CT, PermutedDimsArray(X, (3, 1, 2)))
     end
-end
-function _im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Colorant,T<:Real}
-    throw(ArgumentError("For $(ndims(X)) dimensional numerical array, manual conversion from MATLAB layout is required."))
+    function _im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Colorant,T<:Real}
+        throw(ArgumentError("For $(ndims(X)) dimensional numerical array, manual conversion from MATLAB layout is required."))
+    end
 end
 _im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Gray,T<:Real} = colorview(CT, X)
 _im_from_matlab(::Type{CT}, X::AbstractArray{T,3}) where {CT<:Gray,T<:Real} = colorview(CT, X)
 
+# index image support
+im_from_matlab(index::AbstractArray, values::AbstractMatrix{T}) where T<:Real = im_from_matlab(RGB{T}, index, values)
+@static if VERSION >= v"1.3"
+    function im_from_matlab(::Type{CT}, index::AbstractArray, values::AbstractMatrix{T}) where {CT<:Colorant, T<:Real}
+        return IndirectArray(index, im_from_matlab(CT, values))
+    end
+else
+    function im_from_matlab(::Type{CT}, index::AbstractArray, values::AbstractMatrix{T}) where {CT<:Colorant, T<:Real}
+        return IndirectArray(index, colorview(CT, PermutedDimsArray(values, (2, 1))))
+    end
+end
+
 
 """
-    im_to_matlab([T], X::AbstractArray) -> AbstractArray{T}
+    I = im_to_matlab([T], X::AbstractArray)
+    (index, values) = im_to_matlab([T], X::IndirectArray)
 
-Convert colorant array `X` to numerical array, using MATLAB's image layout convention.
+Convert colorant array `X` to numerical array, using MATLAB's image layout convention. If
+`X` is an indexed image `IndirectArray`, then the output is a tuple of `index`-`values`
+pair.
 
 ```julia
 img = rand(Gray{N0f8}, 4, 4)
@@ -140,15 +177,35 @@ julia> im_to_matlab(img) ≈ im_to_matlab(gray.(img))
 true
 ```
 
-!!! tip "lazy conversion"
+For indexed image represented as `IndirectArray` provided by
+[IndirectArrays.jl](https://github.com/JuliaArrays/IndirectArrays.jl), a tuple of
+`index`-`values` pair will be returned:
+
+```julia
+# 4×4 indexed image with 5 color
+jl_index = rand(1:5, 4, 4)
+jl_values = [
+    RGB(0.0,0.0,0.0), # black
+    RGB(1.0,0.0,0.0), # red
+    RGB(0.0,1.0,0.0), # green
+    RGB(0.0,0.0,1.0), # blue
+    RGB(1.0,1.0,1.0)  # white
+]
+jl_img = IndirectArray(jl_index, jl_values)
+
+# m_values is 5×3 matrix with eltype Float64
+m_index, m_values = im_to_matlab(jl_img)
+```
+
+!!! tip "eager conversion"
     To save memory allocation, the conversion is done in lazy mode. In some cases, this
     could introduce performance overhead due to the repeat computation. This can be easily
     solved by converting eagerly via, e.g., `collect(im_to_matlab(...))`.
 
 !!! info "value range"
-    The output value is always in range \$[0, 1]\$. Thus the equality
-    `data ≈ im_to_matlab(im_from_matlab(data))` only holds when `data` is in also range
-    \$[0, 1]\$. For example, if `eltype(data) == UInt8`, this equality will not hold.
+    The output value is always in range \$[0, 1]\$. Thus the equality `data ≈
+    im_to_matlab(im_from_matlab(data))` only holds when `data` is in also range \$[0, 1]\$.
+    For example, if `eltype(data) == UInt8`, this equality will not hold.
 
 See also: [`im_from_matlab`](@ref).
 """
@@ -164,13 +221,18 @@ im_to_matlab(::Type{T}, img::AbstractArray{<:Color}) where {T} =
 im_to_matlab(::Type{T}, img::AbstractArray{<:Gray}) where {T} =
     of_eltype(T, channelview(img))
 
-# for RGB, only 1d and 2d cases are supported as other cases are not well-defined in MATLAB.
-im_to_matlab(::Type{T}, img::AbstractVector{<:RGB}) where {T} =
-    im_to_matlab(T, reshape(img, (length(img), 1)))
-im_to_matlab(::Type{T}, img::AbstractMatrix{<:RGB}) where {T} =
-    PermutedDimsArray(of_eltype(T, channelview(img)), (2, 3, 1))
-im_to_matlab(::Type{T}, img::AbstractArray{<:RGB}) where {T} =
-    throw(ArgumentError("For $(ndims(img)) dimensional color image, manual conversion to MATLAB layout is required."))
+# for RGB, unroll the color channel in the last dimension
+function im_to_matlab(::Type{T}, img::AbstractArray{<:RGB, N}) where {T, N}
+    v = of_eltype(T, channelview(img))
+    perm = (ntuple(i->i+1, N)..., 1)
+    return PermutedDimsArray(v, perm)
+end
+
+# indexed image
+function im_to_matlab(::Type{T}, img::IndirectArray{CT}) where {T<:Real, CT<:Colorant}
+    return img.index, im_to_matlab(T, img.values)
+end
+
 
 if VERSION >= v"1.6.0-DEV.1083"
     # this method allows `data === im_to_matlab(im_from_matlab(data))` for gray image

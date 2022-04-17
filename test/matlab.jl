@@ -278,4 +278,44 @@
     data = rand(UInt8, 4, 5)
     img = im_from_matlab(data)
     @test im_to_matlab(img) == data ./ 255
+
+    @testset "offset array" begin
+        # JuliaImages accepts arbitrary offsets thus there's no need to force 1-based indexing,
+        # MATLAB, on the other hand, generally requires 1-based indexing to properly work.
+
+        # Gray
+        x = rand(4, 5)
+        xo = OffsetArray(x, (-2, -3))
+        img = im_from_matlab(xo)
+        @test axes(img) == (-1:2, -2:2)
+        @test eltype(img) == Gray{Float64}
+
+        m_img = im_to_matlab(img)
+        @test axes(m_img) == (1:4, 1:5)
+        @test m_img == x
+
+        # RGB
+        x = rand(4, 5, 3)
+        xo = OffsetArray(x, (-2, -3, 0))
+        img = im_from_matlab(xo)
+        @test axes(img) == (-1:2, -2:2)
+        @test eltype(img) == RGB{Float64}
+
+        m_img = im_to_matlab(img)
+        @test axes(m_img) == (1:4, 1:5, 1:3)
+        @test m_img == x
+
+        # indexed image
+        index = rand(1:5, 4, 5)
+        index_offset = OffsetArray(index, (-1, -1))
+        values = rand(5, 3)
+        img = im_from_matlab(index_offset, values)
+        @test axes(img) == (0:3, 0:4)
+        @test eltype(img) == RGB{Float64}
+
+        m_index, m_values = im_to_matlab(img)
+        @test axes(m_index) == (1:4, 1:5)
+        @test m_index == index
+        @test m_values == values
+    end
 end

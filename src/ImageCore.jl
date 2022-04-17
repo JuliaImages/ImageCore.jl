@@ -9,6 +9,7 @@ using Reexport
 @reexport using PaddedViews
 using MappedArrays, Graphics
 using OffsetArrays # for show.jl
+using OffsetArrays: no_offset_view
 using .ColorTypes: colorant_string
 using Colors: Fractional
 using MappedArrays: AbstractMultiMappedArray

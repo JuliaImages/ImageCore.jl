@@ -211,7 +211,7 @@ See also: [`im_from_matlab`](@ref).
 """
 function im_to_matlab end
 
-im_to_matlab(X::AbstractArray{<:Number}) = X
+im_to_matlab(X::AbstractArray{<:Number}) = no_offset_view(X)
 im_to_matlab(img::AbstractArray{CT}) where {CT<:Colorant} = im_to_matlab(eltype(CT), img)
 
 im_to_matlab(::Type{T}, img::AbstractArray{CT}) where {T,CT<:TransparentColor} =
@@ -219,26 +219,26 @@ im_to_matlab(::Type{T}, img::AbstractArray{CT}) where {T,CT<:TransparentColor} =
 im_to_matlab(::Type{T}, img::AbstractArray{<:Color}) where {T} =
     im_to_matlab(T, of_eltype(RGB{T}, img))
 im_to_matlab(::Type{T}, img::AbstractArray{<:Gray}) where {T} =
-    of_eltype(T, channelview(img))
+    no_offset_view(of_eltype(T, channelview(img)))
 
 # for RGB, unroll the color channel in the last dimension
 function im_to_matlab(::Type{T}, img::AbstractArray{<:RGB, N}) where {T, N}
-    v = of_eltype(T, channelview(img))
+    v = no_offset_view(of_eltype(T, channelview(img)))
     perm = (ntuple(i->i+1, N)..., 1)
     return PermutedDimsArray(v, perm)
 end
 
 # indexed image
 function im_to_matlab(::Type{T}, img::IndirectArray{CT}) where {T<:Real, CT<:Colorant}
-    return img.index, im_to_matlab(T, img.values)
+    return no_offset_view(img.index), im_to_matlab(T, img.values)
 end
 
 
 if VERSION >= v"1.6.0-DEV.1083"
     # this method allows `data === im_to_matlab(im_from_matlab(data))` for gray image
     im_to_matlab(::Type{T}, img::Base.ReinterpretArray{CT,N,T,<:AbstractArray{T,N},true}) where {CT,N,T} =
-        img.parent
+        no_offset_view(img.parent)
 else
     im_to_matlab(::Type{T}, img::Base.ReinterpretArray{CT,N,T,<:AbstractArray{T,N}}) where {CT,N,T} =
-        img.parent
+        no_offset_view(img.parent)
 end

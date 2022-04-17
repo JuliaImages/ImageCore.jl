@@ -266,6 +266,41 @@
             @test eltype(m_values) == N0f8
             @test m_values == permutedims(channelview(values), (2, 1))
         end
+
+        @testset "UInt8/UInt16" begin
+            # directly doing eltype conversion doesn't work for UInt8/UInt16
+            # thus we can reinterpret, aka, `rawview`.
+            for (T, NT) in ((UInt8, N0f8), (UInt16, N0f16))
+                img = rand(Gray{NT}, 4, 5)
+                img_m_normed = im_to_matlab(NT, img)
+                img_m = im_to_matlab(T, img)
+                @test eltype(img_m_normed) == NT
+                @test eltype(img_m) == T
+                @test img_m_normed != img_m
+                @test img_m_normed == channelview(img)
+                @test img_m == rawview(channelview(img))
+
+                img = rand(RGB{NT}, 4, 5)
+                img_m_normed = im_to_matlab(NT, img)
+                img_m = im_to_matlab(T, img)
+                @test eltype(img_m_normed) == NT
+                @test eltype(img_m) == T
+                @test img_m_normed != img_m
+                @test img_m_normed == permutedims(channelview(img), (2, 3, 1))
+                @test img_m == permutedims(rawview(channelview(img)), (2, 3, 1))
+            end
+
+            # We only patch for special types that MATLAB expects, for anything that is
+            # non-standard MATLAB layout, manual conversions or other tools are needed. Here
+            # we test that we have informative error messages.
+            for CT in (Gray, RGB)
+                img = rand(CT{N0f8}, 4, 5)
+                msg = "Can not convert to MATLAB format: invalid conversion from `$CT{$N0f8}` to `$N0f16`."
+                @test_throws ArgumentError(msg) im_to_matlab(UInt16, img)
+                msg = "Can not convert to MATLAB format: invalid conversion from `$CT{$N0f8}` to `$Int`."
+                @test_throws ArgumentError(msg) im_to_matlab(Int, img)
+            end
+        end
     end
 
     # test `im_from_matlab` and `im_to_matlab` are inverses of each other.

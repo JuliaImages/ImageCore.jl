@@ -218,18 +218,48 @@ im_to_matlab(::Type{T}, img::AbstractArray{CT}) where {T,CT<:TransparentColor} =
     im_to_matlab(T, of_eltype(base_color_type(CT), img))
 im_to_matlab(::Type{T}, img::AbstractArray{<:Color}) where {T} =
     im_to_matlab(T, of_eltype(RGB{T}, img))
-im_to_matlab(::Type{T}, img::AbstractArray{<:Gray}) where {T} =
-    no_offset_view(of_eltype(T, channelview(img)))
+im_to_matlab(::Type{T}, img::AbstractArray{CT}) where {T,CT<:Union{Gray,RGB,Number}} =
+    _im_to_matlab_try_reinterpret(T, img)
 
+# eltype conversion doesn't work in general, e.g., `UInt8(N0f8(0.3))` would fail. For special
+# types that we know solution, directly reinterpret them via `rawview`.
+function _im_to_matlab_try_reinterpret(::Type{T}, img::AbstractArray{CT}) where {T,CT<:Union{Gray,Real}}
+    throw(ArgumentError("Can not convert to MATLAB format: invalid conversion from `$(CT)` to `$T`."))
+end
+function _im_to_matlab_try_reinterpret(::Type{T}, img::AbstractArray{CT}) where {T<:Union{AbstractFloat, Normed},CT<:Union{Gray,Real}}
+    return no_offset_view(of_eltype(T, channelview(img)))
+end
+for (T, NT) in ((:UInt8, :N0f8), (:UInt16, :N0f16))
+    @eval function _im_to_matlab_try_reinterpret(::Type{$T}, img::AbstractArray{CT}) where {CT<:Union{Gray,Real}}
+        if eltype(CT) != $NT
+            nt_str = string($NT)
+            throw(ArgumentError("Can not convert to MATLAB format: invalid conversion from `$(CT)` to `$nt_str`."))
+        end
+        return no_offset_view(rawview(channelview(img)))
+    end
+end
 # for RGB, unroll the color channel in the last dimension
-function im_to_matlab(::Type{T}, img::AbstractArray{<:RGB, N}) where {T, N}
+_im_to_matlab_try_reinterpret(::Type{T}, img::AbstractArray{CT}) where {T,CT<:RGB} =
+    throw(ArgumentError("Can not convert to MATLAB format: invalid conversion from `$(CT)` to `$T`."))
+function _im_to_matlab_try_reinterpret(::Type{T}, img::AbstractArray{<:RGB,N}) where {T<:Union{AbstractFloat, Normed},N}
     v = no_offset_view(of_eltype(T, channelview(img)))
-    perm = (ntuple(i->i+1, N)..., 1)
+    perm = (ntuple(i -> i + 1, N)..., 1)
     return PermutedDimsArray(v, perm)
+end
+for (T, NT) in ((:UInt8, :N0f8), (:UInt16, :N0f16))
+    @eval function _im_to_matlab_try_reinterpret(::Type{$T}, img::AbstractArray{CT,N}) where {CT<:RGB,N}
+        if eltype(CT) != $NT
+            nt_str = string($NT)
+            throw(ArgumentError("Can not convert to MATLAB format: invalid conversion from `$(CT)` to `$nt_str`."))
+        end
+        v = no_offset_view(rawview(channelview(img)))
+        perm = (ntuple(i -> i + 1, N)..., 1)
+        return PermutedDimsArray(v, perm)
+    end
 end
 
 # indexed image
-function im_to_matlab(::Type{T}, img::IndirectArray{CT}) where {T<:Real, CT<:Colorant}
+function im_to_matlab(::Type{T}, img::IndirectArray{CT}) where {T<:Real,CT<:Colorant}
     return no_offset_view(img.index), im_to_matlab(T, img.values)
 end
 

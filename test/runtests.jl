@@ -1,6 +1,7 @@
 module ImageCoreTests
 
 using ImageCore
+using OffsetArrays: OffsetArray
 using Test, ReferenceTests
 using Aqua, Documenter # for meta quality checks
 

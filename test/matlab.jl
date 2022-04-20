@@ -149,6 +149,12 @@
             lab_values = permutedims(channelview(Lab.(img.values)), (2, 1))
             lab_img = im_from_matlab(Lab, index, lab_values)
             @test sum(abs2, channelview(RGB.(lab_img) - img)) < 1e-10
+
+            values = UInt8.(values .* 255)
+            img = im_from_matlab(index, values)
+            @test size(img) == (2, 5)
+            @test eltype(img) == RGB{N0f8}
+            @test img[2, 3] == RGB(0.0, 0.0, 1.0)
         end
     end
 

@@ -132,7 +132,7 @@ _im_from_matlab(::Type{CT}, X::AbstractArray{T}) where {CT<:Gray,T<:Real} = colo
 _im_from_matlab(::Type{CT}, X::AbstractArray{T,3}) where {CT<:Gray,T<:Real} = colorview(CT, X)
 
 # index image support
-im_from_matlab(index::AbstractArray, values::AbstractMatrix{T}) where T<:Real = im_from_matlab(RGB{T}, index, values)
+im_from_matlab(index::AbstractArray, values::AbstractMatrix{T}) where T<:Real = im_from_matlab(RGB, index, values)
 @static if VERSION >= v"1.3"
     function im_from_matlab(::Type{CT}, index::AbstractArray, values::AbstractMatrix{T}) where {CT<:Colorant, T<:Real}
         return IndirectArray(index, im_from_matlab(CT, values))

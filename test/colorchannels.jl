@@ -1,5 +1,6 @@
 using Colors, ImageCore, OffsetArrays, FixedPointNumbers, Test
 using OffsetArrays: IdentityUnitRange
+using BlockArrays
 
 # backward-compatibility to ColorTypes < v0.9 or Colors < v0.11
 using ImageCore: XRGB, RGBX
@@ -408,6 +409,20 @@ end
         @test @inferred(v[0,0]) === RGB(a[1,0,0], a[2,0,0], a[3,0,0])
         a = OffsetArray(rand(3, 3, 5), 0:2, -1:1, -2:2)
         @test_throws (VERSION >= v"1.6.0-DEV.1083" ? ArgumentError : DimensionMismatch) colorview(RGB, a)
+    end
+
+    @testset "Custom/divergent axis types" begin
+        img1 = rand(5, 4, 2)
+        img2_2 = mortar(reshape([rand(5, 4, 1), rand(5, 4, 1)], 1, 1, 2))
+        img2_all = mortar(reshape([rand(5, 4, 1), rand(5, 4, 1), rand(5, 4, 1)], 1, 1, 3))
+        img2_odd = img2_all[:,:,1:2:end]
+        for img2 in (img2_2, img2_odd)
+            for imgrgb in (colorview(RGB, img1, img2, zeroarray),
+                        colorview(RGB, img2, img1, zeroarray))
+                @test eltype(imgrgb) === RGB{Float64}
+                @test size(imgrgb) == size(img1)
+            end
+        end
     end
 end
 

@@ -103,6 +103,7 @@ struct ZeroArray{T,N,R<:AbstractUnitRange} <: AbstractArray{T,N}
 end
 
 ZeroArrayPromise{T}(inds::NTuple{N,R}) where {T,N,R<:AbstractUnitRange} = ZeroArray{T,N,R}(inds)
+ZeroArrayPromise{T}(inds::NTuple{N,AbstractUnitRange}) where {T,N} = ZeroArrayPromise{T}(promote(inds...))
 Base.eltype(::Type{ZeroArrayPromise{T}}) where {T} = T
 
 Base.axes(A::ZeroArray) = A.inds

@@ -7,7 +7,7 @@ using Reexport
 
 @reexport using MosaicViews
 @reexport using PaddedViews
-using MappedArrays, Graphics
+using MappedArrays
 using OffsetArrays # for show.jl
 using .ColorTypes: colorant_string
 using Colors: Fractional
@@ -15,8 +15,6 @@ using MappedArrays: AbstractMultiMappedArray
 
 using Base: tail, @pure, Indices
 import Base: float
-
-import Graphics: width, height
 
 # TODO: just use .+
 # See https://github.com/JuliaLang/julia/pull/22932#issuecomment-330711997
@@ -81,7 +79,6 @@ export
     # traits
     assert_timedim_last,
     coords_spatial,
-    height,
     indices_spatial,
     namedaxes,
     nimages,
@@ -89,9 +86,7 @@ export
     sdims,
     size_spatial,
     spacedirections,
-    spatialorder,
-    width,
-    widthheight
+    spatialorder
 
 include("colorchannels.jl")
 include("stackedviews.jl")

@@ -9,9 +9,22 @@ using Reexport
 @reexport using PaddedViews
 using MappedArrays, Graphics
 using OffsetArrays # for show.jl
+using OffsetArrays: no_offset_view
 using .ColorTypes: colorant_string
 using Colors: Fractional
 using MappedArrays: AbstractMultiMappedArray
+@static if VERSION >= v"1.3"
+    # There are two common ways to convert from struct of array (SOA) layout to array of
+    # struct (AOS) layout without copying the data. Take 2D RGB image as an example:
+    #   - `colorview(RGB, PermutedDimsArray(img, (3, 1, 2)))`
+    #   - `StructArray{RGB{eltype(img)}}(img; dims=3)`
+    # Using `StructArray` preserves the information that original data is stored as SOA
+    # layout, while `ReinterpretArray` cannot. For newer Julia versions, we interpret it as
+    # `StructArray` and thus provides room for operator optimization, e.g., `imfilter` on
+    # SOA layout can be implemented much easier and efficiently.
+    @reexport using StructArrays: StructArray
+end
+@reexport using IndirectArrays: IndirectArray # for indexed image
 
 using Base: tail, @pure, Indices
 import Base: float
@@ -91,7 +104,11 @@ export
     spacedirections,
     spatialorder,
     width,
-    widthheight
+    widthheight,
+    # matlab compatibility
+    im_from_matlab,
+    im_to_matlab
+
 
 include("colorchannels.jl")
 include("stackedviews.jl")
@@ -100,6 +117,7 @@ include("traits.jl")
 include("map.jl")
 include("show.jl")
 include("functions.jl")
+include("matlab.jl")
 include("deprecations.jl")
 
 """

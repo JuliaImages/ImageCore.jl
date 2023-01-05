@@ -16,9 +16,9 @@ let
         return first(v)
     end
 
-    eltypes = (N0f8, N0f16, Float32, Float64)        # eltypes of parametric colors
-    pctypes = (Gray, RGB, AGray, GrayA, ARGB, RGBA)  # parametric colors
-    cctypes = (Gray24, AGray32, RGB24, ARGB32)       # non-parametric colors
+    eltypes = (N0f8, N0f16, Float32, Float64)    # eltypes of parametric colors
+    pctypes = (Gray, RGB)                        # parametric colors
+    cctypes = ()                                 # non-parametric colors (e.g., Gray24)
     dims  = (1, 2, 3, 4)
     szs   = ((2,), (2, 2), (2, 2, 2), (2, 2, 2, 2))
     @precompile_all_calls begin

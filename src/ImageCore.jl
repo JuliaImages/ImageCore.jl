@@ -99,7 +99,6 @@ include("convert_reinterpret.jl")
 include("traits.jl")
 include("map.jl")
 include("show.jl")
-include("functions.jl")
 include("deprecations.jl")
 
 """
@@ -168,6 +167,27 @@ function Base.transpose(a::AbstractVector{C}) where C<:Colorant
     outr = reshape(out, ind)
     copy!(outr, a)
     out
+end
+
+# It's better not to define fft on Colorant arrays, because keeping
+# track of the color dimension and the fft-dims is prone to omissions
+# or problems due to later operations. So we put the bookkeeping on
+# the user, but we try to give helpful suggestions.
+function throw_ffterror(io, @nospecialize(f), x, dims=1:ndims(x))
+    newdims = plus(dims, channelview_dims_offset(x))
+    print(io, '\n', f, " not defined for eltype $(eltype(x)). Use channelview, and likely $newdims for the dims in the fft.")
+end
+
+if Base.VERSION >= v"1.5"
+    function __init__()
+        Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
+            if nameof(exc.f) ∈ (:fft, :rfft, :plan_fft, :plan_rfft, :realfloat) && argtypes[1] <: AbstractArray{<:Colorant}
+                throw_ffterror(io, exc.f, exc.args...)
+            end
+        end
+    end
+else
+    include("functions.jl")
 end
 
 if VERSION >= v"1.4.2" # work around https://github.com/JuliaLang/julia/issues/34121

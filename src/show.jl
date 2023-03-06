@@ -1,5 +1,5 @@
 # rawview
-AAFixed{T<:FixedPoint,N} = AbstractArray{T,N}
+const AAFixed{T<:FixedPoint,N} = AbstractArray{T,N}
 function Base.showarg(io::IO, A::MappedArray{T,N,AA,typeof(reinterpret)}, toplevel=false) where {T<:Integer,N,AA<:AAFixed}
     print(io, "rawview(")
     Base.showarg(io, parent(A), false)
@@ -8,7 +8,7 @@ function Base.showarg(io::IO, A::MappedArray{T,N,AA,typeof(reinterpret)}, toplev
 end
 
 # normedview
-AAInteger{T<:Integer,N} = AbstractArray{T,N}
+const AAInteger{T<:Integer,N} = AbstractArray{T,N}
 function Base.showarg(io::IO, A::MappedArray{T,N,AA,F,typeof(reinterpret)}, toplevel=false) where {T<:FixedPoint,N,AA<:AAInteger,F}
     print(io, "normedview(")
     ColorTypes.showcoloranttype(io, T)

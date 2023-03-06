@@ -24,13 +24,13 @@ plus(r::AbstractUnitRange, i::Integer) = broadcast(+, r, i)
 plus(a::AbstractArray, i::Integer) = a .+ i
 
 using .ColorTypes: AbstractGray, TransparentGray, Color3, Transparent3
-Color1{T} = Colorant{T,1}
-Color2{T} = Colorant{T,2}
-Color4{T} = Colorant{T,4}
-AColor{N,C,T} = AlphaColor{C,T,N}
-ColorA{N,C,T} = ColorAlpha{C,T,N}
+const Color1{T} = Colorant{T,1}
+const Color2{T} = Colorant{T,2}
+const Color4{T} = Colorant{T,4}
+const AColor{N,C,T} = AlphaColor{C,T,N}
+const ColorA{N,C,T} = ColorAlpha{C,T,N}
 const NonparametricColors = Union{RGB24,ARGB32,Gray24,AGray32}
-Color1Array{C<:Color1,N} = AbstractArray{C,N}
+const Color1Array{C<:Color1,N} = AbstractArray{C,N}
 # Type that arises from reshape(reinterpret(To, A), sz):
 if VERSION >= v"1.6.0-DEV.1083"
     const RRArray{To,From,M,P} = Base.ReinterpretArray{To,M,From,P,true}

@@ -1,7 +1,7 @@
-using SnoopPrecompile
+using PrecompileTools
 
 let
-@precompile_setup begin
+@setup_workload begin
     function pcarray(f::F, ::Type{A}, sz) where {F,A}
         a = f(A(undef, sz))
         fill!(a, zero(eltype(a)))
@@ -21,7 +21,7 @@ let
     cctypes = ()                                 # non-parametric colors (e.g., Gray24)
     dims  = (1, 2, 3, 4)
     szs   = ((2,), (2, 2), (2, 2, 2), (2, 2, 2, 2))
-    @precompile_all_calls begin
+    @compile_workload begin
         for T in eltypes
             clamp01(zero(T))
             clamp01nan(zero(T))

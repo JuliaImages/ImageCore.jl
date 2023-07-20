@@ -200,10 +200,6 @@ end
 assert_timedim_last(img::OffsetArray) = assert_timedim_last(parent(img))
 assert_timedim_last(img::SubArray) = assert_timedim_last(parent(img))
 
-widthheight(img::AbstractArray) = length(axes(img,2)), length(axes(img,1))
-
-width(img::AbstractArray) = widthheight(img)[1]
-height(img::AbstractArray) = widthheight(img)[2]
 
 
 # Traits whose only meaningful definitions occur in ImageAxes, but for

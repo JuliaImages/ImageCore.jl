@@ -29,8 +29,6 @@ using ImageCore: Pixel, NumberLike, GenericImage, GenericGrayImage, default_name
             @test indices_spatial(B) == (Base.OneTo(3), Base.OneTo(5))
         end
         assert_timedim_last(B)
-        @test width(B) == 5
-        @test height(B) == 3
     end
 end
 

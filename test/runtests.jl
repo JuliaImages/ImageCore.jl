@@ -11,11 +11,11 @@ using Aqua, Documenter # for meta quality checks
                   ambiguities=false,
                   project_extras=true,
                   deps_compat=true,
-                  stale_deps= v"1.4" <= Base.VERSION < v"1.5", # we don't use AbstractFFTs on 1.5+, SnoopPrecompile on <1.4
+                  stale_deps=true,
                   # FIXME? re-enable the `piracy` test
-                  piracy=false, # Base.VERSION >= v"1.5",    # need the register_error_hint for AbstractFFTs
+                  piracy=false, # currently just `float` and `paddedviews`
                   project_toml_formatting=true,
-                  unbound_args=false, # FIXME: it fails when this is true
+                  unbound_args=true,
     )
     DocMeta.setdocmeta!(ImageCore, :DocTestSetup, :(using ImageCore); recursive=true)
 end

@@ -30,11 +30,7 @@ const ColorA{N,C,T} = ColorAlpha{C,T,N}
 const NonparametricColors = Union{RGB24,ARGB32,Gray24,AGray32}
 const Color1Array{C<:Color1,N} = AbstractArray{C,N}
 # Type that arises from reshape(reinterpret(To, A), sz):
-if VERSION >= v"1.6.0-DEV.1083"
-    const RRArray{To,From,M,P} = Base.ReinterpretArray{To,M,From,P,true}
-else
-    const RRArray{To,From,N,M,P} = Base.ReshapedArray{To,N,Base.ReinterpretArray{To,M,From,P}}
-end
+const RRArray{To,From,M,P} = Base.ReinterpretArray{To,M,From,P,true}
 const RGArray = Union{Base.ReinterpretArray{<:AbstractGray,M,<:Number,P}, Base.ReinterpretArray{<:Number,M,<:AbstractGray,P}} where {M,P}
 
 # delibrately not export these constants to enable extensibility for downstream packages
@@ -173,20 +169,14 @@ function throw_ffterror(io, @nospecialize(f), x, dims=1:ndims(x))
     print(io, '\n', f, " not defined for eltype $(eltype(x)). Use channelview, and likely $newdims for the dims in the fft.")
 end
 
-if Base.VERSION >= v"1.5"
-    function __init__()
-        Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
-            if nameof(exc.f) ∈ (:fft, :rfft, :plan_fft, :plan_rfft, :realfloat) && argtypes[1] <: AbstractArray{<:Colorant}
-                throw_ffterror(io, exc.f, exc.args...)
-            end
+function __init__()
+    Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
+        if nameof(exc.f) ∈ (:fft, :rfft, :plan_fft, :plan_rfft, :realfloat) && argtypes[1] <: AbstractArray{<:Colorant}
+            throw_ffterror(io, exc.f, exc.args...)
         end
     end
-else
-    include("functions.jl")
 end
 
-if VERSION >= v"1.4.2" # work around https://github.com/JuliaLang/julia/issues/34121
-    include("precompile.jl")
-end
+include("precompile.jl")
 
 end ## module

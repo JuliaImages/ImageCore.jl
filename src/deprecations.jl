@@ -1,19 +1,15 @@
 const warned_once = Ref(false)
-if VERSION >= v"1.5"
-    function forced_depwarn(msg, sym)
-        opts = Base.JLOptions()
-        if !warned_once[] && !(opts.depwarn == 1)
-            @warn msg
-            @info """It is recommended that you fix this now to avoid breakage when a new version is released and this warning is removed.
-                     Tip: to see all deprecation warnings together with code locations, launch Julia with `--depwarn=yes` and rerun your code."""
-            warned_once[] = true
-        else
-            Base.depwarn(msg, sym)
-        end
-        return nothing
+function forced_depwarn(msg, sym)
+    opts = Base.JLOptions()
+    if !warned_once[] && !(opts.depwarn == 1)
+        @warn msg
+        @info """It is recommended that you fix this now to avoid breakage when a new version is released and this warning is removed.
+                    Tip: to see all deprecation warnings together with code locations, launch Julia with `--depwarn=yes` and rerun your code."""
+        warned_once[] = true
+    else
+        Base.depwarn(msg, sym)
     end
-else
-    forced_depwarn(msg, sym) = Base.depwarn(msg, sym)
+    return nothing
 end
 
 # a perhaps "permanent" deprecation

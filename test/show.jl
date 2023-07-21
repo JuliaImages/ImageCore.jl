@@ -1,13 +1,9 @@
 using ImageCore, Colors, FixedPointNumbers, OffsetArrays, Test
 
-if VERSION >= v"1.2.0-DEV.229"
-    sumsz(img) = Base.dims2string(size(img)) * ' '
-else
-    sumsz(img) = ""
-end
+sumsz(img) = Base.dims2string(size(img)) * ' '
 
-const rrstr = VERSION >= v"1.6.0-DEV.1083" ? "reshape, " : ""
-rrdim(n) = VERSION >= v"1.6.0-DEV.1083" ? n-1 : n
+const rrstr = "reshape, "
+rrdim(n) = n-1
 
 # N0f8 is shown as either N0f8 or Normed{UInt8, 8}
 # RGB is shown as ColorTypes.RGB or RGB
@@ -25,8 +21,7 @@ RGB_str = typestring(RGB)
     v = view(rgb32, 2:3, :)
     @test summary(v) == "2×5 view(::Array{RGB{Float32},2}, 2:3, :) with eltype $(RGB_str){Float32}"
     a = channelview(rgb32)
-    @test summary(a) == (VERSION >= v"1.6.0-DEV.1083" ? "3×3×5 reinterpret(reshape, Float32, ::Array{RGB{Float32},2}) with eltype Float32" :
-                                                        "3×3×5 reinterpret(Float32, ::Array{RGB{Float32},3})")
+    @test summary(a) == "3×3×5 reinterpret(reshape, Float32, ::Array{RGB{Float32},2}) with eltype Float32"
     num64 = rand(3,5)
     b = colorview(RGB, num64)
     str = summary(b)
@@ -51,11 +46,10 @@ RGB_str = typestring(RGB)
     @test occursin("5×3 PermutedDimsArray(reinterpret", str) && occursin("N0f16", str) &&
           occursin("::$(typeof(rand16))), (2, 1)", str) && occursin("with eltype $(N0f16_str)", str)
     g = channelview(rgb8)
-    etstr = VERSION >= v"1.6.0-DEV.1083" ? " with eltype" : ""
     str = summary(g)
     @test occursin("3×3×5 reinterpret($(rrstr)", str) && occursin("N0f8", str) &&
           occursin("::Array{RGB{N0f8},$(rrdim(3))}", str)
-    VERSION >= v"1.6.0-DEV.1083" && @test occursin("with eltype", str)
+    @test occursin("with eltype", str)
     h = OffsetArray(rgb8, -1:1, -2:2)
     @test summary(h) == "$(sumsz(h))OffsetArray(::Array{RGB{N0f8},2}, -1:1, -2:2) with eltype $(RGB_str){$(N0f8_str)} with indices -1:1×-2:2"
     i = channelview(h)

@@ -102,7 +102,7 @@ struct ZeroArray{T,N,R<:AbstractUnitRange} <: AbstractArray{T,N}
     inds::NTuple{N,R}
 end
 
-ZeroArrayPromise{T}(inds::NTuple{N,R}) where {T,N,R<:AbstractUnitRange} = ZeroArray{T,N,R}(inds)
+ZeroArrayPromise{T}(inds::Tuple{R,Vararg{R,N}}) where {T,N,R<:AbstractUnitRange} = ZeroArray{T,N+1,R}(inds)
 ZeroArrayPromise{T}(inds::NTuple{N,AbstractUnitRange}) where {T,N} = ZeroArrayPromise{T}(promote(inds...))
 Base.eltype(::Type{ZeroArrayPromise{T}}) where {T} = T
 

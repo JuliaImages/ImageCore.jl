@@ -20,7 +20,7 @@ clamp01(c::Union{TransparentGray,AbstractRGB,TransparentRGB}) = mapc(clamp01, c)
 Restrict values in array to [0, 1], in-place. See also [`clamp01`](@ref).
 """
 function clamp01!(img::AbstractArray)
-    # slgihtly faster than map!(clamp01, img, img)
+    # Slightly faster than map!(clamp01, img, img)
     @inbounds for i in eachindex(img)
         img[i] = clamp01(img[i])
     end

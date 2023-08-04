@@ -139,7 +139,7 @@ julia> img
  RGB{N0f8}(0.0,0.0,1.0)    RGB{N0f8}(0.0,0.0,0.0)
 ```
 
-The hexidecimal representation of 128 is 0x80; this is approximately
+The hexadecimal representation of 128 is 0x80; this is approximately
 halfway to 255, and as a consequence the `N0f8` representation is
 very near 0.5.  You can see the same change is reflected in `r`, `v`,
 and `img`: there is only one underlying array, `img`, and the two

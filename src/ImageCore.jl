@@ -33,7 +33,7 @@ const Color1Array{C<:Color1,N} = AbstractArray{C,N}
 const RRArray{To,From,M,P} = Base.ReinterpretArray{To,M,From,P,true}
 const RGArray = Union{Base.ReinterpretArray{<:AbstractGray,M,<:Number,P}, Base.ReinterpretArray{<:Number,M,<:AbstractGray,P}} where {M,P}
 
-# delibrately not export these constants to enable extensibility for downstream packages
+# Deliberately not export these constants to enable extensibility for downstream packages
 const NumberLike = Union{Number,AbstractGray}
 const Pixel = Union{Number,Colorant}
 const GenericGrayImage{T<:NumberLike,N} = AbstractArray{T,N}

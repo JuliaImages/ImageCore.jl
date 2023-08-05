@@ -19,8 +19,9 @@ It is important to note that ImageCore.jl focuses on fundamental image processin
 
 If you want to use ImageCore.jl, you can add it to your Julia environment using the package manager. Open a Julia REPL and use the following command:
 
-using Pkg
-Pkg.add("ImageCore")
+```jl
+] add ImageCore
+```
 
 
 If you're just getting started with images in Julia, it's recommended

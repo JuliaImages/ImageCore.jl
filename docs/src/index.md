@@ -9,8 +9,10 @@ display, input/output, and the writing of algorithms.
 
 Some of the key features and functionalities provided by ImageCore.jl include:
 
-1.Image data representation: It provides the Image type to store image data along with functions for basic image manipulation.
-2.Image rotation and flipping: Functions to rotate and flip images.
+- Storage type transformations: ImageCore.jl provides various methods like `float32`, `n0f8`, etc which can be used to transform raw storage type of the image without changing the color space. 
+- Image view conversion: It provides various methods like `rawview`, `channelview`, `colorview` , `stackedview` which help in conversions between various types of representations. Default representation of images is likely all that is needed most of the time but these functions provided more flexibility while working with image data.
+- Pixel level transformations: Several methods like `clamp01` , `clamp01nan`, `scaleminmax`, etc are available that help with truncating image pixel values within certain valid limits and helps to avoid IO errors.
+- Image Traits: These can prove to be useful to users when trying to add more meaning to different axes of image and to add dimension specific information.
 
 
 It is important to note that ImageCore.jl focuses on fundamental image processing operations and may not have the full range of advanced image processing capabilities found in more specialized libraries. For more complex image processing tasks, you might need to explore other Julia packages such as ImageFiltering.jl, or other external libraries.

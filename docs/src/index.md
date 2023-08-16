@@ -15,9 +15,9 @@ Some of the key features and functionalities provided by ImageCore.jl include:
 - Image Traits: These can prove to be useful to users when trying to add more meaning to different axes of image and to add dimension specific information.
 
 
-It is important to note that ImageCore.jl focuses on fundamental image processing operations and may not have the full range of advanced image processing capabilities found in more specialized libraries. For more complex image processing tasks, you might need to explore other Julia packages such as ImageFiltering.jl, or other external libraries.
+ImageCore often acts as the "common core" dependency for working with any kind of image in the JuliaImages ecosystem., but itself provides almost none of the standard image-processing algorithms. These algorithms are found in other packages in the JuliaImages ecosystem.
 
-If you want to use ImageCore.jl, you can add it to your Julia environment using the package manager. Open a Julia REPL and use the following command:
+If you want to use ImageCore.jl, you can add it to your project environment using the package manager. Open a Julia REPL and use the following command:
 
 ```jl
 ] add ImageCore

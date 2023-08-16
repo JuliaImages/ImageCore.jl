@@ -15,7 +15,7 @@ Some of the key features and functionalities provided by ImageCore.jl include:
 - Image Traits: These can prove to be useful to users when trying to add more meaning to different axes of image and to add dimension specific information.
 
 
-ImageCore often acts as the "common core" dependency for working with any kind of image in the JuliaImages ecosystem., but itself provides almost none of the standard image-processing algorithms. These algorithms are found in other packages in the JuliaImages ecosystem.
+ImageCore often acts as the "common core" dependency for working with any kind of image in the JuliaImages ecosystem, but itself provides almost none of the standard image-processing algorithms. These algorithms are found in other packages in the JuliaImages ecosystem.
 
 If you want to use ImageCore.jl, you can add it to your project environment using the package manager. Open a Julia REPL and use the following command:
 

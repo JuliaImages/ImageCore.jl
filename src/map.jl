@@ -11,8 +11,8 @@ channel separately.
 See also: [`clamp01!`](@ref), [`clamp01nan`](@ref).
 """
 clamp01(x::Union{N0f8,N0f16}) = x
-clamp01(x::Number) = clamp(x, zero(x), oneunit(x))
-clamp01(c::Colorant) = mapc(clamp01, c)
+clamp01(x::NumberLike) = clamp(x, zero(x), oneunit(x))
+clamp01(c::Union{TransparentGray,AbstractRGB,TransparentRGB}) = mapc(clamp01, c)
 
 """
     clamp01!(array::AbstractArray)
@@ -20,7 +20,7 @@ clamp01(c::Colorant) = mapc(clamp01, c)
 Restrict values in array to [0, 1], in-place. See also [`clamp01`](@ref).
 """
 function clamp01!(img::AbstractArray)
-    # slgihtly faster than map!(clamp01, img, img)
+    # Slightly faster than map!(clamp01, img, img)
     @inbounds for i in eachindex(img)
         img[i] = clamp01(img[i])
     end
@@ -35,8 +35,8 @@ Similar to `clamp01`, except that any `NaN` values are changed to 0.
 See also: [`clamp01nan!`](@ref), [`clamp01`](@ref).
 """
 clamp01nan(x) = clamp01(x)
-clamp01nan(x::AbstractFloat) = ifelse(isnan(x), zero(x), clamp01(x))
-clamp01nan(c::Colorant) = mapc(clamp01nan, c)
+clamp01nan(x::Union{AbstractFloat,AbstractGray{<:AbstractFloat}}) = ifelse(isnan(x), zero(x), clamp01(x))
+clamp01nan(c::Union{TransparentGray,AbstractRGB,TransparentRGB}) = mapc(clamp01nan, c)
 
 """
     clamp01nan!(array::AbstractArray)

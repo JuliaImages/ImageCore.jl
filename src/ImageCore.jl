@@ -7,7 +7,7 @@ using Reexport
 
 @reexport using MosaicViews
 @reexport using PaddedViews
-using MappedArrays, Graphics
+using MappedArrays
 using OffsetArrays # for show.jl
 using OffsetArrays: no_offset_view
 using .ColorTypes: colorant_string
@@ -29,30 +29,24 @@ end
 using Base: tail, @pure, Indices
 import Base: float
 
-import Graphics: width, height
-
 # TODO: just use .+
 # See https://github.com/JuliaLang/julia/pull/22932#issuecomment-330711997
 plus(r::AbstractUnitRange, i::Integer) = broadcast(+, r, i)
 plus(a::AbstractArray, i::Integer) = a .+ i
 
 using .ColorTypes: AbstractGray, TransparentGray, Color3, Transparent3
-Color1{T} = Colorant{T,1}
-Color2{T} = Colorant{T,2}
-Color4{T} = Colorant{T,4}
-AColor{N,C,T} = AlphaColor{C,T,N}
-ColorA{N,C,T} = ColorAlpha{C,T,N}
+const Color1{T} = Colorant{T,1}
+const Color2{T} = Colorant{T,2}
+const Color4{T} = Colorant{T,4}
+const AColor{N,C,T} = AlphaColor{C,T,N}
+const ColorA{N,C,T} = ColorAlpha{C,T,N}
 const NonparametricColors = Union{RGB24,ARGB32,Gray24,AGray32}
-Color1Array{C<:Color1,N} = AbstractArray{C,N}
+const Color1Array{C<:Color1,N} = AbstractArray{C,N}
 # Type that arises from reshape(reinterpret(To, A), sz):
-if VERSION >= v"1.6.0-DEV.1083"
-    const RRArray{To,From,M,P} = Base.ReinterpretArray{To,M,From,P,true}
-else
-    const RRArray{To,From,N,M,P} = Base.ReshapedArray{To,N,Base.ReinterpretArray{To,M,From,P}}
-end
+const RRArray{To,From,M,P} = Base.ReinterpretArray{To,M,From,P,true}
 const RGArray = Union{Base.ReinterpretArray{<:AbstractGray,M,<:Number,P}, Base.ReinterpretArray{<:Number,M,<:AbstractGray,P}} where {M,P}
 
-# delibrately not export these constants to enable extensibility for downstream packages
+# Deliberately not export these constants to enable extensibility for downstream packages
 const NumberLike = Union{Number,AbstractGray}
 const Pixel = Union{Number,Colorant}
 const GenericGrayImage{T<:NumberLike,N} = AbstractArray{T,N}
@@ -94,7 +88,6 @@ export
     # traits
     assert_timedim_last,
     coords_spatial,
-    height,
     indices_spatial,
     namedaxes,
     nimages,
@@ -109,14 +102,12 @@ export
     im_from_matlab,
     im_to_matlab
 
-
 include("colorchannels.jl")
 include("stackedviews.jl")
 include("convert_reinterpret.jl")
 include("traits.jl")
 include("map.jl")
 include("show.jl")
-include("functions.jl")
 include("matlab.jl")
 include("deprecations.jl")
 
@@ -188,9 +179,23 @@ function Base.transpose(a::AbstractVector{C}) where C<:Colorant
     out
 end
 
-if VERSION >= v"1.4.2" # work around https://github.com/JuliaLang/julia/issues/34121
-    include("precompile.jl")
-    _precompile_()
+# It's better not to define fft on Colorant arrays, because keeping
+# track of the color dimension and the fft-dims is prone to omissions
+# or problems due to later operations. So we put the bookkeeping on
+# the user, but we try to give helpful suggestions.
+function throw_ffterror(io, @nospecialize(f), x, dims=1:ndims(x))
+    newdims = plus(dims, channelview_dims_offset(x))
+    print(io, '\n', f, " not defined for eltype $(eltype(x)). Use channelview, and likely $newdims for the dims in the fft.")
 end
+
+function __init__()
+    Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
+        if nameof(exc.f) ∈ (:fft, :rfft, :plan_fft, :plan_rfft, :realfloat) && argtypes[1] <: AbstractArray{<:Colorant}
+            throw_ffterror(io, exc.f, exc.args...)
+        end
+    end
+end
+
+include("precompile.jl")
 
 end ## module

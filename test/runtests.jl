@@ -1,23 +1,26 @@
 module ImageCoreTests
 
 using ImageCore
+using OffsetArrays: OffsetArray
 using Test, ReferenceTests
 using Aqua, Documenter # for meta quality checks
 
-@testset "Project meta quality checks" begin
-    # Not checking compat section for test-only dependencies
-    Aqua.test_ambiguities(ImageCore)
-    Aqua.test_all(ImageCore;
-                  ambiguities=false,
-                  project_extras=true,
-                  deps_compat=true,
-                  stale_deps=true,
-                  # FIXME? re-enable the `piracy` test
-                  piracy=false, # currently just `float` and `paddedviews`
-                  project_toml_formatting=true,
-                  unbound_args=true,
-    )
-    DocMeta.setdocmeta!(ImageCore, :DocTestSetup, :(using ImageCore); recursive=true)
+@static if VERSION >= v"1.3"
+  @testset "Project meta quality checks" begin
+      # Not checking compat section for test-only dependencies
+      Aqua.test_ambiguities(ImageCore)
+      Aqua.test_all(ImageCore;
+                    ambiguities=false,
+                    project_extras=true,
+                    deps_compat=true,
+                    stale_deps=true,
+                    # FIXME? re-enable the `piracy` test
+                    piracy=false, # currently just `float` and `paddedviews`
+                    project_toml_formatting=true,
+                    unbound_args=true,
+      )
+      DocMeta.setdocmeta!(ImageCore, :DocTestSetup, :(using ImageCore); recursive=true)
+    end
 end
 
 # ReferenceTests uses ImageInTerminal as a default image rendering backend, we need to
@@ -33,7 +36,9 @@ include("views.jl")
 include("convert_reinterpret.jl")
 include("traits.jl")
 include("map.jl")
+include("matlab.jl")
 Base.VERSION >= v"1.8" && include("functions.jl")   # requires @test_throws msg expr
+
 include("show.jl")
 
 # To ensure our deprecations work and don't break code

@@ -1,6 +1,6 @@
 name = "ImageCore"
 uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
-version = "0.10.1"
+version = "0.10.2"
 
 [deps]
 ColorVectorSpace = "c3611d14-8923-5661-9e6a-0046d554d3a4"
@@ -14,15 +14,26 @@ PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [compat]
+Aqua = "0.8"
+BlockArrays = "0.16"
 ColorVectorSpace = "0.10"
 Colors = "0.12"
+Documenter = "1"
+FFTW = "1"
 FixedPointNumbers = "0.8"
+ImageIO = "0.6"
+ImageInTerminal = "0.5"
+Logging = "1"
 MappedArrays = "0.2, 0.3, 0.4"
 MosaicViews = "0.3.3"
 OffsetArrays = "0.8, 0.9, 0.10, 0.11, 1.0.1"
 PaddedViews = "0.5.8"
 PrecompileTools = "1"
+Random = "1"
 Reexport = "0.2, 1.0"
+ReferenceTests = "0.10"
+Statistics = "1"
+Test = "1"
 julia = "1.6"
 
 [extras]
@@ -32,10 +43,11 @@ Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
 ImageInTerminal = "d8c32880-2388-543b-8c61-d9f865259254"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 ReferenceTests = "324d217c-45ce-50fc-942e-d289b448e8cf"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "BlockArrays", "Documenter", "FFTW", "ImageIO", "ImageInTerminal", "Random", "ReferenceTests", "Statistics", "Test"]
+test = ["Aqua", "BlockArrays", "Documenter", "FFTW", "ImageIO", "ImageInTerminal", "Logging", "Random", "ReferenceTests", "Statistics", "Test"]

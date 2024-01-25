@@ -13,8 +13,7 @@ using Aqua, Documenter # for meta quality checks
                   deps_compat=true,
                   stale_deps=true,
                   # FIXME? re-enable the `piracy` test
-                  piracy=false, # currently just `float` and `paddedviews`
-                  project_toml_formatting=true,
+                  piracies=false, # currently just `float` and `paddedviews`
                   unbound_args=true,
     )
     DocMeta.setdocmeta!(ImageCore, :DocTestSetup, :(using ImageCore); recursive=true)

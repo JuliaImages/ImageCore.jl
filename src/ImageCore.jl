@@ -171,7 +171,8 @@ end
 
 function __init__()
     Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
-        if nameof(exc.f) ∈ (:fft, :rfft, :plan_fft, :plan_rfft, :realfloat) && argtypes[1] <: AbstractArray{<:Colorant}
+        f = exc.f
+        if isa(f, Function) && nameof(f) ∈ (:fft, :rfft, :plan_fft, :plan_rfft, :realfloat) && argtypes[1] <: AbstractArray{<:Colorant}
             throw_ffterror(io, exc.f, exc.args...)
         end
     end

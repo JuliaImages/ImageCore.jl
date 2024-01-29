@@ -30,8 +30,11 @@ RGB_str = typestring(RGB)
     rgb8 = rand(RGB{N0f8}, 3, 5)
     c = rawview(channelview(rgb8))
     str = summary(c)
-    @test occursin("3×3×5 rawview(reinterpret($(rrstr)", str) && occursin("N0f8", str) &&
-          occursin("::Array{RGB{N0f8},$(rrdim(3))}", str) && occursin("with eltype UInt8", str)
+    if VERSION >= v"1.6.0-DEV.1083"
+        @test str == "3×3×5 reinterpret(reshape, UInt8, ::Array{RGB{N0f8},2}) with eltype UInt8"
+    else
+        @test str == "3×3×5 rawview(reinterpret(N0f8, ::Array{RGB{N0f8},3})) with eltype UInt8"
+    end
     @test summary(rgb8) == "3×5 Array{RGB{N0f8},2} with eltype $(RGB_str){$(N0f8_str)}"
     rand8 = rand(UInt8, 3, 5)
     d = normedview(PermutedDimsArray(rand8, (2,1)))

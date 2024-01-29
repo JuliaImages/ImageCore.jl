@@ -105,6 +105,11 @@ rawview(a::AbstractArray{T}) where {T<:FixedPoint} = mappedarray(reinterpret, y-
 rawview(a::Array{T}) where {T<:FixedPoint} = reinterpret(FixedPointNumbers.rawtype(T), a)
 rawview(a::AbstractArray{T}) where {T<:Real} = a
 
+if VERSION >= v"1.6.0-DEV.1083"
+    # does not use the slow `mappedarray` fallback for, typically, `rawview(channelview(img))`
+    rawview(a::Base.ReinterpretArray{T}) where {T<:FixedPoint} = reinterpret(reshape, FixedPointNumbers.rawtype(T), parent(a))
+end
+
 """
     normedview([T], img::AbstractArray{Unsigned})
 

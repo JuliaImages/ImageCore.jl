@@ -14,7 +14,7 @@ designed to support image processing and computer vision.
 
 [pkgeval-img]: https://juliaci.github.io/NanosoldierReports/pkgeval_badges/I/ImageCore.svg
 [pkgeval-url]: https://juliaci.github.io/NanosoldierReports/pkgeval_badges/report.html
-[action-img]: https://github.com/JuliaImages/ImageCore.jl/workflows/Unit%20test/badge.svg
+[action-img]: https://github.com/JuliaImages/ImageCore.jl/actions/workflows/UnitTest.yml/badge.svg
 [action-url]: https://github.com/JuliaImages/ImageCore.jl/actions
 [codecov-img]: https://codecov.io/github/JuliaImages/ImageCore.jl/coverage.svg?branch=master
 [codecov-url]: https://codecov.io/github/JuliaImages/ImageCore.jl?branch=master

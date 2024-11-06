@@ -1,6 +1,6 @@
 name = "ImageCore"
 uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
-version = "0.10.2"
+version = "0.10.3"
 
 [deps]
 ColorVectorSpace = "c3611d14-8923-5661-9e6a-0046d554d3a4"
@@ -16,7 +16,7 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 [compat]
 Aqua = "0.8"
 BlockArrays = "0.16"
-ColorVectorSpace = "0.10"
+ColorVectorSpace = "0.10, 0.11"
 Colors = "0.12"
 Documenter = "1"
 FFTW = "1"

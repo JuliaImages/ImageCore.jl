@@ -16,7 +16,7 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 [compat]
 Aqua = "0.8"
 BlockArrays = "0.16"
-ColorVectorSpace = "0.10"
+ColorVectorSpace = "0.10, 0.11"
 Colors = "0.12, 0.13"
 Documenter = "1"
 FFTW = "1"

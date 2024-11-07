@@ -20,9 +20,9 @@ julia> using Colors
 
 julia> img = [RGB(1,0,0) RGB(0,1,0);
               RGB(0,0,1) RGB(0,0,0)]
-2×2 Array{RGB{N0f8},2} with eltype RGB{FixedPointNumbers.Normed{UInt8,8}}:
- RGB{N0f8}(1.0,0.0,0.0)  RGB{N0f8}(0.0,1.0,0.0)
- RGB{N0f8}(0.0,0.0,1.0)  RGB{N0f8}(0.0,0.0,0.0)
+2×2 Matrix{RGB{FixedPointNumbers.N0f8}}:
+ RGB(1.0, 0.0, 0.0)  RGB(0.0, 1.0, 0.0)
+ RGB(0.0, 0.0, 1.0)  RGB(0.0, 0.0, 0.0)
 ```
 
 which displays as
@@ -50,7 +50,7 @@ That said, occasionally there are reasons to want to treat `RGB` as a
 
 ```jldoctest
 julia> v = channelview(img)
-3×2×2 reinterpret(N0f8, ::Array{RGB{N0f8},3}):
+3×2×2 reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}}) with eltype N0f8:
 [:, :, 1] =
  1.0  0.0
  0.0  0.0
@@ -70,7 +70,7 @@ another view called `rawview`:
 
 ```jldoctest
 julia> r = rawview(v)
-3×2×2 rawview(reinterpret(N0f8, ::Array{RGB{N0f8},3})) with eltype UInt8:
+3×2×2 rawview(reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}})) with eltype UInt8:
 [:, :, 1] =
  0xff  0x00
  0x00  0x00
@@ -110,7 +110,7 @@ end
 
 ```jldoctest
 julia> r
-3×2×2 rawview(reinterpret(N0f8, ::Array{RGB{N0f8},3})) with eltype UInt8:
+3×2×2 rawview(reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}})) with eltype UInt8:
 [:, :, 1] =
  0xff  0x00
  0x00  0x00
@@ -122,7 +122,7 @@ julia> r
  0x00  0x00
 
 julia> v
-3×2×2 reinterpret(N0f8, ::Array{RGB{N0f8},3}):
+3×2×2 reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}}) with eltype N0f8:
 [:, :, 1] =
  1.0    0.0
  0.0    0.0
@@ -134,9 +134,9 @@ julia> v
  0.0  0.0
 
 julia> img
-2×2 Array{RGB{N0f8},2} with eltype RGB{Normed{UInt8,8}}:
- RGB{N0f8}(1.0,0.0,0.502)  RGB{N0f8}(0.0,1.0,0.0)
- RGB{N0f8}(0.0,0.0,1.0)    RGB{N0f8}(0.0,0.0,0.0)
+2×2 Matrix{RGB{N0f8}}:
+ RGB(1.0, 0.0, 0.502)  RGB(0.0, 1.0, 0.0)
+ RGB(0.0, 0.0, 1.0)    RGB(0.0, 0.0, 0.0)
 ```
 
 The hexadecimal representation of 128 is 0x80; this is approximately
@@ -150,7 +150,7 @@ rather than the first. We can achieve that using `PermutedDimsArray`:
 
 ```jldoctest
 julia> p = PermutedDimsArray(v, (2,3,1))
-2×2×3 PermutedDimsArray(reinterpret(N0f8, ::Array{RGB{N0f8},3}), (2, 3, 1)) with eltype Normed{UInt8,8}:
+2×2×3 PermutedDimsArray(reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}}), (2, 3, 1)) with eltype N0f8:
 [:, :, 1] =
  1.0  0.0
  0.0  0.0
@@ -164,13 +164,13 @@ julia> p = PermutedDimsArray(v, (2,3,1))
  1.0    0.0
 
 julia> p[1,2,:] .= 0.25
-3-element view(PermutedDimsArray(reinterpret(N0f8, ::Array{RGB{N0f8},3}), (2, 3, 1)), 1, 2, :) with eltype Normed{UInt8,8}:
+3-element view(PermutedDimsArray(reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}}), (2, 3, 1)), 1, 2, :) with eltype N0f8:
  0.251N0f8
  0.251N0f8
  0.251N0f8
 
 julia> p
-2×2×3 PermutedDimsArray(reinterpret(N0f8, ::Array{RGB{N0f8},3}), (2, 3, 1)) with eltype Normed{UInt8,8}:
+2×2×3 PermutedDimsArray(reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}}), (2, 3, 1)) with eltype N0f8:
 [:, :, 1] =
  1.0  0.251
  0.0  0.0
@@ -184,7 +184,7 @@ julia> p
  1.0    0.0
 
 julia> v
-3×2×2 reinterpret(N0f8, ::Array{RGB{N0f8},3}):
+3×2×2 reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}}) with eltype N0f8:
 [:, :, 1] =
  1.0    0.0
  0.0    0.0
@@ -196,9 +196,9 @@ julia> v
  0.251  0.0
 
 julia> img
-2×2 Array{RGB{N0f8},2} with eltype RGB{Normed{UInt8,8}}:
- RGB{N0f8}(1.0,0.0,0.502)  RGB{N0f8}(0.251,0.251,0.251)
- RGB{N0f8}(0.0,0.0,1.0)    RGB{N0f8}(0.0,0.0,0.0)
+2×2 Matrix{RGB{N0f8}}:
+ RGB(1.0, 0.0, 0.502)  RGB(0.251, 0.251, 0.251)
+ RGB(0.0, 0.0, 1.0)    RGB(0.0, 0.0, 0.0)
 ```
 
 Once again, `p` is a view, and as a consequence changing it leads to

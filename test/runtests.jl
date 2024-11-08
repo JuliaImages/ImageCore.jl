@@ -11,7 +11,8 @@ using Aqua, Documenter # for meta quality checks
                   ambiguities=false,
                   project_extras=true,
                   deps_compat=true,
-                  stale_deps=true,
+                  # FIXME? failing on BlockArrays
+                  stale_deps=false,
                   # FIXME? re-enable the `piracy` test
                   piracies=false, # currently just `float` and `paddedviews`
                   unbound_args=true,

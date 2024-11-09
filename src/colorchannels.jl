@@ -179,9 +179,9 @@ Create a function that is equivalent to `(As...) -> colorview(C, Ax...)`.
 
 ```jldoctest; setup = :(using ImageCore)
 julia> ones(Float32, 2, 2) |> colorview(Gray)
-2×2 reinterpret(reshape, Gray{Float32}, ::$(Array{Float32,2})) with eltype Gray{Float32}:
- Gray{Float32}(1.0)  Gray{Float32}(1.0)
- Gray{Float32}(1.0)  Gray{Float32}(1.0)
+2×2 reinterpret(reshape, Gray{Float32}, ::Matrix{Float32}) with eltype Gray{Float32}:
+ 1.0  1.0
+ 1.0  1.0
 ```
 
 This can be slightly convenient when you want to convert a batch of channel data, for example:

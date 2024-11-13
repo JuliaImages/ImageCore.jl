@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Views · ImageCore</title><meta name="title" content="Views · ImageCore"/><meta property="og:title" content="Views · ImageCore"/><meta property="twitter:title" content="Views · ImageCore"/><meta name="description" content="Documentation for ImageCore."/><meta property="og:description" content="Documentation for ImageCore."/><meta property="twitter:description" content="Documentation for ImageCore."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">ImageCore</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">ImageCore.jl</a></li><li class="is-active"><a class="tocitem" href>Views</a><ul class="internal"><li><a class="tocitem" href="#View-types-defined-in-ImageCore"><span>View types defined in ImageCore</span></a></li></ul></li><li><a class="tocitem" href="../map/">Lazy transformation of values</a></li><li><a class="tocitem" href="../traits/">Traits</a></li><li><a class="tocitem" href="../reference/">Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Views</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Views</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaImages/ImageCore.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaImages/ImageCore.jl/blob/master/docs/src/views.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Views"><a class="docs-heading-anchor" href="#Views">Views</a><a id="Views-1"></a><a class="docs-heading-anchor-permalink" href="#Views" title="Permalink"></a></h1><h2 id="View-types-defined-in-ImageCore"><a class="docs-heading-anchor" href="#View-types-defined-in-ImageCore">View types defined in ImageCore</a><a id="View-types-defined-in-ImageCore-1"></a><a class="docs-heading-anchor-permalink" href="#View-types-defined-in-ImageCore" title="Permalink"></a></h2><p>It is quite possible that the default representation of images will satisfy most or all of your needs. However, to enhance flexibility in working with image data, it is possible to leverage several different kinds of &quot;views.&quot; Generically, a view is an <em>interpretation</em> of array data, one that may change the apparent meaning of the array but which shares the same underlying storage: change an element of the view, and you also change the original array. Views can facilitate processing images of immense size without making copies, and writing algorithms in the most convenient format often without having to worry about the potential cost of converting from one format to another.</p><p>To illustrate views, it&#39;s helpful to begin with a very simple image:</p><pre><code class="language-julia-repl hljs">julia&gt; using Colors
+
+julia&gt; img = [RGB(1,0,0) RGB(0,1,0);
+              RGB(0,0,1) RGB(0,0,0)]
+2×2 Matrix{RGB{FixedPointNumbers.N0f8}}:
+ RGB(1.0, 0.0, 0.0)  RGB(0.0, 1.0, 0.0)
+ RGB(0.0, 0.0, 1.0)  RGB(0.0, 0.0, 0.0)</code></pre><p>which displays as</p><p><img src="../assets/rgbk.png" alt="rgbk"/></p><p>Most commonly, it&#39;s convenient that all dimensions of this array correspond to pixel indices: you don&#39;t need to worry about some dimensions of the array corresponding to &quot;color channels&quot; and other the spatial location, and you&#39;re guaranteed to get the entire pixel contents when you access that location.</p><p>That said, occasionally there are reasons to want to treat <code>RGB</code> as a 3-component vector.  That&#39;s motivation for introducing our first view:</p><pre><code class="language-julia-repl hljs">julia&gt; v = channelview(img)
+3×2×2 reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}}) with eltype N0f8:
+[:, :, 1] =
+ 1.0  0.0
+ 0.0  0.0
+ 0.0  1.0
+
+[:, :, 2] =
+ 0.0  0.0
+ 1.0  0.0
+ 0.0  0.0</code></pre><p><code>channelview</code> does exactly what the name suggests: provide a view of the array using separate channels for the color components.</p><p>To access the underlying representation of the <code>N0f8</code> numbers, there&#39;s another view called <code>rawview</code>:</p><pre><code class="language-julia-repl hljs">julia&gt; r = rawview(v)
+3×2×2 rawview(reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}})) with eltype UInt8:
+[:, :, 1] =
+ 0xff  0x00
+ 0x00  0x00
+ 0x00  0xff
+
+[:, :, 2] =
+ 0x00  0x00
+ 0xff  0x00
+ 0x00  0x00</code></pre><p>Let&#39;s make a change in one of the entries:</p><pre><code class="language-julia-repl hljs">julia&gt; r[3,1,1] = 128
+128</code></pre><p>If we display <code>img</code>, now we get this:</p><p><img src="../assets/mgbk.png" alt="mgbk"/></p><p>You can see that the first pixel has taken on a magenta hue, which is a mixture of red and blue.  Why does this happen? Let&#39;s look at the array values themselves:</p><pre><code class="language-julia-repl hljs">julia&gt; r
+3×2×2 rawview(reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}})) with eltype UInt8:
+[:, :, 1] =
+ 0xff  0x00
+ 0x00  0x00
+ 0x80  0xff
+
+[:, :, 2] =
+ 0x00  0x00
+ 0xff  0x00
+ 0x00  0x00
+
+julia&gt; v
+3×2×2 reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}}) with eltype N0f8:
+[:, :, 1] =
+ 1.0    0.0
+ 0.0    0.0
+ 0.502  1.0
+
+[:, :, 2] =
+ 0.0  0.0
+ 1.0  0.0
+ 0.0  0.0
+
+julia&gt; img
+2×2 Matrix{RGB{N0f8}}:
+ RGB(1.0, 0.0, 0.502)  RGB(0.0, 1.0, 0.0)
+ RGB(0.0, 0.0, 1.0)    RGB(0.0, 0.0, 0.0)</code></pre><p>The hexadecimal representation of 128 is 0x80; this is approximately halfway to 255, and as a consequence the <code>N0f8</code> representation is very near 0.5.  You can see the same change is reflected in <code>r</code>, <code>v</code>, and <code>img</code>: there is only one underlying array, <code>img</code>, and the two views simply reference it.</p><p>Maybe you&#39;re used to having the color channel be the last dimension, rather than the first. We can achieve that using <code>PermutedDimsArray</code>:</p><pre><code class="language-julia-repl hljs">julia&gt; p = PermutedDimsArray(v, (2,3,1))
+2×2×3 PermutedDimsArray(reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}}), (2, 3, 1)) with eltype N0f8:
+[:, :, 1] =
+ 1.0  0.0
+ 0.0  0.0
+
+[:, :, 2] =
+ 0.0  1.0
+ 0.0  0.0
+
+[:, :, 3] =
+ 0.502  0.0
+ 1.0    0.0
+
+julia&gt; p[1,2,:] .= 0.25
+3-element view(PermutedDimsArray(reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}}), (2, 3, 1)), 1, 2, :) with eltype N0f8:
+ 0.251N0f8
+ 0.251N0f8
+ 0.251N0f8
+
+julia&gt; p
+2×2×3 PermutedDimsArray(reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}}), (2, 3, 1)) with eltype N0f8:
+[:, :, 1] =
+ 1.0  0.251
+ 0.0  0.0
+
+[:, :, 2] =
+ 0.0  0.251
+ 0.0  0.0
+
+[:, :, 3] =
+ 0.502  0.251
+ 1.0    0.0
+
+julia&gt; v
+3×2×2 reinterpret(reshape, N0f8, ::Matrix{RGB{N0f8}}) with eltype N0f8:
+[:, :, 1] =
+ 1.0    0.0
+ 0.0    0.0
+ 0.502  1.0
+
+[:, :, 2] =
+ 0.251  0.0
+ 0.251  0.0
+ 0.251  0.0
+
+julia&gt; img
+2×2 Matrix{RGB{N0f8}}:
+ RGB(1.0, 0.0, 0.502)  RGB(0.251, 0.251, 0.251)
+ RGB(0.0, 0.0, 1.0)    RGB(0.0, 0.0, 0.0)</code></pre><p>Once again, <code>p</code> is a view, and as a consequence changing it leads to changes in all the coupled arrays and views.</p><p>Finally, you can combine multiple arrays into a &quot;virtual&quot; multichannel array. We&#39;ll use the <a href="http://juliaimages.github.io/TestImages.jl/images/lighthouse.png">lighthouse</a> image:</p><pre><code class="language-julia hljs">using ImageCore, TestImages, Colors
+img = testimage(&quot;lighthouse&quot;)
+# Split out into separate channels
+cv = channelview(img)
+# Recombine the channels, filling in 0 for the middle (green) channel
+rb = colorview(RGB, cv[1,:,:], zeroarray, cv[3,:,:])</code></pre><img src="cc4a0bb6.png" alt="Example block output"/><p><code>zeroarray</code> is a constant which serves as a placeholder to create a (virtual) all-zeros array of size that matches the other arguments.</p><p><code>rb</code> looks like this:</p><p><img src="../assets/redblue.png" alt="redblue"/></p><p>In this case, we could have done the same thing somewhat more simply with <code>cv[2,:,:] .= 0</code> and then visualize <code>img</code>. However, more generally you can apply this to independent arrays which may not allow you to set values to 0. In IJulia,</p><p><img src="../assets/linspace1.png" alt="linspace1"/></p><p>The error comes from the fact that <code>img1d</code> does not store values separately from the <code>LinSpace</code> objects used to create it, and <code>LinSpace</code> (which uses a compact representation of a range, storing just the endpoints and the number of values) does not allow you to set specific values. However, if you need to set individual values, you can make a <code>copy</code>:</p><p><img src="../assets/linspace2.png" alt="linspace2"/></p><p>The fact that no storage is allocated by <code>colorview</code> is very convenient in certain situations, particularly when processing large images.</p><p><code>colorview</code>&#39;s ability to combine multiple grayscale images is based on another view, <code>StackedView</code>, which you can also use directly.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« ImageCore.jl</a><a class="docs-footer-nextpage" href="../map/">Lazy transformation of values »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Wednesday 13 November 2024 00:13">Wednesday 13 November 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

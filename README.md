@@ -5,6 +5,7 @@
 [![][codecov-img]][codecov-url]
 [![][docs-stable-img]][docs-stable-url]
 [![][docs-dev-img]][docs-dev-url]
+[![downloads][downloads-img]][downloads-url]
 
 ImageCore is the lowest-level component of the system of packages
 designed to support image processing and computer vision.
@@ -22,3 +23,5 @@ designed to support image processing and computer vision.
 [docs-stable-url]: https://JuliaImages.github.io/ImageCore.jl/stable
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
 [docs-dev-url]: https://JuliaImages.github.io/ImageCore.jl/latest
+[downloads-img]: https://img.shields.io/badge/dynamic/json?url=http%3A%2F%2Fjuliapkgstats.com%2Fapi%2Fv1%2Fmonthly_downloads%2FImageCore&query=total_requests&suffix=%2Fmonth&label=Downloads
+[downloads-url]: https://juliapkgstats.com/pkg/ImageCore
